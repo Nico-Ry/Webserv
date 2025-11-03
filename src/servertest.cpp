@@ -4,7 +4,12 @@
 #include <iostream> // For cout
 #include <unistd.h> // For read
 
-/*from https://ncona.com/2019/04/building-a-simple-server-with-cpp/  */
+/*interesting links:
+https://github.com/Kaydooo/Webserv_42
+https://github.com/cclaude42/webserv
+*/
+
+/* this is from https://ncona.com/2019/04/building-a-simple-server-with-cpp/  */
 
 int main() {
   // Create a socket (IPv4, TCP)
