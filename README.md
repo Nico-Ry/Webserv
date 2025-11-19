@@ -1,10 +1,10 @@
 # webserv
 
 
-webserv/
-├─ README.md
-├─ LICENSE
-├─ Makefile
+webserv/  
+├─ README.md  
+├─ LICENSE  
+├─ Makefile  
 ├─ .gitignore
 ├─ .clang-format                 # optional, C++98-friendly style (no features beyond C++98)
 ├─ include/                      # public headers
