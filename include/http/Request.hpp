@@ -28,6 +28,11 @@ struct HttpRequest {
 	bool chunked;
 	size_t bodyBytesRead;
 
+	/* Chunked decoding state (used only when chunked == true) */
+	size_t	chunkSize;			// current chunk size we are reading
+	bool	chunkSizeKnown;		// true after we parsed the chunk size line
+
+
 	// Body buffer (optional for now)
 	std::string body;
 
@@ -36,7 +41,10 @@ struct HttpRequest {
 		  hasContentLength(false),
 		  contentLength(0),
 		  chunked(false),
-		  bodyBytesRead(0)
+		  bodyBytesRead(0),
+		  chunkSize(0),
+		  chunkSizeKnown(false)
+
 	{}
 };
 
