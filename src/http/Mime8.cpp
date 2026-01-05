@@ -1,10 +1,5 @@
 #include "http/Mime.hpp"
 
-/*
-	toLower(s)
-
-	Simple lowercase helper to make extension matching case-insensitive.
-*/
 std::string	Mime::toLower(const std::string &s)
 {
 	std::string	out;
@@ -89,8 +84,6 @@ std::string	Mime::fromPath(const std::string &path)
 		return ("image/x-icon");
 	if (ext == "pdf")
 		return ("application/pdf");
-	/*
-		Default for unknown binary files.
-	*/
+	//	Default for unknown binary files.
 	return ("application/octet-stream");
 }
