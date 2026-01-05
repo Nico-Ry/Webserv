@@ -3,8 +3,10 @@
 
 #include <string>
 
-inline std::string reasonPhrase(int code) {
-	switch(code) {
+inline std::string reasonPhrase(int code)
+{
+	switch(code)
+	{
 		case 200: return "OK";
 		case 201: return "Created";
 		case 204: return "No Content";
@@ -21,5 +23,4 @@ inline std::string reasonPhrase(int code) {
 	}
 	return "Unknown";
 }
-
 #endif

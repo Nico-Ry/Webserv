@@ -43,9 +43,7 @@ std::string	ResponseBuilder::buildDateValue()
 		%H:%M:%S = time
 	*/
 	if (gmt == NULL)
-	{
 		return ("");
-	}
 	std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", gmt);
 	return (std::string(buf));
 }
@@ -82,21 +80,15 @@ std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnectio
 	out += "Date: ";
 	out += buildDateValue();
 	out += "\r\n";
-
 	out += "Server: webserv\r\n";
-
 	/*
 		3) Connection header (based on closeConnection parameter)
 	*/
 	out += "Connection: ";
 	if (closeConnection == true)
-	{
 		out += "close\r\n";
-	}
 	else
-	{
 		out += "keep-alive\r\n";
-	}
 
 	/*
 		4) Content-Length header
@@ -105,9 +97,7 @@ std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnectio
 	hasContentLength = false;
 	it = resp.headers.find("Content-Length");
 	if (it != resp.headers.end())
-	{
 		hasContentLength = true;
-	}
 
 	if (hasContentLength == false)
 	{

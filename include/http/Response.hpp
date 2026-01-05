@@ -4,7 +4,8 @@
 #include <string>
 #include <map>
 
-struct HttpResponse {
+struct HttpResponse
+{
 	int statusCode;
 	std::string reason; // "OK", "Not Found", etc.
 	std::map<std::string, std::string> headers;

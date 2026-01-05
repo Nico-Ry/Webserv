@@ -4,14 +4,16 @@
 #include <string>
 #include <map>
 
-enum HttpMethod {
+enum HttpMethod
+{
 	METHOD_GET,
 	METHOD_POST,
 	METHOD_DELETE,
 	METHOD_UNKNOWN
 };
 
-struct HttpRequest {
+struct HttpRequest
+{
 	HttpMethod method;
 
 	std::string rawTarget; // "/path?x=1"

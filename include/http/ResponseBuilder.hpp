@@ -11,7 +11,8 @@
 	Module 2 builds the final HTTP message string.
 	Module 1 sends it through the socket.
 */
-class ResponseBuilder {
+class ResponseBuilder
+{
 public:
 	/*
 		build(resp, closeConnection)

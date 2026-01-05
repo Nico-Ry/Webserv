@@ -42,24 +42,15 @@ std::string	Mime::getExtension(const std::string &path)
 	dotPos = path.find_last_of('.');
 
 	if (dotPos == std::string::npos)
-	{
 		return ("");
-	}
-
 	/*
 		Ensure the '.' is after the last slash.
 		So "/a.b/file" does not treat ".b/file" as extension.
 	*/
 	if (slashPos != std::string::npos && dotPos < slashPos)
-	{
 		return ("");
-	}
-
 	if (dotPos + 1 >= path.size())
-	{
 		return ("");
-	}
-
 	return (path.substr(dotPos + 1));
 }
 
@@ -74,58 +65,30 @@ std::string	Mime::fromPath(const std::string &path)
 	std::string	ext;
 
 	ext = toLower(getExtension(path));
-
 	if (ext == "html" || ext == "htm")
-	{
 		return ("text/html");
-	}
 	if (ext == "css")
-	{
 		return ("text/css");
-	}
 	if (ext == "js")
-	{
 		return ("application/javascript");
-	}
 	if (ext == "json")
-	{
 		return ("application/json");
-	}
 	if (ext == "txt")
-	{
 		return ("text/plain");
-	}
 	if (ext == "xml")
-	{
 		return ("application/xml");
-	}
-
 	if (ext == "png")
-	{
 		return ("image/png");
-	}
 	if (ext == "jpg" || ext == "jpeg")
-	{
 		return ("image/jpeg");
-	}
 	if (ext == "gif")
-	{
 		return ("image/gif");
-	}
 	if (ext == "svg")
-	{
 		return ("image/svg+xml");
-	}
 	if (ext == "ico")
-	{
 		return ("image/x-icon");
-	}
-
 	if (ext == "pdf")
-	{
 		return ("application/pdf");
-	}
-
 	/*
 		Default for unknown binary files.
 	*/

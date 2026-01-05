@@ -13,7 +13,8 @@
 
 	If unknown extension: "application/octet-stream"
 */
-class Mime {
+class Mime
+{
 public:
 	static std::string	fromPath(const std::string &path);
 

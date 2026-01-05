@@ -16,7 +16,8 @@
 	Because of that, we cannot assume we have the full request at once.
 	We parse it step-by-step (state machine).
 */
-enum ParserState {
+enum ParserState
+{
 	PS_START_LINE,   // Parsing: "GET /path HTTP/1.1"
 	PS_HEADERS,      // Parsing: "Host: ...", "User-Agent: ...", until empty line
 	PS_BODY,         // (later) Parsing message body: Content-Length or chunked
@@ -31,7 +32,8 @@ enum ParserState {
 	- This parser will store bytes in _buffer until it has complete lines.
 	- When parsing is complete, isDone() becomes true and you can call getRequest().
 */
-class HttpRequestParser {
+class HttpRequestParser
+{
 public:
 	HttpRequestParser();
 
@@ -43,8 +45,6 @@ public:
 	bool	hasBufferedData() const;
 
 	bool	shouldCloseConnection() const;
-
-
 
 	/*
 		feed(data)
@@ -85,7 +85,6 @@ private:
 	// If state is PS_ERROR, this holds the HTTP error status code (e.g. 400)
 	int          _errorStatus;
 
-private:
 	/*
 		Parsing helpers:
 		These return true if they made progress (consumed input / changed state),
@@ -99,6 +98,11 @@ private:
 	bool	finalizeHeaders();
 	bool	handleHeaderLine(const std::string &line);
 	bool	parseContentLengthValue(size_t &outValue, const std::string &value);
+	
+	bool	parseChunkSizeLine();
+	bool	consumeFinalChunkCRLF();
+	bool	consumeChunkDataAndCRLF();
+
 
 	/*
 		readLine(hasLine)
