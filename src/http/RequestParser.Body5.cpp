@@ -1,17 +1,5 @@
 #include "http/RequestParser.hpp"
 #include <cctype>
-
-/*
-	<sstream> is used for std::istringstream.
-	We use it to split the start line like this:
-
-		"GET /index.html HTTP/1.1"
-
-	into:
-		method = "GET"
-		target = "/index.html"
-		version = "HTTP/1.1"
-*/
 #include <sstream>
 
 bool	HttpRequestParser::parseBody()
@@ -30,7 +18,7 @@ bool	HttpRequestParser::parseBody()
 
 	/*
 		If request is chunked, we are NOT implementing it yet.
-		We will do chunked in Phase 3.5.
+		We will do chunked in Phase 3.5.TODO
 	*/
 	if (_req.chunked == true)
 		return (parseBodyChunked());
@@ -187,16 +175,11 @@ bool	HttpRequestParser::consumeFinalChunkCRLF()
 */
 bool	HttpRequestParser::consumeChunkDataAndCRLF()
 {
-	/*
-		STEP B: We know the chunk size. We must read exactly that many bytes from _buffer.
-	*/
+	//STEP B: We know the chunk size. We must read exactly that many bytes from _buffer.
+
+	//Not enough data yet to read the full chunk.
 	if (_buffer.size() < _req.chunkSize)
-	{
-		/*
-			Not enough data yet to read the full chunk.
-		*/
 		return (false);
-	}
 
 	//	Append chunk data to the decoded body.
 	_req.body.append(_buffer, 0, _req.chunkSize);

@@ -60,9 +60,9 @@ std::string	ResponseBuilder::buildDateValue()
 */
 std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnection)
 {
-	std::string									out;
+	std::string											out;
 	std::map<std::string, std::string>::const_iterator	it;
-	bool										hasContentLength;
+	bool												hasContentLength;
 
 	/*
 		1) Status line

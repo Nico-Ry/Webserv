@@ -1,17 +1,5 @@
 #include "http/RequestParser.hpp"
 #include <cctype>
-
-/*
-	<sstream> is used for std::istringstream.
-	We use it to split the start line like this:
-
-		"GET /index.html HTTP/1.1"
-
-	into:
-		method = "GET"
-		target = "/index.html"
-		version = "HTTP/1.1"
-*/
 #include <sstream>
 
 /*
@@ -55,7 +43,6 @@ bool	HttpRequestParser::parseStartLine()
 	*/
 	hasLine = false;
 	line = readLine(hasLine);
-
 	if (hasLine == false)
 		return (false);
 
