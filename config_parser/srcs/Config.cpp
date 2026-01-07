@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:03:19 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/07 18:39:10 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/07 19:44:27 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,14 @@ TokenType	Config::identifyDelimiter(const char& delimiter) {
 }
 
 
+static void	pushAndFlush(std::vector<Token>& tokens, TokenType t, std::string& buf, size_t line, size_t col) {
+	tokens.push_back(Token(t, buf, line, col));
+	buf.clear();
+}
+
 void	Config::tokeniseConfig(std::vector<Token>& tokens) {
     std::string currentLine;
-    int lineNum = 0;
+    size_t lineNum = 0;
 
     while (std::getline(cfgFile, currentLine)) {
         lineNum++;
@@ -71,36 +76,31 @@ void	Config::tokeniseConfig(std::vector<Token>& tokens) {
         for (size_t col = 0; col < currentLine.length(); ++col) {
             char c = currentLine[col];
 
-            // TODO: Check if special character
+            // Check if special character
 			if (c == '{' || c == '}' || c == ';') {
-				if (!tokenBuf.empty()) {
-					tokens.push_back(Token(TOKEN_WORD, tokenBuf, lineNum, tokenStartCol));
-					tokenBuf.clear();
-				}
+				if (!tokenBuf.empty())
+					pushAndFlush(tokens, TOKEN_WORD, tokenBuf, lineNum, tokenStartCol);
 				TokenType	type = identifyDelimiter(c);
 				tokens.push_back(Token(type, std::string(1, c), lineNum, col));
 			}
-            // TODO: Check if whitespace
+
+			// Check if whitespace
 			else if (std::isspace(c)) {
-				if (!tokenBuf.empty()) {
-					tokens.push_back(Token(TOKEN_WORD, tokenBuf, lineNum, tokenStartCol));
-					tokenBuf.clear();
-				}
+				if (!tokenBuf.empty())
+					pushAndFlush(tokens, TOKEN_WORD, tokenBuf, lineNum, tokenStartCol);
 			}
-            // TODO: Otherwise, it's a regular character
+
+            // it's a regular character add to buffer
 			else {
-				if (tokenBuf.empty())
+				if (tokenBuf.empty()) // new word set tokenStartCol to current col
 					tokenStartCol = col;
 				tokenBuf += c;
 			}
 		}
-        // TODO: End of line - flush buffer if needed
-		if (!tokenBuf.empty()) {
-			tokens.push_back(Token(TOKEN_WORD, tokenBuf, lineNum, tokenStartCol));
-			tokenBuf.clear();
-		}
+        // End of line - flush buffer if not empty
+		if (!tokenBuf.empty())
+			pushAndFlush(tokens, TOKEN_WORD, tokenBuf, lineNum, tokenStartCol);
 	}
-	cfgFile.close();
 }
 
 
@@ -108,6 +108,6 @@ void Config::parseConfigFile() {
 	std::vector<Token>	tokens;
 	tokeniseConfig(tokens);
 	for (size_t i=0; i < tokens.size(); ++i)
-		std::cout << "[" << tokens[i].value << "] ";
+		std::cout << "[" << tokens[i].value << "] type: " << tokens[i].type << std::endl;
 	//parseTokens(); //using this->tokens
 }
