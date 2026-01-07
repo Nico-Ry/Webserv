@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webserv Test Page</title>
+    <style>
+        body { font-family: Arial; margin: 50px; }
+        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+        pre { background: #333; color: #0f0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Webserv Test Page</h1>
+
+    <h2>Test GET</h2>
+    <button onclick="testGet()">Test GET /</button>
+    <button onclick="testGet('/api/users')">Test GET /api/users</button>
+
+    <h2>Test POST</h2>
+    <button onclick="testPost()">Test POST /upload</button>
+    <button onclick="testPostWithBody()">Test POST with Body</button>
+
+    <h2>Test DELETE</h2>
+    <button onclick="testDelete()">Test DELETE /file.txt</button>
+
+    <div class="result" id="result">
+        <strong>Result:</strong>
+        <pre id="output">Click a button to test...</pre>
+    </div>
+
+    <script>
+        function showResult(method, url, status, body) {
+            document.getElementById('output').textContent =
+                method + ' ' + url + '\n' +
+                'Status: ' + status + '\n\n' +
+                'Response:\n' + body;
+        }
+
+        function testGet(path = '/') {
+            fetch('http://localhost:8080' + path)
+                .then(response => {
+                    const status = response.status;
+                    return response.text().then(text => ({status, text}));
+                })
+                .then(({status, text}) => {
+                    showResult('GET', path, status, text);
+                })
+                .catch(err => {
+                    showResult('GET', path, 'ERROR', err.message);
+                });
+        }
+
+        function testPost() {
+            fetch('http://localhost:8080/upload', {
+                method: 'POST'
+            })
+            .then(response => {
+                const status = response.status;
+                return response.text().then(text => ({status, text}));
+            })
+            .then(({status, text}) => {
+                showResult('POST', '/upload', status, text);
+            })
+            .catch(err => {
+                showResult('POST', '/upload', 'ERROR', err.message);
+            });
+        }
+
+        function testPostWithBody() {
+            fetch('http://localhost:8080/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: 'Hello from browser test!'
+            })
+            .then(response => {
+                const status = response.status;
+                return response.text().then(text => ({status, text}));
+            })
+            .then(({status, text}) => {
+                showResult('POST', '/upload (with body)', status, text);
+            })
+            .catch(err => {
+                showResult('POST', '/upload', 'ERROR', err.message);
+            });
+        }
+
+        function testDelete() {
+            fetch('http://localhost:8080/file.txt', {
+                method: 'DELETE'
+            })
+            .then(response => {
+                const status = response.status;
+                return response.text().then(text => ({status, text}));
+            })
+            .then(({status, text}) => {
+                showResult('DELETE', '/file.txt', status, text);
+            })
+            .catch(err => {
+                showResult('DELETE', '/file.txt', 'ERROR', err.message);
+            });
+        }
+    </script>
+</body>
+</html>

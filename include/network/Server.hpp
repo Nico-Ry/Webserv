@@ -4,6 +4,9 @@
 #include "SocketManager.hpp"
 #include "Connection.hpp"
 #include "IOMultiplexer.hpp"
+#include "../http/RequestParser.hpp"
+#include "../http/ResponseBuilder.hpp"
+#include "../http/Response.hpp"
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -34,13 +37,18 @@ private:
     void handleClientWrite(int fd);
     void removeClient(int fd);
 
-    // Processus de la donnee recue (pour l'instant: simple echo)
-    void processRequest(Connection* conn);
+    // Processus de la donnee recue - utilise HttpRequestParser
+    void processRequest(Connection* conn, int fd);
+
+    // Traite une requete HTTP complete et retourne une reponse
+    // TODO: Plus tard, cette fonction appellera le Router
+    HttpResponse handleHttpRequest(const HttpRequest& req);
 
     // Membres
     SocketManager socket_manager;
     IOMultiplexer multiplexer;
     std::map<int, Connection*> clients;
+    std::map<int, HttpRequestParser*> parsers;  // Un parser par client (keep-alive)
     int server_fd;
     int port;
     bool running;

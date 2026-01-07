@@ -4,23 +4,33 @@ NAME = webserv
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
-INCLUDES = -I./include/network
+INCLUDES = -I./include
 
 # Directories
-SRC_DIR = src/network
 OBJ_DIR = obj
 
 # Source files
-SRCS = $(SRC_DIR)/SocketManager.cpp \
-       $(SRC_DIR)/Connection.cpp \
-       $(SRC_DIR)/IOMultiplexer.cpp \
-       $(SRC_DIR)/Server.cpp
+SRC_NETWORK = src/network/SocketManager.cpp \
+              src/network/Connection.cpp \
+              src/network/IOMultiplexer.cpp \
+              src/network/Server.cpp
+
+SRC_HTTP = src/http/RequestParser.Core1.cpp \
+           src/http/RequestParser.StartLine3.cpp \
+           src/http/RequestParser.Headers4.cpp \
+           src/http/RequestParser.Body5.cpp \
+           src/http/RequestParser.Utils2.cpp \
+           src/http/RequestParser.Connection6.cpp \
+           src/http/ResponseBuilder7.cpp \
+           src/http/Mime8.cpp
+
+SRCS = $(SRC_NETWORK) $(SRC_HTTP)
 
 # Main source
 MAIN_SRC = src/main.cpp
 
 # Object files
-OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+OBJS = $(SRCS:src/%.cpp=$(OBJ_DIR)/%.o)
 MAIN_OBJ = $(OBJ_DIR)/main.o
 
 # Colors
@@ -35,8 +45,8 @@ $(NAME): $(OBJS) $(MAIN_OBJ)
 	@echo "$(GREEN)$(NAME) compiled successfully!$(RESET)"
 	@echo "$(GREEN)Run with: ./$(NAME) [port]$(RESET)"
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
+$(OBJ_DIR)/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
 	@echo "Compiling $<..."
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
