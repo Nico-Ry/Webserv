@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 16:22:26 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/08 16:43:10 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ ServerBlock	ConfigParser::parseServerBlock() {
 	current = expect(TOKEN_LBRACE, "Expected '{'");
 
 	ServerBlock	s;
-	
+
 	current = expect(TOKEN_RBRACE, "Expected '}'");
 	return s;
 }
