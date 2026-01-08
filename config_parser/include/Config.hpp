@@ -30,8 +30,8 @@ class Config {
 		~Config();
 
 //					METHODS
-		// bool		validInputFile(const std::string& fileName);
-		// Config		buildConfig(const std::string& configFile);
+		// const std::vector<ServerBlock>& getServers() const;
+		void	addServer(const ServerBlock& s);
 };
 
 #endif

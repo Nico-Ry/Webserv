@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:27:33 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 13:35:35 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/08 13:41:01 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	main(int ac, char** av) {
 		return -1;
 	try {
 		Config	cfg(av[1]);
-		std::cout << "TOKENISATION SUCCESS" << std::endl;
+		std::cout << "PARSING SUCCESS" << std::endl;
 	}
 	catch (std::exception& e) {
 		std::cout << "Error: " << e.what() << std::endl;

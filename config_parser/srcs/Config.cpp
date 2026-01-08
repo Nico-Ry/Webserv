@@ -23,12 +23,12 @@ Config::Config(const std::string& configFile) {
     std::vector<Token> tokens;
     Tokeniser tokeniser(file);
     tokeniser.tokenise(tokens);
-	printTokens(tokens);
+	// printTokens(tokens);
 
-// Parse
-	// ConfigParser	parser(tokens);
-	// parser.parse(result);
-	// validate(result);
+	// Parse
+	ConfigParser	parser(tokens);
+	parser.parse(*this);
+	// validate(*this);
 }
 
 
@@ -46,3 +46,8 @@ return *this;
 }
 
 Config::~Config() {}
+
+
+void	Config::addServer(const ServerBlock& s) {
+	servers.push_back(s);
+}

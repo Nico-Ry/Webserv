@@ -21,12 +21,12 @@ NAME		= Webserv
 
 # Header files
 INCL_DIR	= config_parser/include/
-INCLUDES	= $(addprefix $(INCL_DIR), Config.hpp ServerBlock.hpp LocationBlock.hpp Tokeniser.hpp)
+INCLUDES	= $(addprefix $(INCL_DIR), Config.hpp ConfigParser.hpp ServerBlock.hpp LocationBlock.hpp Tokeniser.hpp)
 
 
 # Source files
 SRCS_DIR	= config_parser/srcs/
-SRC			= $(addprefix $(SRCS_DIR), Config.cpp ServerBlock.cpp LocationBlock.cpp Tokeniser.cpp main.cpp)
+SRC			= $(addprefix $(SRCS_DIR), Config.cpp ConfigParser.cpp ServerBlock.cpp LocationBlock.cpp Tokeniser.cpp main.cpp)
 
 # Object files (not strictly needed if just one .cpp file, but useful for scaling)
 OBJ_FILES	= $(SRC:.cpp=.o)

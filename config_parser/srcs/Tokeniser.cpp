@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 13:16:08 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 13:38:53 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/08 15:43:28 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,9 @@ void	Tokeniser::tokenise(std::vector<Token>& tokens) {
 					pushAndFlush(tokens, TOKEN_WORD, tokenBuf, lineNum, tokenStartCol);
 			}
 
-            // it's a regular character add to buffer
+            // regular character - add to buffer
 			else {
-				if (tokenBuf.empty()) // new word set tokenStartCol to current col
+				if (tokenBuf.empty()) // new word - set tokenStartCol to (curent)col
 					tokenStartCol = col;
 				tokenBuf += c;
 			}
@@ -70,6 +70,8 @@ void	Tokeniser::tokenise(std::vector<Token>& tokens) {
 		if (!tokenBuf.empty())
 			pushAndFlush(tokens, TOKEN_WORD, tokenBuf, lineNum, tokenStartCol);
 	}
+	if (tokens.empty())
+		throw (std::runtime_error("Config file is Empty!"));
 }
 
 
