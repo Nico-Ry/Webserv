@@ -1,26 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/01/07 16:27:33 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 13:35:35 by ameechan         ###   ########.fr       */
+/*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
+/*   Updated: 2026/01/08 11:38:34 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Config.hpp"
+#include "ConfigParser.hpp"
 
-int	main(int ac, char** av) {
-	if (ac != 2)
-		return -1;
-	try {
-		Config	cfg(av[1]);
-		std::cout << "TOKENISATION SUCCESS" << std::endl;
-	}
-	catch (std::exception& e) {
-		std::cout << "Error: " << e.what() << std::endl;
-	}
-	return 0;
-}
+ConfigParser::ConfigParser(const std::vector<Token>& toks)
+	: tokens(toks), currentIndex(0) {}
+
+ConfigParser::~ConfigParser() {}
+

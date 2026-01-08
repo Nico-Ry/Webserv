@@ -14,52 +14,24 @@
 #define CONFIG_HPP
 
 #include <vector>
-#include <sstream>
-#include <istream>
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-#include <cctype>
 #include "ServerBlock.hpp"
 #include "LocationBlock.hpp"
-
-typedef	enum e_token {
-	TOKEN_WORD,//		0
-	TOKEN_LBRACE,//		1
-	TOKEN_RBRACE,//		2
-	TOKEN_SEMICOLON,//	3
-	TOKEN_EOF//			4
-}	TokenType;
-
-typedef struct Token {
-	TokenType	type;
-	std::string	value;
-	size_t		line;
-	size_t		column;
-
-	//constructor that takes parameters
-	Token(TokenType t, std::string v, size_t l, size_t c)
-		: type(t), value(v), line(l), column(c) {}
-
-	//default constructor
-	Token() : type(TOKEN_EOF), value(""), line(0), column(0) {}
-}	tok;
+#include "ConfigParser.hpp"
+#include "Tokeniser.hpp"
 
 class Config {
 	private:
 		std::vector<ServerBlock>	servers;
-		// std::vector<std::string>	tokens;
-		std::ifstream				cfgFile;
 	public:
-		Config();
+//				CONSTRUCTOR & DESTRUCTOR
+		Config(const std::string& configFile);
 		Config(const Config& other);
 		Config& operator=(const Config& other);
 		~Config();
-//					MEMBER FUNCS
-		bool		validInputFile(const std::string& fileName);
-		void		tokeniseConfig(std::vector<Token>& tokens);
-		void		parseConfigFile();
-		TokenType	identifyDelimiter(const char& delimiter);
+
+//					METHODS
+		// bool		validInputFile(const std::string& fileName);
+		// Config		buildConfig(const std::string& configFile);
 };
 
 #endif
