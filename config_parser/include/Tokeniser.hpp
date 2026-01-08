@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 13:15:59 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 13:38:39 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/08 18:07:04 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,8 @@ typedef	enum e_token {
 	TOKEN_LBRACE,//		1
 	TOKEN_RBRACE,//		2
 	TOKEN_SEMICOLON,//	3
-	TOKEN_EOF//			4
+	TOKEN_EOF,//		4
+	TOKEN_ERR//			5
 }	TokenType;
 
 

@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 16:43:10 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/08 18:27:38 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,10 @@ ServerBlock	ConfigParser::parseServerBlock() {
 	current = expect(TOKEN_LBRACE, "Expected '{'");
 
 	ServerBlock	s;
-
+	while (peek().value != "}") {
+		if (peek().value == "listen")
+			parseListen(s);
+	}
 	current = expect(TOKEN_RBRACE, "Expected '}'");
 	return s;
 }
@@ -39,12 +42,39 @@ void	ConfigParser::parse(Config& data) {
 	while (!isAtEnd()) {
 		data.addServer(parseServerBlock());
 	}
+	ServerBlock	s = data.getServer(4);
+	std::cout << s.getPort() << std::endl;
 }
 
 
 
 
 
+
+#pragma region Parse Directives
+
+void	ConfigParser::parseListen(ServerBlock& s) {
+// consume 'listen'
+	consume();
+
+	std::stringstream	ss(tokens[currentIndex].value);
+	int	port;
+
+	if (!(ss >> port))
+		throw std::runtime_error("listen: not a number: " + peek().value);
+	if (!ss.eof())
+		throw std::runtime_error("listen: invalid characters: " + peek().value);
+	if (port < 1 || port > 65535)
+		throw std::runtime_error("listen: port out of range: " + peek().value);
+
+// consume port number
+	consume();
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+	s.setPort(port);
+}
+
+
+#pragma endregion
 
 
 

@@ -51,3 +51,9 @@ Config::~Config() {}
 void	Config::addServer(const ServerBlock& s) {
 	servers.push_back(s);
 }
+
+ServerBlock	Config::getServer(size_t index) {
+	if (index >= servers.size())
+		throw std::runtime_error("getServer: index out of bounds");
+	return servers[index];
+}
