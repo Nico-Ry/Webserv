@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
+/*   By: ameechan <ameechan@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/01/07 16:03:37 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/07 18:40:11 by ameechan         ###   ########.fr       */
+/*   Created: 2026/01/08 10:45:45 by ameechan          #+#    #+#             */
+/*   Updated: 2026/01/08 10:46:15 by ameechan         ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,17 @@
 #include <istream>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <cctype>
 #include "ServerBlock.hpp"
 #include "LocationBlock.hpp"
 
 typedef	enum e_token {
-	TOKEN_WORD,
-	TOKEN_LBRACE,
-	TOKEN_RBRACE,
-	TOKEN_SEMICOLON,
-	TOKEN_EOF
+	TOKEN_WORD,//		0
+	TOKEN_LBRACE,//		1
+	TOKEN_RBRACE,//		2
+	TOKEN_SEMICOLON,//	3
+	TOKEN_EOF//			4
 }	TokenType;
 
 typedef struct Token {

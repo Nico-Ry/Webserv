@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
+/*   By: ameechan <ameechan@student.42lausanne.ch>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/01/07 16:03:19 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/07 19:44:27 by ameechan         ###   ########.fr       */
+/*   Created: 2026/01/08 10:40:54 by ameechan          #+#    #+#             */
+/*   Updated: 2026/01/08 10:44:41 by ameechan         ###   ########.ch       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,6 @@ void Config::parseConfigFile() {
 	std::vector<Token>	tokens;
 	tokeniseConfig(tokens);
 	for (size_t i=0; i < tokens.size(); ++i)
-		std::cout << "[" << tokens[i].value << "] type: " << tokens[i].type << std::endl;
+		std::cout << "[" << tokens[i].value << "]" << std::setw(25 - tokens[i].value.size()) << "type: " << tokens[i].type << std::endl;
 	//parseTokens(); //using this->tokens
 }
