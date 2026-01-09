@@ -6,11 +6,27 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 20:37:51 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/09 20:41:05 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigParser.hpp"
+
+#pragma region TEMP DEBUG FUNCS
+
+void	printServerPorts(Config& data) {
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		if (data.servers[i].port) {
+			std::cout << "[DEBUG] port: " << data.servers[i].port
+				<< " server: " << i << std::endl;
+		}
+		else
+			std::cout << "[DEBUG] No port! server: " << i << std::endl;
+
+	}
+}
+
+#pragma endregion TEMP DEBUG FUNCS
 
 ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	: tokens(toks), currentIndex(0) {
@@ -48,20 +64,14 @@ ServerBlock	ConfigParser::parseServerBlock() {
 }
 
 
+
+
 void	ConfigParser::parse(Config& data) {
 
 	while (!isAtEnd()) {
 		data.servers.push_back(parseServerBlock());
 	}
-	for (size_t i=0; i < data.servers.size(); ++i) {
-		if (data.servers[i].port) {
-			std::cout << "[DEBUG] port: " << data.servers[i].port
-				<< " server: " << i << std::endl;
-		}
-		else
-			std::cout << "[DEBUG] No port! server: " << i << std::endl;
-
-	}
+	printServerPorts(data);
 }
 
 
