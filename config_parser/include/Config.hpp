@@ -20,8 +20,6 @@
 #include "Tokeniser.hpp"
 
 class Config {
-	private:
-		std::vector<ServerBlock>	servers;
 	public:
 //				CONSTRUCTOR & DESTRUCTOR
 		Config(const std::string& configFile);
@@ -29,10 +27,13 @@ class Config {
 		Config& operator=(const Config& other);
 		~Config();
 
+//				SERVERS BUILT FROM CONFIG
+		std::vector<ServerBlock>	servers;
+
 //					METHODS
 		// const std::vector<ServerBlock>& getServers() const;
-		void		addServer(const ServerBlock& s);
-		ServerBlock	getServer(const size_t index);
+		// void		addServer(const ServerBlock& s);
+		// ServerBlock	getServer(const size_t index);
 };
 
 #endif

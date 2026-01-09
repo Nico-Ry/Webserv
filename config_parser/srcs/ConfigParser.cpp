@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 19:51:05 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/09 20:37:51 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 
 	//build directive (KEY) - function_pointer (VALUE) map
 		directiveHandlers["listen"] = &ConfigParser::parseListen;
-		directiveHandlers["root"] = &ConfigParser::parseRoot;
+		// directiveHandlers["root"] = &ConfigParser::parseRoot;
 	}
 
 ConfigParser::~ConfigParser() {}
@@ -51,10 +51,17 @@ ServerBlock	ConfigParser::parseServerBlock() {
 void	ConfigParser::parse(Config& data) {
 
 	while (!isAtEnd()) {
-		data.addServer(parseServerBlock());
+		data.servers.push_back(parseServerBlock());
 	}
-	ServerBlock	s = data.getServer(4);
-	// std::cout << "[DEBUG] port: " << s.getPort() << std::endl;
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		if (data.servers[i].port) {
+			std::cout << "[DEBUG] port: " << data.servers[i].port
+				<< " server: " << i << std::endl;
+		}
+		else
+			std::cout << "[DEBUG] No port! server: " << i << std::endl;
+
+	}
 }
 
 
@@ -79,7 +86,7 @@ void	ConfigParser::parseListen(ServerBlock& s) {
 // consume port number
 	consume();
 	expect(TOKEN_SEMICOLON, "Expected ';'");
-	s.setPort(port);
+	s.port = port;
 }
 
 
