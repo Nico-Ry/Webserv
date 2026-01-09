@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 21:02:58 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/09 21:36:58 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,23 @@
 void	printServerPorts(Config& data) {
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		if (data.servers[i].port) {
-			std::cout << "[DEBUG] port: " << data.servers[i].port
-				<< " server: " << i << std::endl;
+			std::cout << "[DEBUG] server: " << i
+				<< " -> port: " << data.servers[i].port << std::endl;
 		}
 		else
-			std::cout << "[DEBUG] No port! server: " << i << std::endl;
+			std::cout << "[DEBUG] server: " << i << " -> No port!" << std::endl;
+
+	}
+}
+
+void	printServerRoot(Config& data) {
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		if (!data.servers[i].root.empty()) {
+			std::cout << "[DEBUG] server: " << i
+			<< " -> root: " << data.servers[i].root << std::endl;
+		}
+		else
+			std::cout << "[DEBUG] server: " << i << " -> No root!" << std::endl;
 
 	}
 }
@@ -31,9 +43,9 @@ void	printServerPorts(Config& data) {
 ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	: tokens(toks), currentIndex(0) {
 
-	//build directive (KEY) - function_pointer (VALUE) map
+	//build map for server directives(KEY) to function pointers(VALUE)
 		serverDirectives["listen"] = &ConfigParser::parseListen;
-		// directiveHandlers["root"] = &ConfigParser::parseRoot;
+		serverDirectives["root"] = &ConfigParser::parseRoot;
 	}
 
 ConfigParser::~ConfigParser() {}
@@ -51,12 +63,16 @@ ServerBlock	ConfigParser::parseServerBlock() {
 	ServerBlock	s;
 	while (!check(TOKEN_RBRACE)) {
 		Token	directive = expect(TOKEN_WORD, "Expected directive");
+
+	// Find pointer to parsing function that matches directive.value
 		std::map<std::string, ServerFn>::iterator it	=
 			serverDirectives.find(directive.value);
 
+	// If directive not found in map, throw error
 		if (it == serverDirectives.end())
 			throw std::runtime_error("Unkown directive: " + directive.value);
 
+	// Else call function pointer to parse directive
 		(this->*(it->second))(s);
 	}
 	current = expect(TOKEN_RBRACE, "Expected '}'");
@@ -72,6 +88,8 @@ void	ConfigParser::parse(Config& data) {
 		data.servers.push_back(parseServerBlock());
 	}
 	printServerPorts(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerRoot(data);
 }
 
 
@@ -99,6 +117,11 @@ void	ConfigParser::parseListen(ServerBlock& s) {
 	s.port = port;
 }
 
+void	ConfigParser::parseRoot(ServerBlock& s) {
+	s.root = tokens[currentIndex].value;
+	consume();
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
 
 #pragma endregion
 
