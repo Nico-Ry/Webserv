@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 21:36:58 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/09 21:59:03 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,15 @@ void	printServerRoot(Config& data) {
 	}
 }
 
+void	printServerIndex(Config& data) {
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		std::cout << "[DEBUG] server: " << i << " -> index: ";
+		for (size_t j=0; j < data.servers[i].index.size(); ++j)
+			std::cout << data.servers[i].index[j] << " ";
+		std::cout << std::endl;
+	}
+}
+
 #pragma endregion TEMP DEBUG FUNCS
 
 ConfigParser::ConfigParser(const std::vector<Token>& toks)
@@ -46,6 +55,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	//build map for server directives(KEY) to function pointers(VALUE)
 		serverDirectives["listen"] = &ConfigParser::parseListen;
 		serverDirectives["root"] = &ConfigParser::parseRoot;
+		serverDirectives["index"] = &ConfigParser::parseIndex;
 	}
 
 ConfigParser::~ConfigParser() {}
@@ -90,6 +100,9 @@ void	ConfigParser::parse(Config& data) {
 	printServerPorts(data);
 	std::cout << "-------------------------" << std::endl;
 	printServerRoot(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerIndex(data);
+	std::cout << "-------------------------" << std::endl;
 }
 
 
@@ -98,6 +111,14 @@ void	ConfigParser::parse(Config& data) {
 
 
 #pragma region Parse Directives
+
+void	ConfigParser::parseIndex(ServerBlock& s) {
+	while (peek().type == TOKEN_WORD) {
+		std::string	index = consume().value;
+		s.index.push_back(index);
+	}
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
 
 void	ConfigParser::parseListen(ServerBlock& s) {
 

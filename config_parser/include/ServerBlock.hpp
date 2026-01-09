@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:03:43 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 21:13:03 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/09 21:46:42 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,12 @@ class ServerBlock {
 		ServerBlock();
 		~ServerBlock();
 
-		int							port;
+		int							port;//		Validated at parsing (not checked for reserved ports)
 		std::vector<std::string>	defaultMethods;
 		std::vector<LocationBlock>	locations;
 
-		std::string					root;
-		std::vector<std::string>	index;
+		std::string					root;//		can fail gracefully (not validated)
+		std::vector<std::string>	index;//	can fail gracefully (not validated)
 		bool						autoIndex;
 		std::map<int, std::string>	errorPages;
 		// size_t					clientMaxBodySize;
