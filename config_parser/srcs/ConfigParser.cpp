@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 20:41:05 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/09 21:02:58 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	: tokens(toks), currentIndex(0) {
 
 	//build directive (KEY) - function_pointer (VALUE) map
-		directiveHandlers["listen"] = &ConfigParser::parseListen;
+		serverDirectives["listen"] = &ConfigParser::parseListen;
 		// directiveHandlers["root"] = &ConfigParser::parseRoot;
 	}
 
@@ -51,10 +51,10 @@ ServerBlock	ConfigParser::parseServerBlock() {
 	ServerBlock	s;
 	while (!check(TOKEN_RBRACE)) {
 		Token	directive = expect(TOKEN_WORD, "Expected directive");
-		std::map<std::string, ParseFn>::iterator it	=
-			directiveHandlers.find(directive.value);
+		std::map<std::string, ServerFn>::iterator it	=
+			serverDirectives.find(directive.value);
 
-		if (it == directiveHandlers.end())
+		if (it == serverDirectives.end())
 			throw std::runtime_error("Unkown directive: " + directive.value);
 
 		(this->*(it->second))(s);
