@@ -6,14 +6,19 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 18:27:38 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/09 19:51:05 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigParser.hpp"
 
 ConfigParser::ConfigParser(const std::vector<Token>& toks)
-	: tokens(toks), currentIndex(0) {}
+	: tokens(toks), currentIndex(0) {
+
+	//build directive (KEY) - function_pointer (VALUE) map
+		directiveHandlers["listen"] = &ConfigParser::parseListen;
+		directiveHandlers["root"] = &ConfigParser::parseRoot;
+	}
 
 ConfigParser::~ConfigParser() {}
 
@@ -21,16 +26,22 @@ ConfigParser::~ConfigParser() {}
 
 
 ServerBlock	ConfigParser::parseServerBlock() {
-	Token	current = expect(TOKEN_WORD, "Expected 'server'");
+	Token		current = expect(TOKEN_WORD, "Expected 'server'");
 
 	if (current.value != "server")
 		throw std::runtime_error("Unkown directive: " + current.value);
 	current = expect(TOKEN_LBRACE, "Expected '{'");
 
 	ServerBlock	s;
-	while (peek().value != "}") {
-		if (peek().value == "listen")
-			parseListen(s);
+	while (!check(TOKEN_RBRACE)) {
+		Token	directive = expect(TOKEN_WORD, "Expected directive");
+		std::map<std::string, ParseFn>::iterator it	=
+			directiveHandlers.find(directive.value);
+
+		if (it == directiveHandlers.end())
+			throw std::runtime_error("Unkown directive: " + directive.value);
+
+		(this->*(it->second))(s);
 	}
 	current = expect(TOKEN_RBRACE, "Expected '}'");
 	return s;
@@ -43,7 +54,7 @@ void	ConfigParser::parse(Config& data) {
 		data.addServer(parseServerBlock());
 	}
 	ServerBlock	s = data.getServer(4);
-	std::cout << s.getPort() << std::endl;
+	// std::cout << "[DEBUG] port: " << s.getPort() << std::endl;
 }
 
 
@@ -54,14 +65,12 @@ void	ConfigParser::parse(Config& data) {
 #pragma region Parse Directives
 
 void	ConfigParser::parseListen(ServerBlock& s) {
-// consume 'listen'
-	consume();
 
 	std::stringstream	ss(tokens[currentIndex].value);
-	int	port;
+	long	port;
 
 	if (!(ss >> port))
-		throw std::runtime_error("listen: not a number: " + peek().value);
+		throw std::runtime_error("listen: not a number or out of range: " + peek().value);
 	if (!ss.eof())
 		throw std::runtime_error("listen: invalid characters: " + peek().value);
 	if (port < 1 || port > 65535)
