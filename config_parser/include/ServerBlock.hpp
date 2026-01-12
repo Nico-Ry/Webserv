@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:03:43 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/12 18:48:30 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/12 19:18:56 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ class ServerBlock {
 		std::vector<std::string>	index;//	can fail gracefully (not validated)
 		bool						autoIndex;
 		std::map<int, StringVec>	errorPages;
-		size_t						clientMaxBodySize;
+		size_t						clientMaxBodySize; // defaults to 20Kb
 
 		// bool						hasRedirect;
 		// int						redirectCode;

@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/12 19:00:32 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/12 19:17:32 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,27 @@ void	printServerAutoIndex(Config& data) {
 }
 
 
+void	printServerMaxSize(Config& data) {
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		std::cout << "[DEBUG] server: " << i << " -> MaxSize: ";
+
+		size_t	bytes = data.servers[i].clientMaxBodySize;
+		if (bytes >= (1024UL * 1024UL))
+			std::cout << (bytes / (1024UL * 1024UL)) << "Mb" << std::endl;
+		else
+			std::cout << (bytes / 1024UL) << "Kb" << std::endl;
+	}
+}
+
+
+
+
+
+
+
+
+
+
 
 
 #pragma endregion TEMP DEBUG FUNCS
@@ -143,6 +164,8 @@ void	ConfigParser::parse(Config& data) {
 	printServerErrorPages(data);
 	std::cout << "-------------------------" << std::endl;
 	printServerAutoIndex(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerMaxSize(data);
 	std::cout << "-------------------------" << std::endl;
 }
 
