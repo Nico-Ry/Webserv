@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:08 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/12 13:42:55 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/12 18:44:45 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,10 @@ class ConfigParser {
 		void	parseRoot(ServerBlock& s);
 		void	parseIndex(ServerBlock& s);
 		void	parseErrorPages(ServerBlock& s);
+		void	parseAutoIndex(ServerBlock& s);
+		void	parseMaxSize(ServerBlock& s);
+		void	getSizeAndUnit(const std::string& token, long& num, std::string& unit);
+		void	updateUnit(std::string& unit, const std::string& currentToken);
 
 	public:
 		ConfigParser(const std::vector<Token>& toks);

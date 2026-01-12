@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/12 15:14:05 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/12 19:00:32 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,20 @@ void	printServerErrorPages(Config& data) {
 	}
 }
 
+void	printServerAutoIndex(Config& data) {
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		std::cout << "[DEBUG] server: " << i << " -> autoindex: ";
+		if (data.servers[i].autoIndex)
+			std::cout << "on";
+		else
+			std::cout << "off";
+		std::cout << std::endl;
+	}
+}
+
+
+
+
 #pragma endregion TEMP DEBUG FUNCS
 
 ConfigParser::ConfigParser(const std::vector<Token>& toks)
@@ -78,6 +92,8 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 		serverDirectives["root"] = &ConfigParser::parseRoot;
 		serverDirectives["index"] = &ConfigParser::parseIndex;
 		serverDirectives["error_page"] = &ConfigParser::parseErrorPages;
+		serverDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
+		serverDirectives["max_size"] = &ConfigParser::parseMaxSize;
 	}
 
 ConfigParser::~ConfigParser() {}
@@ -112,17 +128,6 @@ ServerBlock	ConfigParser::parseServerBlock() {
 }
 
 
-bool	ConfigParser::isDirective(const std::string& value) {
-// look through map for matching directive
-	std::map<std::string, ServerFn>::iterator it;
-	it = serverDirectives.find(value);
-
-// If directive not found in map, return false
-	if (it == serverDirectives.end())
-		return false;
-	return true;
-}
-
 
 void	ConfigParser::parse(Config& data) {
 
@@ -136,6 +141,9 @@ void	ConfigParser::parse(Config& data) {
 	printServerIndex(data);
 	std::cout << "-------------------------" << std::endl;
 	printServerErrorPages(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerAutoIndex(data);
+	std::cout << "-------------------------" << std::endl;
 }
 
 
@@ -144,6 +152,95 @@ void	ConfigParser::parse(Config& data) {
 
 
 #pragma region Parse Directives
+
+
+void	ConfigParser::getSizeAndUnit(const std::string& token, long& num, std::string& unit) {
+	std::stringstream	ss(token);
+	std::string			unit_err = "max_size: invalid unit specifier, expected K, M or G: ";
+
+	if (!(ss >> num))
+		throw std::runtime_error("max_size: invalid input: " + token);
+
+	if (num < 0)
+		throw std::runtime_error("max_size: negative number: " + token);
+
+	//store remainder of ss in unit
+	ss >> unit;
+
+	// no unit specified and next Token is not unit specifier
+	if (unit.empty() && check(TOKEN_SEMICOLON))
+		unit = "M";
+	// no unit specified but next Token might be unit specifier
+	else if (unit.empty() && check(TOKEN_WORD))
+		updateUnit(unit, peek().value);
+
+	// check for invalid unit specifier
+	if (unit.size() > 1)
+		throw std::runtime_error(unit_err + token);
+	if (unit != "K" && unit != "M" && unit != "G")
+		throw std::runtime_error(unit_err + token);
+}
+
+/**
+ * @brief updates `unit` and consumes the current token if peek().value
+ * is an accepted unit specifier (K, M or G)
+ */
+void	ConfigParser::updateUnit(std::string& unit, const std::string& currentToken) {
+	if (currentToken == "K" || currentToken == "M" || currentToken == "G")
+		unit = consume().value;
+}
+
+/**
+ * @brief Grabs and bound checks value associated with `max_size` directive
+ * @attention Accepts and handles `G` as unit specifier, despite max_size
+ * being limited to 100M
+ */
+void	ConfigParser::parseMaxSize(ServerBlock& s) {
+	long		num;
+	std::string	unit;
+	Token		sizeToken = expect(TOKEN_WORD, "Expected size specifier: ");
+
+	getSizeAndUnit(sizeToken.value, num, unit);
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+
+	size_t		maxSize = 0;
+	if (unit == "K")
+		maxSize = static_cast<size_t>(num) * 1024UL;
+	else if (unit == "M")
+		maxSize = static_cast<size_t>(num) * 1024UL * 1024UL;
+	else if (unit == "G")
+		maxSize = static_cast<size_t>(num) * 1024UL * 1024UL * 1024UL;
+
+	if (maxSize > 104857600) // max size 100M
+		throw std::runtime_error("max_size: too large (max 100M): " + sizeToken.value);
+	s.clientMaxBodySize = maxSize;
+}
+
+
+void	ConfigParser::parseAutoIndex(ServerBlock& s) {
+	if (peek().value == "on")
+		s.autoIndex = true;
+	else if (peek().value == "off")
+		s.autoIndex = false;
+	else
+		throw std::runtime_error("Unknown boolean: " + peek().value);
+
+	consume(); //consume on/off
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
+
+
+bool	ConfigParser::isDirective(const std::string& value) {
+// look through map for matching directive
+	std::map<std::string, ServerFn>::iterator it;
+	it = serverDirectives.find(value);
+
+// If directive not found in map, return false
+	if (it == serverDirectives.end())
+		return false;
+	return true;
+}
+
 
 void	ConfigParser::parseErrorPages(ServerBlock& s) {
 	std::stringstream	ss(peek().value);
