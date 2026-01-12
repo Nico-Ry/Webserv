@@ -6,13 +6,14 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:27:27 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/12 19:19:39 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/12 19:21:28 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerBlock.hpp"
 
-ServerBlock::ServerBlock() : port(0), autoIndex(false), clientMaxBodySize(512 * 1024UL) {
+ServerBlock::ServerBlock()
+	: port(0), autoIndex(false), clientMaxBodySize(512 * 1024UL) {
 	defaultMethods.push_back("GET");
 }
 
