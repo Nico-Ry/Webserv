@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 21:59:03 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/12 15:14:05 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,27 @@ void	printServerIndex(Config& data) {
 	}
 }
 
+void	printServerErrorPages(Config& data) {
+
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		ServerBlock&	s = data.servers[i];
+
+		if (s.errorPages.empty())
+		{
+  	 		std::cout << "[DEBUG] server: " << i << " -> no error_page\n";
+    		continue;
+		}
+
+		std::cout << "[DEBUG] server: " << i << " -> error_page: ";
+
+		std::map<int, StringVec>::iterator it = s.errorPages.begin();
+		std::cout << it->first << " > ";
+		for (size_t j=0; j < it->second.size(); ++j)
+			std::cout << it->second[j] << " ";
+		std::cout << std::endl;
+	}
+}
+
 #pragma endregion TEMP DEBUG FUNCS
 
 ConfigParser::ConfigParser(const std::vector<Token>& toks)
@@ -56,6 +77,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 		serverDirectives["listen"] = &ConfigParser::parseListen;
 		serverDirectives["root"] = &ConfigParser::parseRoot;
 		serverDirectives["index"] = &ConfigParser::parseIndex;
+		serverDirectives["error_page"] = &ConfigParser::parseErrorPages;
 	}
 
 ConfigParser::~ConfigParser() {}
@@ -90,6 +112,16 @@ ServerBlock	ConfigParser::parseServerBlock() {
 }
 
 
+bool	ConfigParser::isDirective(const std::string& value) {
+// look through map for matching directive
+	std::map<std::string, ServerFn>::iterator it;
+	it = serverDirectives.find(value);
+
+// If directive not found in map, return false
+	if (it == serverDirectives.end())
+		return false;
+	return true;
+}
 
 
 void	ConfigParser::parse(Config& data) {
@@ -103,6 +135,7 @@ void	ConfigParser::parse(Config& data) {
 	std::cout << "-------------------------" << std::endl;
 	printServerIndex(data);
 	std::cout << "-------------------------" << std::endl;
+	printServerErrorPages(data);
 }
 
 
@@ -112,10 +145,52 @@ void	ConfigParser::parse(Config& data) {
 
 #pragma region Parse Directives
 
+void	ConfigParser::parseErrorPages(ServerBlock& s) {
+	std::stringstream	ss(peek().value);
+	long				err_code;
+	StringVec			err_pages;
+
+	if (!(ss >> err_code)) {
+		std::cerr << peek().line << " |"; //[DEBUG]
+		throw std::runtime_error("error_page: not an error code or out of range: " + peek().value);
+	}
+	if (!ss.eof())
+		throw std::runtime_error("error_page: invalid error code input: " + peek().value);
+	if (err_code < 400 || err_code > 599)
+		throw std::runtime_error("error_page: inadequate error code: " + peek().value);
+
+	consume(); // consume error code
+	if (!check(TOKEN_WORD)) // expect at least one error file/path
+		expect(TOKEN_WORD, "Expected error file");
+
+	while (true) {
+		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
+			break;
+		if (check(TOKEN_WORD)) {
+			if (isDirective(peek().value))
+				expect(TOKEN_SEMICOLON, "Expected ';'"); // missing semicolon
+
+			err_pages.push_back(consume().value);
+		}
+	}
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+	// s.errorPages[err_code] = err_pages;
+	s.errorPages.insert(std::pair<int, StringVec>(err_code, err_pages)); //err_code] = err_pages;
+}
+
 void	ConfigParser::parseIndex(ServerBlock& s) {
-	while (peek().type == TOKEN_WORD) {
-		std::string	index = consume().value;
-		s.index.push_back(index);
+
+	if (!check(TOKEN_WORD)) // expect at least one index file
+		expect(TOKEN_WORD, "Expected index file");
+
+	while (true) {
+		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
+			break;
+		if (check(TOKEN_WORD)) {
+			if (isDirective(peek().value))
+				expect(TOKEN_SEMICOLON, "Expected ';'");
+			s.index.push_back(consume().value);
+			}
 	}
 	expect(TOKEN_SEMICOLON, "Expected ';'");
 }
@@ -139,7 +214,10 @@ void	ConfigParser::parseListen(ServerBlock& s) {
 }
 
 void	ConfigParser::parseRoot(ServerBlock& s) {
-	s.root = tokens[currentIndex].value;
+	if (check(TOKEN_WORD))
+		s.root = tokens[currentIndex].value;
+	else
+		throw std::runtime_error("root: invalid path: " + peek().value);
 	consume();
 	expect(TOKEN_SEMICOLON, "Expected ';'");
 }
@@ -150,6 +228,9 @@ void	ConfigParser::parseRoot(ServerBlock& s) {
 
 
 #pragma region Helper Funcs
+
+
+
 
 //Look at current Token without consuming it
 Token	ConfigParser::peek() const {

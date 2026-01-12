@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:08 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 21:31:11 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/12 13:42:55 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,13 +43,16 @@ class ConfigParser {
 		bool	check(TokenType type) const;
 		bool	matchWord(const std::string& value);
 		bool	checkWord(const std::string& value) const;
+		bool	isDirective(const std::string& value);
 
 //			PARSING FUNCTIONS
 		ServerBlock	parseServerBlock();
 		// void parseLocationBlock(ServerBlock& server);
 		void	parseListen(ServerBlock& s);
 		void	parseRoot(ServerBlock& s);
-		void	parseIndex(ServerBlock &s);
+		void	parseIndex(ServerBlock& s);
+		void	parseErrorPages(ServerBlock& s);
+
 	public:
 		ConfigParser(const std::vector<Token>& toks);
 		~ConfigParser();
