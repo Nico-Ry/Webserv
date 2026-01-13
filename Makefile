@@ -21,7 +21,7 @@ NAME		= Webserv
 
 # Header files
 INCL_DIR	= config_parser/include/
-INCLUDES	= $(addprefix $(INCL_DIR), Config.hpp ConfigParser.hpp ServerBlock.hpp LocationBlock.hpp Tokeniser.hpp utils.hpp)
+INCLUDES	= $(addprefix $(INCL_DIR), Config.hpp ConfigParser.hpp ServerBlock.hpp LocationBlock.hpp Tokeniser.hpp utils.hpp colours.hpp)
 
 
 # Source files

@@ -6,12 +6,13 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 20:33:33 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 20:54:24 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigParser.hpp"
 #include "utils.hpp"
+#include "colours.hpp"
 
 //---------------------------------------------------------------------------//
 //								  CONSTRUCTORS
@@ -62,35 +63,64 @@ void	ConfigParser::parse(Config& data) {
 	while (!isAtEnd()) {
 		data.servers.push_back(parseServerBlock());
 	}
+	std::cout << BOLD_GOLD << "~~~~~ SERVER BLOCKS ~~~~~" << RES << std::endl;
+
+	std::cout << CYAN << "LISTEN" << RES << std::endl;
 	printServerPorts(data);
 	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "ROOT" << RES << std::endl;
 	printServerRoot(data);
 	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "INDEX" << RES << std::endl;
 	printServerIndex(data);
 	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "ERROR_PAGE" << RES << std::endl;
 	printServerErrorPages(data);
 	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "AUTOINDEX" << RES << std::endl;
 	printServerAutoIndex(data);
 	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "MAX_SIZE" << RES << std::endl;
 	printServerMaxSize(data);
-	std::cout << "-------------------------" << std::endl;
+	std::cout << "-------------------------\n" << std::endl;
+
+	std::cout << BOLD_GOLD << "~~~~~ LOCATION BLOCKS ~~~~~" << RES << std::endl;
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		ServerBlock	current = data.servers[i];
-		std::cout << "~SERVER " << i+1 << "~" << std::endl;
+		std::cout << GREEN << "~SERVER " << i+1 << "~" << RES << std::endl;
+
+		std::cout << CYAN << "ROOT" << RES << std::endl;
 		printLocationRoot(current);
 		std::cout << std::endl;
+
+		std::cout << CYAN << "INDEX" << RES << std::endl;
 		printLocationIndex(current);
 		std::cout << std::endl;
+
+		std::cout << CYAN << "ERROR_PAGE" << RES << std::endl;
 		printLocationErrorPages(current);
 		std::cout << std::endl;
+
+		std::cout << CYAN << "AUTOINDEX" << RES << std::endl;
 		printLocationAutoIndex(current);
 		std::cout << std::endl;
+
+		std::cout << CYAN << "MAX_SIZE" << RES << std::endl;
 		printLocationMaxSize(current);
 		std::cout << std::endl;
+
+		std::cout << CYAN << "METHODS" << RES << std::endl;
 		printLocationMethods(current);
 		std::cout << std::endl;
+
+		std::cout << CYAN << "REDIRECT" << RES << std::endl;
 		printLocationRedirect(current);
-	std::cout << "\n-------------------------" << std::endl;
+		std::cout << "\n-------------------------" << std::endl;
 	}
 }
 
