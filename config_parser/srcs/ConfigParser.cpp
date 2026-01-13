@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 18:39:12 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 20:33:33 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,18 +62,18 @@ void	ConfigParser::parse(Config& data) {
 	while (!isAtEnd()) {
 		data.servers.push_back(parseServerBlock());
 	}
-	// printServerPorts(data);
-	// std::cout << "-------------------------" << std::endl;
-	// printServerRoot(data);
-	// std::cout << "-------------------------" << std::endl;
-	// printServerIndex(data);
-	// std::cout << "-------------------------" << std::endl;
-	// printServerErrorPages(data);
-	// std::cout << "-------------------------" << std::endl;
-	// printServerAutoIndex(data);
-	// std::cout << "-------------------------" << std::endl;
-	// printServerMaxSize(data);
-	// std::cout << "-------------------------" << std::endl;
+	printServerPorts(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerRoot(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerIndex(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerErrorPages(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerAutoIndex(data);
+	std::cout << "-------------------------" << std::endl;
+	printServerMaxSize(data);
+	std::cout << "-------------------------" << std::endl;
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		ServerBlock	current = data.servers[i];
 		std::cout << "~SERVER " << i+1 << "~" << std::endl;
