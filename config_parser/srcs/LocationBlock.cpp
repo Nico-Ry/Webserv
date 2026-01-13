@@ -6,16 +6,18 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:27:31 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 18:48:20 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 18:52:40 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "LocationBlock.hpp"
 
 /**
- * @brief Builds a default LocationBlock copying defaults as defined
- * by the ServerBlock it inhabits, and defining other defaults unique
+ * @brief Default constructor - Builds a LocationBlock object copying relevant
+ * values from the ServerBlock passed as argument. Also sets other defaults unique
  * to LocationBlocks
+ * @note copies: root, index, autoIndex, clientMaxBodySize, hasRedirect and
+ * redirectCode.
  * @param root where to look in our filesystem for the given URI
  * @param index default file to feed for GET requests
  * @param autoIndex Enables/disables directory listing if GET requested a directory
