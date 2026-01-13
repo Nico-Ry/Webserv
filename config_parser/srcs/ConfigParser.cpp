@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 14:15:14 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 14:32:58 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,13 +57,12 @@ void	ConfigParser::parse(Config& data) {
 
 
 ServerBlock	ConfigParser::parseServerBlock() {
-	Token	current = expect(TOKEN_WORD, "Expected 'server'");
-
-	if (current.value != "server")
-		throw std::runtime_error("Unkown directive: " + current.value);
-	current = expect(TOKEN_LBRACE, "Expected '{'");
-
 	ServerBlock	s;
+
+	if (!matchWord("server"))// Expect word "server"
+		throw std::runtime_error("Unkown directive: " + peek().value);
+
+	expect(TOKEN_LBRACE, "Expected '{'");
 	while (!check(TOKEN_RBRACE)) {
 		Token	directive = expect(TOKEN_WORD, "Expected directive");
 
@@ -78,7 +77,7 @@ ServerBlock	ConfigParser::parseServerBlock() {
 	// Else call function pointer to parse directive
 		(this->*(it->second))(s);
 	}
-	current = expect(TOKEN_RBRACE, "Expected '}'");
+	expect(TOKEN_RBRACE, "Expected '}'");
 	return s;
 }
 
@@ -284,21 +283,24 @@ void	ConfigParser::parseRoot(ServerBlock& s) {
 #pragma region TOKEN HELPERS -> Peek, expect, etc.
 
 
-//Look at current Token without consuming it
+//Looks at current Token without consuming it
 Token	ConfigParser::peek() const {
 	if (currentIndex < tokens.size())
 		return tokens[currentIndex];
 	return tokens.back();
 }
 
-//Look at next Token without consuming it
+//Looks at next Token without consuming it
 Token	ConfigParser::peekNext() const {
 	if (currentIndex + 1 < tokens.size())
 		return tokens[currentIndex + 1];
 	return tokens.back();
 }
 
-// Consumes and returns current Token
+
+/**
+ * @brief Consumes and returns current token
+ */
 Token	ConfigParser::consume() {
 	if (isAtEnd())
 		throw(std::runtime_error("Can't consume past end of tokens!"));
@@ -309,7 +311,8 @@ Token	ConfigParser::consume() {
 
 /**
  * @brief expects a specific token, throws error if not expected type
- * @return if type matches, returns consume()
+ * @attention Consumes token if types match
+ * @return Current token if types match
  */
 Token	ConfigParser::expect(TokenType type, const std::string& msg) {
 	Token	current = peek();
@@ -330,14 +333,23 @@ bool	ConfigParser::isAtEnd() const {
 	return false;
 }
 
-// Returns true if current token matches type
+
+/**
+ * @brief Checks if current token's type matches with `type`
+ * @return `true` if types match, `false` otherwise
+ */
 bool	ConfigParser::check(TokenType type) const {
 	if (peek().type == type)
 		return true;
 	return false;
 }
 
-// If current token matches, consume it and return true
+/**
+ * @brief Checks if current token's type matches with `type` and consumes
+ * the current token if true
+ * @attention Consumes token on true
+ * @return `true` if token type matches, `false` otherwise
+ */
 bool	ConfigParser::match(TokenType type) {
 	if (check(type)) {
 		consume();
@@ -346,13 +358,23 @@ bool	ConfigParser::match(TokenType type) {
 	return false;
 }
 
-// Check if current token is a word with specific value
+
+/**
+ * @brief Checks that current token is TOKEN_WORD and that its
+ * value matches `value`
+ * @return `true` if word and matches value, `false` otherwise
+ */
 bool ConfigParser::checkWord(const std::string& value) const {
     Token current = peek();
     return current.type == TOKEN_WORD && current.value == value;
 }
 
-// Match and consume if word matches
+/**
+ * @brief Matches current token's value with `value` and consumes
+ * the token if both values match
+ * @attention Consumes token on true
+ * @return `true` if values match, `false` otherwise
+ */
 bool ConfigParser::matchWord(const std::string& value) {
     if (checkWord(value)) {
         consume();
