@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 14:32:58 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 15:02:40 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,24 +16,35 @@
 ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	: tokens(toks), currentIndex(0) {
 
-	//build map for server directives(KEY) to function pointers(VALUE)
-		serverDirectives["listen"] = &ConfigParser::parseListen;
-		serverDirectives["root"] = &ConfigParser::parseRoot;
-		serverDirectives["index"] = &ConfigParser::parseIndex;
-		serverDirectives["error_page"] = &ConfigParser::parseErrorPages;
-		serverDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
-		serverDirectives["max_size"] = &ConfigParser::parseMaxSize;
-		serverDirectives["location"] = &ConfigParser::parseLocationBlock;
+//build map for server directives(KEY) to function pointers(VALUE)
+	serverDirectives["listen"] = &ConfigParser::parseListen;
+	serverDirectives["root"] = &ConfigParser::parseRoot;
+	serverDirectives["index"] = &ConfigParser::parseIndex;
+	serverDirectives["error_page"] = &ConfigParser::parseErrorPages;
+	serverDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
+	serverDirectives["max_size"] = &ConfigParser::parseMaxSize;
+	serverDirectives["location"] = &ConfigParser::parseLocationBlock;
 
-	//build map for Location directives(KEY) to function pointers(VALUE)
-		// locationDirectives["root"] = &ConfigParser::parseRoot;
-		// locationDirectives["index"] = &ConfigParser::parseIndex;
-		// locationDirectives["error_page"] = &ConfigParser::parseErrorPages;
-		// locationDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
-		// locationDirectives["max_size"] = &ConfigParser::parseMaxSize;
-	}
+//build map for Location directives(KEY) to function pointers(VALUE)
+	locationDirectives["root"] = &ConfigParser::parseRoot;
+	// locationDirectives["index"] = &ConfigParser::parseIndex;
+	// locationDirectives["error_page"] = &ConfigParser::parseErrorPages;
+	// locationDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
+	// locationDirectives["max_size"] = &ConfigParser::parseMaxSize;
+}
 
 ConfigParser::~ConfigParser() {}
+
+
+
+
+
+
+
+
+
+
+
 
 
 void	ConfigParser::parse(Config& data) {
@@ -41,18 +52,24 @@ void	ConfigParser::parse(Config& data) {
 	while (!isAtEnd()) {
 		data.servers.push_back(parseServerBlock());
 	}
-	printServerPorts(data);
-	std::cout << "-------------------------" << std::endl;
-	printServerRoot(data);
-	std::cout << "-------------------------" << std::endl;
-	printServerIndex(data);
-	std::cout << "-------------------------" << std::endl;
-	printServerErrorPages(data);
-	std::cout << "-------------------------" << std::endl;
-	printServerAutoIndex(data);
-	std::cout << "-------------------------" << std::endl;
-	printServerMaxSize(data);
-	std::cout << "-------------------------" << std::endl;
+	// printServerPorts(data);
+	// std::cout << "-------------------------" << std::endl;
+	// printServerRoot(data);
+	// std::cout << "-------------------------" << std::endl;
+	// printServerIndex(data);
+	// std::cout << "-------------------------" << std::endl;
+	// printServerErrorPages(data);
+	// std::cout << "-------------------------" << std::endl;
+	// printServerAutoIndex(data);
+	// std::cout << "-------------------------" << std::endl;
+	// printServerMaxSize(data);
+	// std::cout << "-------------------------" << std::endl;
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		ServerBlock	current = data.servers[i];
+		std::cout << "SERVER " << i+1 << std::endl;
+		printLocationRoot(current);
+		std::cout << std::endl;
+	}
 }
 
 
@@ -67,8 +84,8 @@ ServerBlock	ConfigParser::parseServerBlock() {
 		Token	directive = expect(TOKEN_WORD, "Expected directive");
 
 	// Find pointer to parsing function that matches directive.value
-		std::map<std::string, ServerFn>::iterator it	=
-		serverDirectives.find(directive.value);
+		std::map<std::string, ServerFn>::iterator	it =
+			serverDirectives.find(directive.value);
 
 	// If directive not found in map, throw error
 		if (it == serverDirectives.end())
@@ -82,25 +99,7 @@ ServerBlock	ConfigParser::parseServerBlock() {
 }
 
 
-void		ConfigParser::parseLocationBlock(ServerBlock& s) {
-	Token	uri = expect(TOKEN_WORD, "Expected <URI>");
-	LocationBlock	newBlock;
-	newBlock.uri = uri.value;
-
-	expect(TOKEN_LBRACE, "Expected '{'");
-	while (!check(TOKEN_RBRACE)) {
-		// Token	directive = expect(TOKEN_WORD, "Expected directive");
-
-	}
-	expect(TOKEN_RBRACE, "Expected '}'");
-	s.locations.push_back(newBlock);
-}
-
-
-
-
-#pragma region SERVER BLOCK
-
+#pragma region PARSE SERVER DIRECTIVES
 
 void	ConfigParser::getSizeAndUnit(const std::string& token, long& num, std::string& unit) {
 	std::stringstream	ss(token);
@@ -259,17 +258,54 @@ void	ConfigParser::parseListen(ServerBlock& s) {
 }
 
 void	ConfigParser::parseRoot(ServerBlock& s) {
-	if (check(TOKEN_WORD))
-		s.root = tokens[currentIndex].value;
-	else
-		throw std::runtime_error("root: invalid path: " + peek().value);
-	consume();
+	Token	rootPath = expect(TOKEN_WORD, "expected path for root:");
+
+	s.root = rootPath.value;
 	expect(TOKEN_SEMICOLON, "Expected ';'");
 }
 
-#pragma endregion SERVER BLOCK
+#pragma endregion PARSE SERVER DIRECTIVES
 
 
+
+
+
+void		ConfigParser::parseLocationBlock(ServerBlock& s) {
+	Token	uri = expect(TOKEN_WORD, "Expected <URI>");
+	LocationBlock	newBlock;
+	newBlock.uri = uri.value;
+
+	expect(TOKEN_LBRACE, "Expected '{'");
+	while (!check(TOKEN_RBRACE)) {
+		Token	directive = expect(TOKEN_WORD, "Expected directive");
+
+	// Find pointer to parsing function that matches directive.value
+		std::map<std::string, LocationFn>::iterator	it =
+			locationDirectives.find(directive.value);
+
+	// If directive not found in map, throw error
+		if (it == locationDirectives.end())
+			throw std::runtime_error("Unkown directive: " + directive.value);
+
+	// Else call function pointer to parse directive
+		(this->*(it->second))(newBlock);
+	}
+	expect(TOKEN_RBRACE, "Expected '}'");
+	s.locations.push_back(newBlock);
+}
+
+
+#pragma region PARSE LOCATION DIRECTIVES
+
+void	ConfigParser::parseRoot(LocationBlock& l) {
+	Token	rootPath = expect(TOKEN_WORD, "expected path for root:");
+
+	l.root = rootPath.value;
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
+
+
+#pragma endregion PARSE LOCATION DIRECTIVES
 
 
 
@@ -281,7 +317,6 @@ void	ConfigParser::parseRoot(ServerBlock& s) {
 
 
 #pragma region TOKEN HELPERS -> Peek, expect, etc.
-
 
 //Looks at current Token without consuming it
 Token	ConfigParser::peek() const {

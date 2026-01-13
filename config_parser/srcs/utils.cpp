@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 13:32:01 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 13:35:22 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 14:59:24 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,5 +87,21 @@ void	printServerMaxSize(Config& data) {
 			std::cout << (bytes / (1024UL * 1024UL)) << "Mb" << std::endl;
 		else
 			std::cout << (bytes / 1024UL) << "Kb" << std::endl;
+	}
+}
+
+
+
+void	printLocationRoot(ServerBlock& s) {
+	for (size_t i=0; i < s.locations.size(); ++i) {
+		LocationBlock	current = s.locations[i];
+		if (!current.root.empty()) {
+			std::cout << "[DEBUG] location " << current.uri
+			<< " -> root: " << current.root << std::endl;
+		}
+		else {
+			std::cout << "[DEBUG] location: " << current.uri
+				<< " -> No root!" << std::endl;
+		}
 	}
 }
