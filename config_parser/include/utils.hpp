@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 13:30:58 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 16:54:12 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 18:01:38 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,3 +27,4 @@ void	printLocationErrorPages(ServerBlock& s);
 void	printLocationAutoIndex(ServerBlock& s);
 void	printLocationMaxSize(ServerBlock& s);
 void	printLocationMethods(ServerBlock& data);
+void	printLocationRedirect(ServerBlock& data);

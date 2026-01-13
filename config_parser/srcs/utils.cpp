@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 13:32:01 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 16:53:58 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 17:59:40 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,5 +185,21 @@ void	printLocationMethods(ServerBlock& data) {
 		for (size_t i=0; i < l.methods.size(); ++i)
 			std::cout << l.methods[i] << " ";
 		std::cout << std::endl;
+	}
+}
+
+void	printLocationRedirect(ServerBlock& data) {
+
+	for (size_t i=0; i < data.locations.size(); ++i) {
+		LocationBlock&	l = data.locations[i];
+
+		if (!l.hasRedirect)
+		{
+  	 		std::cout << "[DEBUG] location " << l.uri << " -> redirect: NO redirect\n";
+    		continue;
+		}
+
+		std::cout << "[DEBUG] location " << l.uri << " -> redirect: "
+			<< l.redirectCode << " " << l.redirectTarget << std::endl;
 	}
 }

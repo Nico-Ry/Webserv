@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:08 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 16:47:16 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 18:23:34 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,21 @@ struct Token;
 class Config;
 class ConfigParser;
 
+
+/**
+ * @brief Typedef for function pointers to any function in the
+ * `ConfigParser` namespace that takes the following parameter:
+ * @param ServerBlock
+ */
 typedef void	(ConfigParser::*ServerFn)(ServerBlock& s);
+
+/**
+ * @brief Typedef for function pointers to any function in the
+ * `ConfigParser` namespace that takes the following parameter:
+ * @param LocationBlock
+ */
 typedef void	(ConfigParser::*LocationFn)(LocationBlock& l);
+
 
 class ConfigParser {
 	private:
@@ -58,7 +71,7 @@ class ConfigParser {
 		void		parseErrorPages(ServerBlock& s);
 		void		parseAutoIndex(ServerBlock& s);
 		void		parseMaxSize(ServerBlock& s);
-		void		getSizeAndUnit(const std::string& token, long& num, std::string& unit);
+		void		getSizeAndUnit(const std::string& sizeToken, long& num, std::string& unit);
 		void		updateUnit(std::string& unit, const std::string& currentToken);
 
 //			LOCATION BLOCK PARSING FUNCTIONS
@@ -69,6 +82,8 @@ class ConfigParser {
 		void		parseMaxSize(LocationBlock& l);
 		void		parseMethods(LocationBlock& l);
 		bool		isMethod(const std::string& value);
+		void		parseReturn(LocationBlock& l);
+		bool		isValidRedirectCode(const int& code);
 
 
 	public:

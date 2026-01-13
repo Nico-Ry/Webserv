@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:03:47 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:50:00 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 17:49:19 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,9 @@ class LocationBlock {
 		std::map<int, StringVec>	errorPages;
 		size_t						clientMaxBodySize;
 
-		// bool						hasRedirect;
-		// int						redirectCode;
-		// std::string				redirectTarget;
+		bool						hasRedirect;
+		int							redirectCode;
+		std::string					redirectTarget;
 };
 
 #endif

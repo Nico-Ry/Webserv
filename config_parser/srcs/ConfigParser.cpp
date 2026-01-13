@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 16:58:54 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 18:01:49 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	locationDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
 	locationDirectives["max_size"] = &ConfigParser::parseMaxSize;
 	locationDirectives["methods"] = &ConfigParser::parseMethods;
+	locationDirectives["return"] = &ConfigParser::parseReturn;
 }
 
 ConfigParser::~ConfigParser() {}
@@ -79,6 +80,8 @@ void	ConfigParser::parse(Config& data) {
 		printLocationMaxSize(current);
 		std::cout << std::endl;
 		printLocationMethods(current);
+		std::cout << std::endl;
+		printLocationRedirect(current);
 	std::cout << "\n-------------------------" << std::endl;
 	}
 }
@@ -112,20 +115,28 @@ ServerBlock	ConfigParser::parseServerBlock() {
 
 #pragma region PARSE SERVER DIRECTIVES
 
-void	ConfigParser::getSizeAndUnit(const std::string& token, long& num, std::string& unit) {
-	std::stringstream	ss(token);
+/**
+ * @brief Parses `sizeToken` grabbing the numeric value and any trailing unit specifiers.
+ * Also handles cases where the unit specifier is stored in the following Token
+ * @attention `parseMaxSize()` consumes `sizeToken`, thus when this function is called,
+ * the current Token points to the token following `sizeToken`
+ * @return throws error on invalid value and/or unit specifier
+ */
+void	ConfigParser::getSizeAndUnit(const std::string& sizeToken, long& num, std::string& unit) {
+	std::stringstream	ss(sizeToken);
 	std::string			unit_err = "max_size: invalid unit specifier, expected K, M or G: ";
 
 	if (!(ss >> num))
-		throw std::runtime_error("max_size: invalid input: " + token);
+		throw std::runtime_error("max_size: invalid input: " + sizeToken);
 
 	if (num < 0)
-		throw std::runtime_error("max_size: negative number: " + token);
+		throw std::runtime_error("max_size: negative number: " + sizeToken);
 
 	//store remainder of ss in unit
 	ss >> unit;
 
-	// no unit specified and next Token is not unit specifier
+	// if no unit specified
+	// and current Token (i.e. the token following sizeToken) is not unit specifier
 	if (unit.empty() && check(TOKEN_SEMICOLON))
 		unit = "M";
 	// no unit specified but next Token might be unit specifier
@@ -134,9 +145,9 @@ void	ConfigParser::getSizeAndUnit(const std::string& token, long& num, std::stri
 
 	// check for invalid unit specifier
 	if (unit.size() > 1)
-		throw std::runtime_error(unit_err + token);
+		throw std::runtime_error(unit_err + sizeToken);
 	if (unit != "K" && unit != "M" && unit != "G")
-		throw std::runtime_error(unit_err + token);
+		throw std::runtime_error(unit_err + sizeToken);
 }
 
 /**
@@ -308,6 +319,37 @@ void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 
 #pragma region PARSE LOCATION DIRECTIVES
 
+
+bool	ConfigParser::isValidRedirectCode(const int& code) {
+	if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308)
+		return true;
+	return false;
+}
+
+void	ConfigParser::parseReturn(LocationBlock& l) {
+	// Make sure current token is NOT a special character
+	if (!check(TOKEN_WORD))
+		expect(TOKEN_WORD, "Expected HTTP status code");
+
+	std::stringstream	ss(peek().value);
+	int					statusCode;
+
+//		not an int	||	trailing non-digits	||	invalid redirect status code
+	if (!(ss >> statusCode) || !ss.eof() || !isValidRedirectCode(statusCode)) {
+		std::cerr << peek().line << " |"; //[DEBUG]
+		throw std::runtime_error("error_page: invalid redirect status code: " + peek().value);
+	}
+	consume();// Consume HTTP status code
+
+	// Expect URI for redirect followed by semicolon
+	Token	uri = expect(TOKEN_WORD, "Expected URI for redirect");
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+
+	// Valid -> Store all data in LocationBlock
+	l.hasRedirect = true;
+	l.redirectCode = statusCode;
+	l.redirectTarget = uri.value;
+}
 
 bool	ConfigParser::isMethod(const std::string& value) {
 	if (value == "GET" || value == "POST" || value == "DELETE")
