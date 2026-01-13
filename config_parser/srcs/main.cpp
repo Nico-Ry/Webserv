@@ -6,9 +6,45 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:27:33 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/09 18:16:38 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 20:17:33 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/*
+High-level configuration parsing flow:
+
+1) A Config object is created. (Config.cpp/hpp)
+   - Config is the top-level container and stores all ServerBlock objects.
+
+2) The configuration file is tokenised. (Tokeniser.cpp/hpp)
+   - Tokeniser reads the raw config file.
+   - It produces a vector of Token objects (keywords, values, symbols).
+   - No semantic meaning is applied at this stage.
+
+3) The token stream is parsed. (ConfigParser.cpp/hpp)
+   - ConfigParser consumes tokens sequentially.
+   - Server blocks are parsed first.
+   - Each ServerBlock parses its own directives and nested LocationBlocks.
+   - Each directive is handled by a dedicated parsing function.
+   - Syntax and semantic errors are detected here.
+
+Data structure layout:
+
+Config															 (Config.hpp)
+└── vector<ServerBlock>												  |
+    └── ServerBlock											(ServerBlock.hpp)
+        ├── server-level configuration/info							  |
+        └── vector<LocationBlock>									  |
+            └── LocationBlock							  (LocationBlock.hpp)
+                └── location-level configuration
+
+Notes:
+- LocationBlocks represent more specific configuration than ServerBlocks.
+- Inheritance and fallback (server -> location) are resolved at runtime,
+  not during parsing.
+- Parsing only builds and validates the configuration structure.
+*/
+
 
 #include "Config.hpp"
 
