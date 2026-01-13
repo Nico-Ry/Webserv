@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 13:15:59 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 18:07:04 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 19:51:15 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 #include <fstream>
 #include <sstream>
 
-
+//enum used to differentiate token types
 typedef	enum e_token {
 	TOKEN_WORD,//		0
 	TOKEN_LBRACE,//		1
@@ -33,7 +33,13 @@ typedef	enum e_token {
 }	TokenType;
 
 
-
+/**
+ * @brief Holds all useful information regarding a given token.
+ * @param type the type of token as define by the enum `TokenType`
+ * @param value the string containing the characters of the token
+ * @param line the line at which the token appears
+ * @param column the column of the first character of the token
+ */
 typedef struct Token {
 	TokenType	type;
 	std::string	value;
@@ -49,7 +55,12 @@ typedef struct Token {
 }	tok;
 
 
-
+/**
+ * @brief Reads from the given `ifstream` and creates tokens using whitespace
+ * as a delimiter. Properly detects special characters `;` `{` and `}`
+ * building separate tokens for them. Example: `root /www;` properly
+ * results in the 3 tokens `root` `/www` and `;`
+ */
 class Tokeniser {
 	private:
 		std::ifstream&	cfgFile;

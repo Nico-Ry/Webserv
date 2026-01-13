@@ -19,6 +19,10 @@
 #include "ConfigParser.hpp"
 #include "Tokeniser.hpp"
 
+/**
+ * @brief The main object that contains all ServerBlocks, which in turn
+ * contain all LocationBlocks within them
+ */
 class Config {
 	public:
 //				CONSTRUCTOR & DESTRUCTOR
@@ -27,7 +31,7 @@ class Config {
 		Config& operator=(const Config& other);
 		~Config();
 
-//				SERVERS BUILT FROM CONFIG
+// 		vector of all ServerBlocks defined in config file
 		std::vector<ServerBlock>	servers;
 };
 

@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 13:16:08 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/08 15:43:28 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 20:02:23 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,10 @@
 
 Tokeniser::Tokeniser(std::ifstream& fileName) : cfgFile(fileName) {}
 
+/**
+ * @brief Detects special characters `;` `{` and `}`
+ * @return The respective `TokenType`
+ */
 TokenType	Tokeniser::identifyDelimiter(const char& delimiter) {
 	if (delimiter == '{')
 		return TOKEN_LBRACE;
@@ -28,11 +32,25 @@ TokenType	Tokeniser::identifyDelimiter(const char& delimiter) {
 	return TOKEN_EOF;
 }
 
+
+/**
+ * @brief Creates a Token from the current contents of `buf`, adds it to `tokens`
+ * and clears `buf`
+ * @param tokens vector containing all tokens
+ */
 void	Tokeniser::pushAndFlush(std::vector<Token>& tokens, TokenType t, std::string& buf, size_t line, size_t col) {
 	tokens.push_back(Token(t, buf, line, col));
 	buf.clear();
 }
 
+
+/**
+ * @brief reads file line-by-line, filling up `buf` character by character until
+ * 1) it encounters a special character 2) it encounters a whitespace.
+ * At which point it creates a token from the current contents of `buf`, clears it
+ * and then adds the token to `tokens`. If it's a special character it also adds a
+ * special character token before continuing.
+ */
 void	Tokeniser::tokenise(std::vector<Token>& tokens) {
     std::string currentLine;
     size_t lineNum = 0;
@@ -74,7 +92,7 @@ void	Tokeniser::tokenise(std::vector<Token>& tokens) {
 		throw (std::runtime_error("Config file is Empty!"));
 }
 
-
+//utility function to check proper token creation
 void	printTokens(const std::vector<Token>& tokens) {
 	for (size_t i=0; i < tokens.size(); ++i)
 		std::cout << "[" << tokens[i].value << "]" << std::setw(25 - tokens[i].value.size()) << "type: " << tokens[i].type << std::endl;
