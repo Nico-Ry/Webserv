@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:27:33 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 20:17:33 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 20:20:26 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ Config															 (Config.hpp)
         ├── server-level configuration/info							  |
         └── vector<LocationBlock>									  |
             └── LocationBlock							  (LocationBlock.hpp)
-                └── location-level configuration
+                └── location-level configuration/info
 
 Notes:
 - LocationBlocks represent more specific configuration than ServerBlocks.
@@ -54,6 +54,7 @@ int	main(int ac, char** av) {
 	try {
 		Config	cfg(av[1]);
 		std::cout << "[DEBUG] PARSING SUCCESS" << std::endl;
+		
 	}
 	catch (std::exception& e) {
 		std::cout << "Error: " << e.what() << std::endl;
