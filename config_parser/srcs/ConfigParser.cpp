@@ -6,13 +6,17 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 18:01:49 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 18:39:12 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigParser.hpp"
 #include "utils.hpp"
 
+//---------------------------------------------------------------------------//
+//								  CONSTRUCTORS
+//---------------------------------------------------------------------------//
+#pragma region CONSTRUCTORS & DESTRUCTORS
 ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	: tokens(toks), currentIndex(0) {
 
@@ -36,19 +40,23 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 }
 
 ConfigParser::~ConfigParser() {}
+#pragma endregion
 
 
 
 
 
-
-
-
-
-
-
-
-
+//---------------------------------------------------------------------------//
+//						1. PARSE & PARSE SERVER BLOCK
+//---------------------------------------------------------------------------//
+#pragma region PARSE SERVER BLOCKS
+/**
+ * @brief Starts the whole parsing process, building ServerBlocks
+ * 1 by 1 and adding them progressively to `data.server`
+ * @param data The main Config object
+ * @note `data` has a member `servers` which is a vector storing all the
+ * ServerBlocks that were built during parsing
+ */
 void	ConfigParser::parse(Config& data) {
 
 	while (!isAtEnd()) {
@@ -111,9 +119,13 @@ ServerBlock	ConfigParser::parseServerBlock() {
 	expect(TOKEN_RBRACE, "Expected '}'");
 	return s;
 }
+#pragma endregion
 
 
-#pragma region PARSE SERVER DIRECTIVES
+//---------------------------------------------------------------------------//
+//				 2. PARSING ALL THE DIRECTIVES FOR SERVER BLOCKS
+//---------------------------------------------------------------------------//
+#pragma region PARSE DIRECTIVES FOR SERVER BLOCKS
 
 /**
  * @brief Parses `sizeToken` grabbing the numeric value and any trailing unit specifiers.
@@ -290,7 +302,9 @@ void	ConfigParser::parseRoot(ServerBlock& s) {
 
 
 
-
+//---------------------------------------------------------------------------//
+//							3. PARSING LOCATION BLOCK
+//---------------------------------------------------------------------------//
 
 void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 	Token	uri = expect(TOKEN_WORD, "Expected <URI>");
@@ -317,8 +331,10 @@ void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 }
 
 
+//---------------------------------------------------------------------------//
+//			   4. PARSING ALL THE DIRECTIVES FOR LOCATION BLOCKS
+//---------------------------------------------------------------------------//
 #pragma region PARSE LOCATION DIRECTIVES
-
 
 bool	ConfigParser::isValidRedirectCode(const int& code) {
 	if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308)
@@ -483,12 +499,9 @@ void	ConfigParser::parseRoot(LocationBlock& l) {
 
 
 
-
-
-
-
-
-
+//---------------------------------------------------------------------------//
+//			5. TOKEN HELPERS FOR CHECKING VALUES, TOKEN TYPES, ETC.
+//---------------------------------------------------------------------------//
 #pragma region TOKEN HELPERS -> Peek, expect, etc.
 
 //Looks at current Token without consuming it
