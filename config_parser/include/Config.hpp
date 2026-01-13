@@ -29,11 +29,6 @@ class Config {
 
 //				SERVERS BUILT FROM CONFIG
 		std::vector<ServerBlock>	servers;
-
-//					METHODS
-		// const std::vector<ServerBlock>& getServers() const;
-		// void		addServer(const ServerBlock& s);
-		// ServerBlock	getServer(const size_t index);
 };
 
 #endif
