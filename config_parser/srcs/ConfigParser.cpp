@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:02:40 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 15:11:22 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 
 //build map for Location directives(KEY) to function pointers(VALUE)
 	locationDirectives["root"] = &ConfigParser::parseRoot;
-	// locationDirectives["index"] = &ConfigParser::parseIndex;
+	locationDirectives["index"] = &ConfigParser::parseIndex;
 	// locationDirectives["error_page"] = &ConfigParser::parseErrorPages;
 	// locationDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
 	// locationDirectives["max_size"] = &ConfigParser::parseMaxSize;
@@ -224,8 +224,7 @@ void	ConfigParser::parseErrorPages(ServerBlock& s) {
 
 void	ConfigParser::parseIndex(ServerBlock& s) {
 
-	if (!check(TOKEN_WORD)) // expect at least one index file
-		expect(TOKEN_WORD, "Expected index file");
+	expect(TOKEN_WORD, "Expected index file"); // expect at least one index file
 
 	while (true) {
 		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
@@ -297,6 +296,24 @@ void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 
 #pragma region PARSE LOCATION DIRECTIVES
 
+
+void	ConfigParser::parseIndex(LocationBlock& l) {
+
+	expect(TOKEN_WORD, "Expected index file"); // expect at least one index file
+
+	while (true) {
+		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
+			break;
+		if (check(TOKEN_WORD)) {
+			if (isDirective(peek().value))
+				expect(TOKEN_SEMICOLON, "Expected ';'");
+			l.index.push_back(consume().value);
+			}
+	}
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
+
+
 void	ConfigParser::parseRoot(LocationBlock& l) {
 	Token	rootPath = expect(TOKEN_WORD, "expected path for root:");
 
@@ -347,16 +364,16 @@ Token	ConfigParser::consume() {
 /**
  * @brief expects a specific token, throws error if not expected type
  * @attention Consumes token if types match
- * @return Current token if types match
+ * @return Current token if types match, throws error if no match
  */
 Token	ConfigParser::expect(TokenType type, const std::string& msg) {
-	Token	current = peek();
-	if (current.type != type) {
+	// Token	current = peek();
+	if (!check(type)) {
 		std::stringstream	ss;
-		ss << "Parse Error at line " << current.line
-			<< ", column " << current.column
+		ss << "Parse Error at line " << peek().line
+			<< ", column " << peek().column
 			<< ": " << msg
-			<< " (got '" << current.value << "' instead)";
+			<< " (got '" << peek().value << "' instead)";
 		throw std::runtime_error(ss.str());
 	}
 	return consume();
