@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:17:53 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 15:38:41 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 //build map for Location directives(KEY) to function pointers(VALUE)
 	locationDirectives["root"] = &ConfigParser::parseRoot;
 	locationDirectives["index"] = &ConfigParser::parseIndex;
-	// locationDirectives["error_page"] = &ConfigParser::parseErrorPages;
-	// locationDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
-	// locationDirectives["max_size"] = &ConfigParser::parseMaxSize;
+	locationDirectives["error_page"] = &ConfigParser::parseErrorPages;
+	locationDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
+	locationDirectives["max_size"] = &ConfigParser::parseMaxSize;
 }
 
 ConfigParser::~ConfigParser() {}
@@ -70,6 +70,12 @@ void	ConfigParser::parse(Config& data) {
 		printLocationRoot(current);
 		std::cout << std::endl;
 		printLocationIndex(current);
+		std::cout << std::endl;
+		printLocationErrorPages(current);
+		std::cout << std::endl;
+		printLocationAutoIndex(current);
+		std::cout << std::endl;
+		printLocationMaxSize(current);
 	}
 }
 
@@ -273,7 +279,7 @@ void	ConfigParser::parseRoot(ServerBlock& s) {
 
 void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 	Token	uri = expect(TOKEN_WORD, "Expected <URI>");
-	LocationBlock	newBlock;
+	LocationBlock	newBlock(s);
 	newBlock.uri = uri.value;
 
 	expect(TOKEN_LBRACE, "Expected '{'");
@@ -297,6 +303,81 @@ void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 
 
 #pragma region PARSE LOCATION DIRECTIVES
+
+
+/**
+ * @brief Grabs and bound checks value associated with `max_size` directive
+ * @attention Accepts and handles `G` as unit specifier, despite max_size
+ * being limited to 100M
+ */
+void	ConfigParser::parseMaxSize(LocationBlock& l) {
+	long		num;
+	std::string	unit;
+	Token		sizeToken = expect(TOKEN_WORD, "Expected size specifier: ");
+
+	getSizeAndUnit(sizeToken.value, num, unit);
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+
+	size_t		maxSize = 0;
+	if (unit == "K")
+		maxSize = static_cast<size_t>(num) * 1024UL;
+	else if (unit == "M")
+		maxSize = static_cast<size_t>(num) * 1024UL * 1024UL;
+	else if (unit == "G")
+		maxSize = static_cast<size_t>(num) * 1024UL * 1024UL * 1024UL;
+
+	if (maxSize > 104857600) // max size 100M
+		throw std::runtime_error("max_size: too large (max 100M): " + sizeToken.value);
+	l.clientMaxBodySize = maxSize;
+}
+
+
+void	ConfigParser::parseAutoIndex(LocationBlock& l) {
+	if (peek().value == "on")
+		l.autoIndex = true;
+	else if (peek().value == "off")
+		l.autoIndex = false;
+	else
+		throw std::runtime_error("Unknown boolean: " + peek().value);
+
+	consume(); //consume on/off
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
+
+
+void	ConfigParser::parseErrorPages(LocationBlock& l) {
+	std::stringstream	ss(peek().value);
+	long				err_code;
+	StringVec			err_pages;
+
+	if (!(ss >> err_code)) {
+		std::cerr << peek().line << " |"; //[DEBUG]
+		throw std::runtime_error("error_page: not an error code or out of range: " + peek().value);
+	}
+	if (!ss.eof())
+		throw std::runtime_error("error_page: invalid error code input: " + peek().value);
+	if (err_code < 400 || err_code > 599)
+		throw std::runtime_error("error_page: inadequate error code: " + peek().value);
+
+	consume(); // consume error code
+	if (!check(TOKEN_WORD)) // expect at least one error file/path
+		expect(TOKEN_WORD, "Expected error file");
+
+	while (true) {
+		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
+			break;
+		if (check(TOKEN_WORD)) {
+			if (isDirective(peek().value))
+				expect(TOKEN_SEMICOLON, "Expected ';'"); // missing semicolon
+
+			err_pages.push_back(consume().value);
+		}
+	}
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+	// s.errorPages[err_code] = err_pages;
+	l.errorPages.insert(std::pair<int, StringVec>(err_code, err_pages)); //err_code] = err_pages;
+}
+
 
 
 void	ConfigParser::parseIndex(LocationBlock& l) {

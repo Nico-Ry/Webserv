@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/07 16:03:43 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 14:13:39 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 15:41:24 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include "LocationBlock.hpp"
 
 typedef std::vector<std::string> StringVec;
+class LocationBlock;
 
 
 class ServerBlock {

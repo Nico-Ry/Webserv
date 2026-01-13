@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 13:30:58 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:13:07 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 15:35:18 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,3 +23,6 @@ void	printServerMaxSize(Config& data);
 
 void	printLocationRoot(ServerBlock& s);
 void	printLocationIndex(ServerBlock& s);
+void	printLocationErrorPages(ServerBlock& s);
+void	printLocationAutoIndex(ServerBlock& s);
+void	printLocationMaxSize(ServerBlock& s);

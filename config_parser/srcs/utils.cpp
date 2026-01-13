@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 13:32:01 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:20:00 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 15:35:02 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ void	printServerMaxSize(Config& data) {
 
 void	printLocationRoot(ServerBlock& s) {
 	for (size_t i=0; i < s.locations.size(); ++i) {
-		LocationBlock	current = s.locations[i];
+		LocationBlock&	current = s.locations[i];
 		if (!current.root.empty()) {
 			std::cout << "[DEBUG] location " << current.uri
 			<< " -> root: " << current.root << std::endl;
@@ -108,7 +108,7 @@ void	printLocationRoot(ServerBlock& s) {
 
 void	printLocationIndex(ServerBlock& s) {
 	for (size_t i=0; i < s.locations.size(); ++i) {
-		LocationBlock	current = s.locations[i];
+		LocationBlock&	current = s.locations[i];
 		if (current.index.empty()) {
 			std::cout << "[DEBUG] location " << current.uri
 			<< " -> NO index!" << std::endl;
@@ -120,5 +120,51 @@ void	printLocationIndex(ServerBlock& s) {
 			std::cout << std::endl;
 		}
 
+	}
+}
+
+void	printLocationErrorPages(ServerBlock& data) {
+
+	for (size_t i=0; i < data.locations.size(); ++i) {
+		LocationBlock&	l = data.locations[i];
+
+		if (l.errorPages.empty())
+		{
+  	 		std::cout << "[DEBUG] location " << l.uri << " -> no error_page\n";
+    		continue;
+		}
+
+		std::cout << "[DEBUG] location " << l.uri << " -> error_page: ";
+
+		std::map<int, StringVec>::iterator it = l.errorPages.begin();
+		std::cout << it->first << " > ";
+		for (size_t j=0; j < it->second.size(); ++j)
+			std::cout << it->second[j] << " ";
+		std::cout << std::endl;
+	}
+}
+
+void	printLocationAutoIndex(ServerBlock& data) {
+	for (size_t i=0; i < data.locations.size(); ++i) {
+		LocationBlock&	l = data.locations[i];
+		std::cout << "[DEBUG] location " << l.uri << " -> autoindex: ";
+		if (data.locations[i].autoIndex)
+			std::cout << "on";
+		else
+			std::cout << "off";
+		std::cout << std::endl;
+	}
+}
+
+void	printLocationMaxSize(ServerBlock& data) {
+	for (size_t i=0; i < data.locations.size(); ++i) {
+		LocationBlock& l = data.locations[i];
+		std::cout << "[DEBUG] location " << l.uri << " -> MaxSize: ";
+
+		size_t	bytes = data.locations[i].clientMaxBodySize;
+		if (bytes >= (1024UL * 1024UL))
+			std::cout << (bytes / (1024UL * 1024UL)) << "Mb" << std::endl;
+		else
+			std::cout << (bytes / 1024UL) << "Kb" << std::endl;
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:08 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:05:46 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 15:51:05 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,11 @@ class ConfigParser {
 //			LOCATION BLOCK PARSING FUNCTIONS
 		void		parseRoot(LocationBlock& l);
 		void		parseIndex(LocationBlock& l);
+		void		parseErrorPages(LocationBlock& l);
+		void		parseAutoIndex(LocationBlock& l);
+		void		parseMaxSize(LocationBlock& l);
+
+
 	public:
 		ConfigParser(const std::vector<Token>& toks);
 		~ConfigParser();
