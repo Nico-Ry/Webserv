@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:11:22 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 15:17:53 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ void	ConfigParser::parse(Config& data) {
 		std::cout << "SERVER " << i+1 << std::endl;
 		printLocationRoot(current);
 		std::cout << std::endl;
+		printLocationIndex(current);
 	}
 }
 
@@ -224,7 +225,8 @@ void	ConfigParser::parseErrorPages(ServerBlock& s) {
 
 void	ConfigParser::parseIndex(ServerBlock& s) {
 
-	expect(TOKEN_WORD, "Expected index file"); // expect at least one index file
+	if (!check(TOKEN_WORD)) // only consume via expect if type != word
+		expect(TOKEN_WORD, "Expected index file");
 
 	while (true) {
 		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
@@ -299,7 +301,8 @@ void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 
 void	ConfigParser::parseIndex(LocationBlock& l) {
 
-	expect(TOKEN_WORD, "Expected index file"); // expect at least one index file
+	if (!check(TOKEN_WORD)) // only consume via expect if type != word
+		expect(TOKEN_WORD, "Expected index file");
 
 	while (true) {
 		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
