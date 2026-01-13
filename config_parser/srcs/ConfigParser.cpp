@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/08 11:34:06 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:38:41 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 16:58:54 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	locationDirectives["error_page"] = &ConfigParser::parseErrorPages;
 	locationDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
 	locationDirectives["max_size"] = &ConfigParser::parseMaxSize;
+	locationDirectives["methods"] = &ConfigParser::parseMethods;
 }
 
 ConfigParser::~ConfigParser() {}
@@ -66,7 +67,7 @@ void	ConfigParser::parse(Config& data) {
 	// std::cout << "-------------------------" << std::endl;
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		ServerBlock	current = data.servers[i];
-		std::cout << "SERVER " << i+1 << std::endl;
+		std::cout << "~SERVER " << i+1 << "~" << std::endl;
 		printLocationRoot(current);
 		std::cout << std::endl;
 		printLocationIndex(current);
@@ -76,6 +77,9 @@ void	ConfigParser::parse(Config& data) {
 		printLocationAutoIndex(current);
 		std::cout << std::endl;
 		printLocationMaxSize(current);
+		std::cout << std::endl;
+		printLocationMethods(current);
+	std::cout << "\n-------------------------" << std::endl;
 	}
 }
 
@@ -305,6 +309,32 @@ void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 #pragma region PARSE LOCATION DIRECTIVES
 
 
+bool	ConfigParser::isMethod(const std::string& value) {
+	if (value == "GET" || value == "POST" || value == "DELETE")
+		return true;
+	return false;
+}
+
+void	ConfigParser::parseMethods(LocationBlock& l) {
+	if (!check(TOKEN_WORD)) // only consume via expect if type != word
+		expect(TOKEN_WORD, "Expected method identifier");
+
+	while (true) {
+		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
+			break;
+		if (check(TOKEN_WORD)) {
+			if (isDirective(peek().value))
+				expect(TOKEN_SEMICOLON, "Expected ';'");
+			if (isMethod(peek().value))
+				l.methods.push_back(consume().value);
+			else
+				throw std::runtime_error("Unknown method: " + peek().value);
+		}
+	}
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
+
+
 /**
  * @brief Grabs and bound checks value associated with `max_size` directive
  * @attention Accepts and handles `G` as unit specifier, despite max_size
@@ -360,7 +390,7 @@ void	ConfigParser::parseErrorPages(LocationBlock& l) {
 		throw std::runtime_error("error_page: inadequate error code: " + peek().value);
 
 	consume(); // consume error code
-	if (!check(TOKEN_WORD)) // expect at least one error file/path
+	if (!check(TOKEN_WORD)) // only consume via expect if type != word
 		expect(TOKEN_WORD, "Expected error file");
 
 	while (true) {

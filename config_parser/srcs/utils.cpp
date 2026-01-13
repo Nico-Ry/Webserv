@@ -6,7 +6,7 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 13:32:01 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 15:35:02 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/13 16:53:58 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,5 +166,24 @@ void	printLocationMaxSize(ServerBlock& data) {
 			std::cout << (bytes / (1024UL * 1024UL)) << "Mb" << std::endl;
 		else
 			std::cout << (bytes / 1024UL) << "Kb" << std::endl;
+	}
+}
+
+
+void	printLocationMethods(ServerBlock& data) {
+
+	for (size_t i=0; i < data.locations.size(); ++i) {
+		LocationBlock&	l = data.locations[i];
+
+		if (l.methods.empty())
+		{
+  	 		std::cout << "[DEBUG] location " << l.uri << " -> methods: DEFAULT (GET)!\n";
+    		continue;
+		}
+
+		std::cout << "[DEBUG] location " << l.uri << " -> methods: ";
+		for (size_t i=0; i < l.methods.size(); ++i)
+			std::cout << l.methods[i] << " ";
+		std::cout << std::endl;
 	}
 }
