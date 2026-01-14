@@ -26,7 +26,10 @@ INCLUDES	= $(addprefix $(INCL_DIR), Config.hpp ConfigParser.hpp ServerBlock.hpp 
 
 # Source files
 SRCS_DIR	= config_parser/srcs/
-SRC			= $(addprefix $(SRCS_DIR), Config.cpp ConfigParser.cpp ServerBlock.cpp LocationBlock.cpp Tokeniser.cpp main.cpp utils.cpp)
+SRC			= $(addprefix $(SRCS_DIR), Config.cpp ConfigParser.cpp \
+				ServerBlock.cpp LocationBlock.cpp Tokeniser.cpp \
+				parseServerBlock.cpp parseLocationBlock.cpp main.cpp \
+				utils.cpp)
 
 # Object files (not strictly needed if just one .cpp file, but useful for scaling)
 OBJ_FILES	= $(SRC:.cpp=.o)

@@ -25,10 +25,10 @@ Config::Config(const std::string& configFile) {
     tokeniser.tokenise(tokens);
 	// printTokens(tokens);
 
-	// Parse
+// Parse
 	ConfigParser	parser(tokens);
 	parser.parse(*this);
-	// validate(*this);
+
 }
 
 

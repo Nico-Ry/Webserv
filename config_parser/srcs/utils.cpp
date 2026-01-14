@@ -6,13 +6,77 @@
 /*   By: ameechan <ameechan@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 13:32:01 by ameechan          #+#    #+#             */
-/*   Updated: 2026/01/13 17:59:40 by ameechan         ###   ########.fr       */
+/*   Updated: 2026/01/14 13:43:36 by ameechan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
+#include "colours.hpp"
 
-void	printServerPorts(Config& data) {
+void	printAllOutput(const Config& data) {
+	std::cout << BOLD_GOLD << "~~~~~ SERVER BLOCKS ~~~~~" << RES << std::endl;
+
+	std::cout << CYAN << "LISTEN" << RES << std::endl;
+	printServerPorts(data);
+	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "ROOT" << RES << std::endl;
+	printServerRoot(data);
+	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "INDEX" << RES << std::endl;
+	printServerIndex(data);
+	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "ERROR_PAGE" << RES << std::endl;
+	printServerErrorPages(data);
+	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "AUTOINDEX" << RES << std::endl;
+	printServerAutoIndex(data);
+	std::cout << "-------------------------" << std::endl;
+
+	std::cout << CYAN << "MAX_SIZE" << RES << std::endl;
+	printServerMaxSize(data);
+	std::cout << "-------------------------\n" << std::endl;
+
+	std::cout << BOLD_GOLD << "~~~~~ LOCATION BLOCKS ~~~~~" << RES << std::endl;
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		ServerBlock	current = data.servers[i];
+		std::cout << GREEN << "~SERVER " << i+1 << "~" << RES << std::endl;
+
+		std::cout << CYAN << "ROOT" << RES << std::endl;
+		printLocationRoot(current);
+		std::cout << std::endl;
+
+		std::cout << CYAN << "INDEX" << RES << std::endl;
+		printLocationIndex(current);
+		std::cout << std::endl;
+
+		std::cout << CYAN << "ERROR_PAGE" << RES << std::endl;
+		printLocationErrorPages(current);
+		std::cout << std::endl;
+
+		std::cout << CYAN << "AUTOINDEX" << RES << std::endl;
+		printLocationAutoIndex(current);
+		std::cout << std::endl;
+
+		std::cout << CYAN << "MAX_SIZE" << RES << std::endl;
+		printLocationMaxSize(current);
+		std::cout << std::endl;
+
+		std::cout << CYAN << "METHODS" << RES << std::endl;
+		printLocationMethods(current);
+		std::cout << std::endl;
+
+		std::cout << CYAN << "REDIRECT" << RES << std::endl;
+		printLocationRedirect(current);
+		std::cout << "\n-------------------------" << std::endl;
+	}
+}
+
+
+void	printServerPorts(const Config& data) {
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		if (data.servers[i].port) {
 			std::cout << "[DEBUG] server: " << (i + 1)
@@ -24,7 +88,7 @@ void	printServerPorts(Config& data) {
 	}
 }
 
-void	printServerRoot(Config& data) {
+void	printServerRoot(const Config& data) {
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		if (!data.servers[i].root.empty()) {
 			std::cout << "[DEBUG] server: " << (i + 1)
@@ -36,7 +100,7 @@ void	printServerRoot(Config& data) {
 	}
 }
 
-void	printServerIndex(Config& data) {
+void	printServerIndex(const Config& data) {
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		std::cout << "[DEBUG] server: " << (i + 1) << " -> index: ";
 		for (size_t j=0; j < data.servers[i].index.size(); ++j)
@@ -45,10 +109,10 @@ void	printServerIndex(Config& data) {
 	}
 }
 
-void	printServerErrorPages(Config& data) {
+void	printServerErrorPages(const Config& data) {
 
 	for (size_t i=0; i < data.servers.size(); ++i) {
-		ServerBlock&	s = data.servers[i];
+		const ServerBlock&	s = data.servers[i];
 
 		if (s.errorPages.empty())
 		{
@@ -58,7 +122,7 @@ void	printServerErrorPages(Config& data) {
 
 		std::cout << "[DEBUG] server: " << (i + 1) << " -> error_page: ";
 
-		std::map<int, StringVec>::iterator it = s.errorPages.begin();
+		std::map<int, StringVec>::const_iterator it = s.errorPages.begin();
 		std::cout << it->first << " > ";
 		for (size_t j=0; j < it->second.size(); ++j)
 			std::cout << it->second[j] << " ";
@@ -66,7 +130,7 @@ void	printServerErrorPages(Config& data) {
 	}
 }
 
-void	printServerAutoIndex(Config& data) {
+void	printServerAutoIndex(const Config& data) {
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		std::cout << "[DEBUG] server: " << (i + 1) << " -> autoindex: ";
 		if (data.servers[i].autoIndex)
@@ -78,7 +142,7 @@ void	printServerAutoIndex(Config& data) {
 }
 
 
-void	printServerMaxSize(Config& data) {
+void	printServerMaxSize(const Config& data) {
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		std::cout << "[DEBUG] server: " << (i + 1) << " -> MaxSize: ";
 
@@ -92,9 +156,9 @@ void	printServerMaxSize(Config& data) {
 
 
 
-void	printLocationRoot(ServerBlock& s) {
+void	printLocationRoot(const ServerBlock& s) {
 	for (size_t i=0; i < s.locations.size(); ++i) {
-		LocationBlock&	current = s.locations[i];
+		const LocationBlock&	current = s.locations[i];
 		if (!current.root.empty()) {
 			std::cout << "[DEBUG] location " << current.uri
 			<< " -> root: " << current.root << std::endl;
@@ -106,9 +170,9 @@ void	printLocationRoot(ServerBlock& s) {
 	}
 }
 
-void	printLocationIndex(ServerBlock& s) {
+void	printLocationIndex(const ServerBlock& s) {
 	for (size_t i=0; i < s.locations.size(); ++i) {
-		LocationBlock&	current = s.locations[i];
+		const LocationBlock&	current = s.locations[i];
 		if (current.index.empty()) {
 			std::cout << "[DEBUG] location " << current.uri
 			<< " -> NO index!" << std::endl;
@@ -123,10 +187,10 @@ void	printLocationIndex(ServerBlock& s) {
 	}
 }
 
-void	printLocationErrorPages(ServerBlock& data) {
+void	printLocationErrorPages(const ServerBlock& data) {
 
 	for (size_t i=0; i < data.locations.size(); ++i) {
-		LocationBlock&	l = data.locations[i];
+		const LocationBlock&	l = data.locations[i];
 
 		if (l.errorPages.empty())
 		{
@@ -136,7 +200,7 @@ void	printLocationErrorPages(ServerBlock& data) {
 
 		std::cout << "[DEBUG] location " << l.uri << " -> error_page: ";
 
-		std::map<int, StringVec>::iterator it = l.errorPages.begin();
+		std::map<int, StringVec>::const_iterator it = l.errorPages.begin();
 		std::cout << it->first << " > ";
 		for (size_t j=0; j < it->second.size(); ++j)
 			std::cout << it->second[j] << " ";
@@ -144,9 +208,9 @@ void	printLocationErrorPages(ServerBlock& data) {
 	}
 }
 
-void	printLocationAutoIndex(ServerBlock& data) {
+void	printLocationAutoIndex(const ServerBlock& data) {
 	for (size_t i=0; i < data.locations.size(); ++i) {
-		LocationBlock&	l = data.locations[i];
+		const LocationBlock&	l = data.locations[i];
 		std::cout << "[DEBUG] location " << l.uri << " -> autoindex: ";
 		if (data.locations[i].autoIndex)
 			std::cout << "on";
@@ -156,9 +220,9 @@ void	printLocationAutoIndex(ServerBlock& data) {
 	}
 }
 
-void	printLocationMaxSize(ServerBlock& data) {
+void	printLocationMaxSize(const ServerBlock& data) {
 	for (size_t i=0; i < data.locations.size(); ++i) {
-		LocationBlock& l = data.locations[i];
+		const LocationBlock& l = data.locations[i];
 		std::cout << "[DEBUG] location " << l.uri << " -> MaxSize: ";
 
 		size_t	bytes = data.locations[i].clientMaxBodySize;
@@ -170,10 +234,10 @@ void	printLocationMaxSize(ServerBlock& data) {
 }
 
 
-void	printLocationMethods(ServerBlock& data) {
+void	printLocationMethods(const ServerBlock& data) {
 
 	for (size_t i=0; i < data.locations.size(); ++i) {
-		LocationBlock&	l = data.locations[i];
+		const LocationBlock&	l = data.locations[i];
 
 		if (l.methods.empty())
 		{
@@ -188,10 +252,10 @@ void	printLocationMethods(ServerBlock& data) {
 	}
 }
 
-void	printLocationRedirect(ServerBlock& data) {
+void	printLocationRedirect(const ServerBlock& data) {
 
 	for (size_t i=0; i < data.locations.size(); ++i) {
-		LocationBlock&	l = data.locations[i];
+		const LocationBlock&	l = data.locations[i];
 
 		if (!l.hasRedirect)
 		{
