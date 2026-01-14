@@ -1,5 +1,17 @@
 # Webserv Makefile - C++98 compliant
 
+# Colors
+RESET			= "\033[0m"	# Default
+BLACK    		= "\033[30m"	# Black
+RED      		= "\033[31m"	# Red
+GREEN    		= "\033[32m"	# Green
+YELLOW   		= "\033[33m"	# Yellow
+BLUE     		= "\033[34m"	# Blue
+MAGENTA  		= "\033[35m"	# Magenta
+CYAN     		= "\033[36m"	# Cyan
+WHITE    		= "\033[37m"	# White
+
+
 NAME = webserv
 
 CXX = c++
@@ -10,21 +22,34 @@ INCLUDES = -I./include
 OBJ_DIR = obj
 
 # Source files
-SRC_NETWORK = src/network/SocketManager.cpp \
-              src/network/Connection.cpp \
-              src/network/IOMultiplexer.cpp \
-              src/network/Server.cpp
+SRC_NETWORK 		= src/network/SocketManager.cpp \
+            		  src/network/Connection.cpp \
+            		  src/network/IOMultiplexer.cpp \
+            		  src/network/Server.cpp
 
-SRC_HTTP = src/http/RequestParser.Core1.cpp \
-           src/http/RequestParser.StartLine3.cpp \
-           src/http/RequestParser.Headers4.cpp \
-           src/http/RequestParser.Body5.cpp \
-           src/http/RequestParser.Utils2.cpp \
-           src/http/RequestParser.Connection6.cpp \
-           src/http/ResponseBuilder7.cpp \
-           src/http/Mime8.cpp
+SRC_HTTP 			= src/http/RequestParser.Core1.cpp \
+         			  src/http/RequestParser.StartLine3.cpp \
+         			  src/http/RequestParser.Headers4.cpp \
+        			  src/http/RequestParser.Body5.cpp \
+        			  src/http/RequestParser.Utils2.cpp \
+        			  src/http/RequestParser.Connection6.cpp \
+        			  src/http/ResponseBuilder7.cpp \
+        			  src/http/Mime8.cpp
 
-SRCS = $(SRC_NETWORK) $(SRC_HTTP)
+
+CP_DIR				= src/configParser/
+SRC_CONFIG_PARSER	= $(addprefix $(CP_DIR), \
+					  Config.cpp \
+					  ConfigParser.cpp \
+					  LocationBlock.cpp \
+					  parseLocationBlock.cpp \
+					  parseServerBlock.cpp \
+					  ServerBlock.cpp \
+					  Tokeniser.cpp \
+					  utils.cpp)
+
+
+SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER)
 
 # Main source
 MAIN_SRC = src/main.cpp
@@ -34,34 +59,39 @@ OBJS = $(SRCS:src/%.cpp=$(OBJ_DIR)/%.o)
 MAIN_OBJ = $(OBJ_DIR)/main.o
 
 # Colors
-GREEN = \033[0;32m
-RESET = \033[0m
+#GREEN = \033[0;32m
+
 
 all: $(NAME)
 
 $(NAME): $(OBJS) $(MAIN_OBJ)
-	@echo "$(GREEN)Building $(NAME)...$(RESET)"
-	$(CXX) $(CXXFLAGS) $(OBJS) $(MAIN_OBJ) -o $(NAME)
-	@echo "$(GREEN)$(NAME) compiled successfully!$(RESET)"
-	@echo "$(GREEN)Run with: ./$(NAME) [port]$(RESET)"
+	@echo $(CYAN)   " - ⏳ Making $(NAME)..." $(RESET)
+#	@echo "$(GREEN)Building $(NAME)...$(RESET)"
+	@$(CXX) $(CXXFLAGS) $(OBJS) $(MAIN_OBJ) -o $(NAME)
+	@echo $(GREEN)  " - ✅ $(NAME) Ready! " $(RESET)
+#	@echo "$(GREEN)Run with: ./$(NAME) [port]$(RESET)"
+	@echo "To get started type: 	" $(CYAN) "./$(NAME) "$(RESET)"<config_file>"
 
 $(OBJ_DIR)/%.o: src/%.cpp
 	@mkdir -p $(dir $@)
-	@echo "Compiling $<..."
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	@echo $(YELLOW) " - 🛠️  Compiling $<..." $(RESET)
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 $(MAIN_OBJ): $(MAIN_SRC)
 	@mkdir -p $(OBJ_DIR)
-	@echo "Compiling $<..."
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	@echo $(YELLOW) " - 🛠️  Compiling $<..." $(RESET)
+#	@echo "Compiling $<..."
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	@echo "Cleaning object files..."
-	rm -rf $(OBJ_DIR)
+#	@echo "Cleaning object files..."
+	@echo $(MAGENTA)" - 🗑️  Object Files Deleted  ✅"   $(RESET)
+	@rm -rf $(OBJ_DIR)
 
 fclean: clean
-	@echo "Cleaning binaries..."
-	rm -f $(NAME)
+	@echo $(GREEN)  " - 🗑️  Fully Cleaned!  ✅" $(RESET)
+#	@echo "Cleaning binaries..."
+	@rm -f $(NAME)
 
 re: fclean all
 
