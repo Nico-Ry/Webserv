@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
         signal(SIGPIPE, SIG_IGN);  // Ignorer SIGPIPE
 
         // Creer et lancer le serveur
-        Server server(cfg.servers[0].port);
+        Server server(cfg.servers[0].port); // for now just give 1st server port
         g_server = &server;
 
         server.run();
