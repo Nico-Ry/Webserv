@@ -50,7 +50,7 @@ void	ConfigParser::parse(Config& data) {
 	}
 
 	//[DEBUG] output to see all parsed/stored values
-	printAllOutput(data);
+	// printAllOutput(data);
 }
 
 
