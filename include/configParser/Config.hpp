@@ -8,7 +8,6 @@
 #include "LocationBlock.hpp"
 #include "ConfigParser.hpp"
 #include "Tokeniser.hpp"
-#include "ConfigValidator.hpp"
 #include "colours.hpp"
 
 /**
