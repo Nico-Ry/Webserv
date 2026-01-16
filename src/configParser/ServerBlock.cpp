@@ -7,6 +7,7 @@
 ServerBlock::ServerBlock() :
 	hasPort(false),
 	hasRoot(false),
+	port(0),
 	autoIndex(false),
 	clientMaxBodySize(512 * 1024UL)
 {

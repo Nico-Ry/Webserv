@@ -2,5 +2,7 @@
 tests/
 texte.md
 
+obj/
+
 #Executable
 webserv

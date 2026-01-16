@@ -17,8 +17,7 @@ Config::Config(const std::string& configFile) {
 	ConfigParser	parser(tokens);
 	parser.parse(*this);
 
-	ConfigValidator	validator;
-	validator.validConfig(*this);
+	detectDuplicatePorts(this->servers);
 }
 
 
@@ -34,6 +33,23 @@ if (this != &other) {
 }
 return *this;
 }
+
+
+void	Config::detectDuplicatePorts(const std::vector<ServerBlock>& servs) {
+	std::set<int>	usedPorts;
+
+	for (size_t i=0; i < servs.size(); ++i) {
+		int port = servs[i].port;
+
+		if (!usedPorts.insert(port).second) {
+			std::stringstream	ss;
+			ss << "Duplicate port: " << RED << port
+				<< RES << " found in multiple servers";
+			throw std::runtime_error(ss.str());
+		}
+	}
+}
+
 
 Config::~Config() {}
 

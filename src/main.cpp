@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
 		Config	cfg(configFile);
 		printAllOutput(cfg);//		 <-- Uncomment to print all parsed output
 
+
 		if (cfg.servers.empty())
 			throw std::runtime_error("No servers defined in config file: " + configFile);
 

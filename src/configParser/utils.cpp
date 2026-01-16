@@ -117,7 +117,7 @@ void	printServerErrorPages(const Config& data) {
 		if (s.errorPages.empty())
 		{
   	 		std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: "
-				<< RES << "-> " << RED << "no error_page\n";
+				<< RES << "-> " << RED << "no error_page\n" << RES;
     		continue;
 		}
 
