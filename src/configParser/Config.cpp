@@ -17,6 +17,8 @@ Config::Config(const std::string& configFile) {
 	ConfigParser	parser(tokens);
 	parser.parse(*this);
 
+	ConfigValidator	validator;
+	validator.validConfig(*this);
 }
 
 

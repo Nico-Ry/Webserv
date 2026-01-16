@@ -6,6 +6,7 @@
 #include "LocationBlock.hpp"
 #include "ConfigParser.hpp"
 #include "Tokeniser.hpp"
+#include "ConfigValidator.hpp"
 
 /**
  * @brief The main object that contains all ServerBlocks, which in turn

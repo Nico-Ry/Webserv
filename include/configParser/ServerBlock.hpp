@@ -31,11 +31,14 @@ class ServerBlock {
 		ServerBlock();
 		~ServerBlock();
 
+		bool						hasPort;
+		bool						hasRoot;
+
 		int							port;//		Validated at parsing (not checked for reserved ports)
 		std::vector<std::string>	defaultMethods;
 		std::vector<LocationBlock>	locations;
 
-		std::string					root;//		can fail gracefully (not validated)
+		std::string					root;
 		std::vector<std::string>	index;//	can fail gracefully (not validated)
 		bool						autoIndex;
 		std::map<int, StringVec>	errorPages;

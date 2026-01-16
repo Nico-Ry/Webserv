@@ -34,6 +34,11 @@ ServerBlock	ConfigParser::parseServerBlock() {
 		(this->*(it->second))(s);
 	}
 	expect(TOKEN_RBRACE, "Expected '}'");
+	// check ServerBlock has at least port and root
+	if (!s.hasPort)
+		throw std::runtime_error("One or more Server Blocks are missing the `listen` directive");
+	if (!s.hasRoot)
+		throw std::runtime_error("One or more Server Blocks are missing the `root` directive");
 	return s;
 }
 
@@ -168,6 +173,7 @@ void	ConfigParser::parseListen(ServerBlock& s) {
 	consume();
 	expect(TOKEN_SEMICOLON, "Expected ';'");
 	s.port = port;
+	s.hasPort = true;
 }
 
 
@@ -180,6 +186,7 @@ void	ConfigParser::parseRoot(ServerBlock& s) {
 
 	s.root = rootPath.value;
 	expect(TOKEN_SEMICOLON, "Expected ';'");
+	s.hasRoot = true;
 }
 
 #pragma endregion PARSE SERVER DIRECTIVES
