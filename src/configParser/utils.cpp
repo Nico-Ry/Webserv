@@ -96,13 +96,14 @@ void	printServerRoot(const Config& data) {
 
 void	printServerIndex(const Config& data) {
 	for (size_t i=0; i < data.servers.size(); ++i) {
+		const ServerBlock&	current = data.servers[i];
 		std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: " << RES << "-> ";
-		for (size_t j=0; j < data.servers[i].index.size(); ++j) {
-			if (data.servers[i].index.empty()) {//						 TRY TO FIX THIS WITH HASINDEX BOOLEAN
-				std::cout << RED << "No Index Files!" << RES << std::endl;
-				break;
-			}
-			std::cout << GREEN << data.servers[i].index[j] << " ";
+
+		if (current.index.empty())
+			std::cout << RED << "No Index Files!" << RES << std::endl;
+		else {
+			for (size_t j=0; j < current.index.size(); ++j)
+				std::cout << GREEN << current.index[j] << " ";
 		}
 		std::cout << RES << std::endl;
 	}
