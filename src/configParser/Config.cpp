@@ -17,6 +17,16 @@ Config::Config(const std::string& configFile) {
 	ConfigParser	parser(tokens);
 	parser.parse(*this);
 
+// Validate
+	if (this->servers.empty())
+			throw std::runtime_error("No servers defined in config file: " + configFile);
+
+	for (size_t i=0; i < this->servers.size(); ++i) {
+		if (!servers[i].hasPort)
+			throw std::runtime_error("One or more Server Blocks are missing the `listen` directive");
+		if (!servers[i].hasRoot)
+			throw std::runtime_error("One or more Server Blocks are missing the `root` directive");
+	}
 	detectDuplicatePorts(this->servers);
 }
 

@@ -34,11 +34,6 @@ ServerBlock	ConfigParser::parseServerBlock() {
 		(this->*(it->second))(s);
 	}
 	expect(TOKEN_RBRACE, "Expected '}'");
-	// check ServerBlock has at least port and root
-	if (!s.hasPort)
-		throw std::runtime_error("One or more Server Blocks are missing the `listen` directive");
-	if (!s.hasRoot)
-		throw std::runtime_error("One or more Server Blocks are missing the `root` directive");
 	return s;
 }
 

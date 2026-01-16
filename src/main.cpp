@@ -43,9 +43,7 @@ int main(int argc, char** argv) {
 		printAllOutput(cfg);//		 <-- Uncomment to print all parsed output
 
 
-		if (cfg.servers.empty())
-			throw std::runtime_error("No servers defined in config file: " + configFile);
-
+		
         // Configurer le gestionnaire de signaux
         signal(SIGINT, signal_handler);
         signal(SIGPIPE, SIG_IGN);  // Ignorer SIGPIPE

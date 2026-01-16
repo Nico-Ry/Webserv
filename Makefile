@@ -41,7 +41,6 @@ CP_DIR				= src/configParser/
 SRC_CONFIG_PARSER	= $(addprefix $(CP_DIR), \
 					  Config.cpp \
 					  ConfigParser.cpp \
-					  ConfigValidator.cpp \
 					  LocationBlock.cpp \
 					  parseLocationBlock.cpp \
 					  parseServerBlock.cpp \
