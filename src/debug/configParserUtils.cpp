@@ -1,5 +1,5 @@
-#include "configParser/utils.hpp"
-#include "configParser/colours.hpp"
+#include "utils.hpp"
+#include "colours.hpp"
 
 void	printAllOutput(const Config& data) {
 	std::cout << BOLD_GOLD << "~~~~~ SERVER BLOCKS ~~~~~" << RES << std::endl;

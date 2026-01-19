@@ -45,11 +45,14 @@ SRC_CONFIG_PARSER	= $(addprefix $(CP_DIR), \
 					  parseLocationBlock.cpp \
 					  parseServerBlock.cpp \
 					  ServerBlock.cpp \
-					  Tokeniser.cpp \
-					  utils.cpp)
+					  Tokeniser.cpp)
 
 
-SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER)
+SRC_DEBUG			= src/debug/configParserUtils.cpp \
+					  src/debug/httpParserUtils.cpp
+
+
+SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_DEBUG)
 
 # Main source
 MAIN_SRC = src/main.cpp

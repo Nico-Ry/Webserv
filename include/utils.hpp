@@ -1,0 +1,50 @@
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
+#include "configParser/ConfigParser.hpp"
+#include "http/Request.hpp"
+#include "http/RequestParser.hpp"
+#include <iomanip>
+
+class Config;
+
+//---------------------------------------------------------------------------//
+//							ENTIRE CONFIG
+//---------------------------------------------------------------------------//
+
+void	printAllOutput(const Config& data);
+
+
+//---------------------------------------------------------------------------//
+//						CONFIG SERVER BLOCKS
+//---------------------------------------------------------------------------//
+
+void	printServerPorts(const Config& data);
+void	printServerRoot(const Config& data);
+void	printServerIndex(const Config& data);
+void	printServerErrorPages(const Config& data);
+void	printServerAutoIndex(const Config& data);
+void	printServerMaxSize(const Config& data);
+
+
+//---------------------------------------------------------------------------//
+//					   CONFIG LOCATION BLOCKS
+//---------------------------------------------------------------------------//
+
+void	printLocationRoot(const ServerBlock& s);
+void	printLocationIndex(const ServerBlock& s);
+void	printLocationErrorPages(const ServerBlock& s);
+void	printLocationAutoIndex(const ServerBlock& s);
+void	printLocationMaxSize(const ServerBlock& s);
+void	printLocationMethods(const ServerBlock& data);
+void	printLocationRedirect(const ServerBlock& data);
+
+
+//---------------------------------------------------------------------------//
+//						HTTP REQUEST PARSER
+//---------------------------------------------------------------------------//
+
+void	printHttpMethod(const HttpMethod& method);
+void	printHttpRequest(const HttpRequest& req);
+
+#endif

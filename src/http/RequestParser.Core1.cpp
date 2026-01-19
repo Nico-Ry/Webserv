@@ -1,5 +1,6 @@
 #include "http/RequestParser.hpp"
 #include <cctype>
+#include "utils.hpp"
 
 /*
 	<sstream> is used for std::istringstream.
@@ -87,6 +88,8 @@ void	HttpRequestParser::feed(const std::string &data)
 		else
 			break ;
 	}
+	// [DEBUG]
+	// printHttpRequest(_req);
 }
 
 

@@ -1,5 +1,6 @@
 #include "../../include/network/Server.hpp"
 #include "../../include/http/Status.hpp"
+#include "colours.hpp"
 #include <iostream>
 #include <cstring>
 #include <sstream>
@@ -504,21 +505,24 @@ Server::ServerException::ServerException(const std::string& message)
 Server::Server(int port, int backlog)
     : socket_manager(), multiplexer(), clients(), server_fd(-1), port(port), running(false) {
 
-    std::cout << "=== Initializing Server on port " << port << " ===" << std::endl;
+    std::cout << BOLD_CYAN << "=== Initializing Server on port ["
+		<< port << "] ===" << RES << std::endl;
 
     // Creer le socket serveur
     server_fd = socket_manager.create_server(port, backlog);
 
-    std::cout << "✓ Server socket created: fd=" << server_fd << std::endl;
+    std::cout << GREEN << "✓ " << RES << "Server socket created: "
+		<< RES << "fd=" << server_fd << std::endl;
 
     // Ajouter le server_fd au multiplexer pour surveiller les nouvelles connexions
     multiplexer.add_fd(server_fd, POLLIN);
 
-    std::cout << "✓ Server ready to accept connections" << std::endl;
+    std::cout << GREEN << "✓ " << RES
+		<< "Server ready to accept connections" << std::endl;
 }
 
 Server::~Server() {
-    std::cout << "=== Shutting down server ===" << std::endl;
+    std::cout << BOLD_ORANGE << "=== Shutting down server ===" << RES << std::endl;
 
     // Fermer toutes les connexions clients
     for (std::map<int, Connection*>::iterator it = clients.begin();
@@ -539,17 +543,18 @@ Server::~Server() {
         SocketManager::close_socket(server_fd);
     }
 
-    std::cout << "✓ Server stopped" << std::endl;
+    std::cout << GREEN << "✓ " << RES << "Server stopped" << std::endl;
 }
 
 void Server::run() {
     running = true;
 
-    std::cout << std::endl;
-    std::cout << "Multi-client server running on port " << port << std::endl;
-    std::cout << "Test with: telnet localhost " << port << std::endl;
-    std::cout << "(Ctrl+C to stop)" << std::endl;
-    std::cout << std::endl;
+    std::cout << std::endl
+    	<< "Multi-client server running on port "
+		<< GREEN << port << RES << std::endl
+    	<< "Test with: telnet localhost "
+		<< GREEN << port << RES << std::endl
+    	<< "(Ctrl+C to stop)\n" << std::endl;
 
     while (running) {
         // Attendre des evenements sur les fds surveilles
@@ -607,8 +612,9 @@ void Server::acceptNewClient() {
         // Surveiller le client pour les donnees entrantes
         multiplexer.add_fd(client_fd, POLLIN);
 
-        std::cout << "✓ New client connected: fd=" << client_fd
-                 << " (total clients: " << clients.size() << ")" << std::endl;
+        std::cout << GREEN << "✓ " << RES << "New client connected: "
+			<< "fd=" << client_fd << " -> (total clients: " << clients.size() << ")"
+			<< std::endl;
     }
     catch (const SocketManager::SocketException& e) {
         std::cerr << "✗ Error accepting client: " << e.what() << std::endl;
@@ -700,6 +706,7 @@ void Server::processRequest(Connection* conn, int fd) {
     HttpRequestParser* parser = parsers[fd];
 
     // Envoyer les donnees au parser
+	std::cout << BOLD_GOLD << conn->recv_buffer << RES << std::endl;
     parser->feed(conn->recv_buffer);
     conn->recv_buffer.clear();
 

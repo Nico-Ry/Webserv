@@ -1,5 +1,5 @@
 #include "configParser/ConfigParser.hpp"
-#include "configParser/utils.hpp"
+#include "utils.hpp"
 
 
 //---------------------------------------------------------------------------//
