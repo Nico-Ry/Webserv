@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 
+
 class Server {
 public:
     class ServerException : public std::runtime_error {

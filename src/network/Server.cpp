@@ -1,5 +1,6 @@
 #include "../../include/network/Server.hpp"
 #include "../../include/http/Status.hpp"
+#include "router/Router.hpp"
 #include "colours.hpp"
 #include "utils.hpp"
 #include <iostream>
@@ -745,7 +746,7 @@ void Server::processRequest(Connection* conn, int fd) {
 			printHttpRequest(req);
 
             // Generer la reponse HTTP
-            HttpResponse resp = handleHttpRequest(req);
+            HttpResponse resp = Router::handleHttpRequest(req);
 
             // Determiner si on doit fermer la connexion (keep-alive)
             bool closeConnection = parser->shouldCloseConnection();

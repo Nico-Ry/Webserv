@@ -39,13 +39,18 @@ SRC_HTTP 			= src/http/RequestParser.Core1.cpp \
 
 CP_DIR				= src/configParser/
 SRC_CONFIG_PARSER	= $(addprefix $(CP_DIR), \
-					  Config.cpp \
-					  ConfigParser.cpp \
-					  LocationBlock.cpp \
-					  parseLocationBlock.cpp \
-					  parseServerBlock.cpp \
-					  ServerBlock.cpp \
-					  Tokeniser.cpp)
+						Config.cpp \
+						ConfigParser.cpp \
+						LocationBlock.cpp \
+						parseLocationBlock.cpp \
+						parseServerBlock.cpp \
+						ServerBlock.cpp \
+						Tokeniser.cpp)
+
+ROUTER_DIR			= src/router/
+SRC_ROUTER			= $(addprefix $(ROUTER_DIR), \
+						Router.cpp \
+						)
 
 
 SRC_DEBUG			= src/debug/configParserUtils.cpp \
