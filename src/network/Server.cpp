@@ -1,6 +1,7 @@
 #include "../../include/network/Server.hpp"
 #include "../../include/http/Status.hpp"
 #include "colours.hpp"
+#include "utils.hpp"
 #include <iostream>
 #include <cstring>
 #include <sstream>
@@ -564,7 +565,7 @@ void Server::run() {
             continue;
         }
 
-        std::cout << "poll() returned " << ready_fds.size() << " ready fd(s)" << std::endl;
+        // std::cout << "poll() returned " << ready_fds.size() << " ready fd(s)" << std::endl;
 
         // Traiter chaque fd pret
         for (size_t i = 0; i < ready_fds.size(); i++) {
@@ -629,7 +630,9 @@ void Server::handleClientRead(int fd) {
     ssize_t n = conn->read_available();
 
     if (n > 0) {
-        std::cout << "  [fd=" << fd << "] Received " << n << " bytes" << std::endl;
+        // std::cout << "  [fd=" << fd << "] Received " << n << " bytes" << std::endl;
+        std::cout << BOLD_YELLOW << "[DEBUG] "
+			<< RES << "Received " << n << " bytes" << std::endl;
 
         // Traiter la requete HTTP avec le parser
         processRequest(conn, fd);
@@ -641,7 +644,8 @@ void Server::handleClientRead(int fd) {
     }
     else if (n == 0) {
         // Client a ferme la connexion
-        std::cout << "  [fd=" << fd << "] Client disconnected" << std::endl;
+        // std::cout << "  [fd=" << fd << "] Client disconnected" << std::endl;
+        std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Client disconnected" << std::endl;
         removeClient(fd);
     }
     else {
@@ -658,7 +662,9 @@ void Server::handleClientWrite(int fd) {
         ssize_t sent = conn->write_pending();
 
         if (sent > 0) {
-            std::cout << "  [fd=" << fd << "] Sent " << sent << " bytes" << std::endl;
+            // std::cout << "  [fd=" << fd << "] Sent " << sent << " bytes" << std::endl;
+            std::cout << BOLD_YELLOW << "[DEBUG] "
+				<< RES << "Sent " << sent << " bytes" << std::endl;
         }
         else if (sent < 0) {
             std::cout << "  [fd=" << fd << "] Error writing" << std::endl;
@@ -692,7 +698,9 @@ void Server::removeClient(int fd) {
             parsers.erase(parser_it);
         }
 
-        std::cout << "  (remaining clients: " << clients.size() << ")" << std::endl;
+        std::cout << BOLD_YELLOW << "[DEBUG] "
+			<< RES << "live clients: " << clients.size() << std::endl;
+        // std::cout << "  (remaining clients: " << clients.size() << ")" << std::endl;
     }
 }
 
@@ -700,13 +708,13 @@ void Server::processRequest(Connection* conn, int fd) {
     // Creer un parser pour ce client si necessaire
     if (parsers.find(fd) == parsers.end()) {
         parsers[fd] = new HttpRequestParser();
-        std::cout << "  [fd=" << fd << "] Created HTTP parser" << std::endl;
+        // std::cout << "  [fd=" << fd << "] Created HTTP parser" << std::endl;
     }
 
     HttpRequestParser* parser = parsers[fd];
 
     // Envoyer les donnees au parser
-	std::cout << BOLD_GOLD << conn->recv_buffer << RES << std::endl;
+	// std::cout << BOLD_GOLD << conn->recv_buffer << RES << std::endl;
     parser->feed(conn->recv_buffer);
     conn->recv_buffer.clear();
 
@@ -729,11 +737,12 @@ void Server::processRequest(Connection* conn, int fd) {
             // Traiter la requete HTTP valide
             const HttpRequest& req = parser->getRequest();
 
-            std::cout << "  [fd=" << fd << "] HTTP Request: "
-                     << (req.method == METHOD_GET ? "GET" :
-                         req.method == METHOD_POST ? "POST" :
-                         req.method == METHOD_DELETE ? "DELETE" : "UNKNOWN")
-                     << " " << req.rawTarget << " " << req.httpVersion << std::endl;
+            // std::cout << "  [fd=" << fd << "] HTTP Request: "
+            //          << (req.method == METHOD_GET ? "GET" :
+            //              req.method == METHOD_POST ? "POST" :
+            //              req.method == METHOD_DELETE ? "DELETE" : "UNKNOWN")
+            //          << " " << req.rawTarget << " " << req.httpVersion << std::endl;
+			printHttpRequest(req);
 
             // Generer la reponse HTTP
             HttpResponse resp = handleHttpRequest(req);
@@ -742,9 +751,12 @@ void Server::processRequest(Connection* conn, int fd) {
             bool closeConnection = parser->shouldCloseConnection();
             conn->send_buffer = ResponseBuilder::build(resp, closeConnection);
 
-            std::cout << "  [fd=" << fd << "] HTTP Response: " << resp.statusCode
+            // std::cout << "  [fd=" << fd << "] HTTP Response: " << resp.statusCode
+            //          << " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
+			std::cout << BOLD_GREEN << "[HTTP Response] " << RES << resp.statusCode
                      << " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
-        }
+
+		}
 
         // Reset parser pour la prochaine requete (keep-alive)
         parser->reset();

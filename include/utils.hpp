@@ -45,6 +45,10 @@ void	printLocationRedirect(const ServerBlock& data);
 //---------------------------------------------------------------------------//
 
 void	printHttpMethod(const HttpMethod& method);
+void	printHttpTarget(const HttpRequest& req);
+void	printHttpVersion(const HttpRequest& req);
+void	printHttpHeaders(const HttpRequest& req);
+void	printHttpBody(const HttpRequest& req);
 void	printHttpRequest(const HttpRequest& req);
 
 #endif
