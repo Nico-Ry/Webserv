@@ -85,8 +85,8 @@ int main(int argc, char** argv) {
         signal(SIGINT, signal_handler);
         signal(SIGPIPE, SIG_IGN);  // Ignorer SIGPIPE
 
-        // Creer et lancer le serveur
-        Server server(cfg.servers[0].port); // for now just give 1st server port
+        // Creer et lancer le serveur multi-ports
+        Server server(cfg); // Passe toute la config (supporte multi-ports)
         g_server = &server;
 
         server.run();

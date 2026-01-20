@@ -2,7 +2,7 @@
 
 ## ✅ CE QUI EXISTE DÉJÀ (COMPLET)
 
-### 1. Module Network ✅ COMPLET
+### 1. Module Network ✅ COMPLET + MULTI-PORTS
 **Localisation:** `include/network/` + `src/network/`
 
 ```
@@ -10,14 +10,22 @@ include/network/
 ├── SocketManager.hpp      ✅ Création socket, bind, listen, accept
 ├── IOMultiplexer.hpp      ✅ poll() pour multiplexage I/O
 ├── Connection.hpp         ✅ Gestion connexions (recv/send non-bloquant)
-└── Server.hpp             ✅ Boucle événementielle, gestion clients
+└── Server.hpp             ✅ Boucle événementielle + multi-ports
 
 src/network/
 ├── SocketManager.cpp      ✅ Implémenté
 ├── IOMultiplexer.cpp      ✅ Implémenté
 ├── Connection.cpp         ✅ Implémenté
-└── Server.cpp             ✅ Implémenté + intégré avec HTTP Parser
+└── Server.cpp             ✅ Implémenté + intégré HTTP + multi-ports
 ```
+
+**Nouvelles fonctionnalités:**
+- ✅ **Support multi-ports** (un seul poll() pour tous les ports - conforme sujet)
+- ✅ Constructeur accepte Config complet au lieu de int port
+- ✅ std::vector<int> server_fds pour stocker tous les server sockets
+- ✅ std::map<int, ServerBlock*> fd_to_server pour mapper fd → config
+- ✅ isServerSocket(fd) pour distinguer server socket vs client
+- ✅ acceptNewClient(server_fd) affiche le port de connexion
 
 ### 2. Module HTTP Parser ✅ COMPLET
 **Localisation:** `include/http/` + `src/http/`
@@ -118,19 +126,26 @@ src/configParser/
 
 **Fichiers config existants:**
 - ✅ `config/default.conf` - Config de base
-- ✅ `config/test.conf` - Config de test
+- ✅ `config/test.conf` - Config de test (2 serveurs: 8080, 2)
+- ✅ `config/multi-port.conf` - Config multi-ports (3 serveurs: 8080, 8081, 9000)
 - ✅ `config/webserv.conf` - Config pointant vers www/
 - ✅ `config/error/*.conf` - Configs invalides pour tests
 
-### 5. CGI Handler ✅ COMPLET (NOUVEAU!)
+### 5. CGI Handler ✅ COMPLET + INTÉGRÉ
 **Localisation:** `include/cgi/` + `src/cgi/` + `cgi-bin/`
 
 ```
 include/cgi/
-└── CgiHandler.hpp         ✅ Interface CGI Handler (750+ lignes)
+├── CgiHandler.hpp         ✅ Interface principale (execute, isCgiScript, detectInterpreter)
+├── CgiEnvironment.hpp     ✅ Construction variables CGI
+├── CgiParser.hpp          ✅ Parsing sortie CGI
+└── CgiUtils.hpp           ✅ Utilitaires (trim, intToString, generateErrorResponse)
 
 src/cgi/
-└── CgiHandler.cpp         ✅ Implémentation complète
+├── CgiHandler.cpp         ✅ Fork/exec + pipes + timeout (230 lignes)
+├── CgiEnvironment.cpp     ✅ Build env variables CGI/1.1 (89 lignes)
+├── CgiParser.cpp          ✅ Parse headers + body CGI (75 lignes)
+└── CgiUtils.cpp           ✅ Helpers + error pages (63 lignes)
 
 cgi-bin/
 ├── hello.py               ✅ Script de test: page simple
@@ -142,16 +157,18 @@ cgi-bin/
 
 **Fonctionnalités CGI Handler:**
 - ✅ Fork + exec pour exécution scripts
-- ✅ Pipes stdin/stdout
-- ✅ Variables d'environnement CGI (REQUEST_METHOD, PATH_INFO, QUERY_STRING, HTTP_*, etc.)
+- ✅ Pipes stdin/stdout pour communication
+- ✅ Variables d'environnement CGI/1.1 complètes (REQUEST_METHOD, PATH_INFO, QUERY_STRING, HTTP_*, etc.)
 - ✅ Support POST (body passé en stdin)
 - ✅ Parsing sortie CGI (headers + body)
-- ✅ Timeout configurable (défaut: 30s)
+- ✅ Timeout configurable avec select() (défaut: 30s)
 - ✅ Gestion erreurs (404, 500, 502, 504)
 - ✅ Auto-détection interpréteur (.py, .php, .pl, .sh, .rb)
 - ✅ Vérification existence + permissions
-- ✅ Pages d'erreur HTML détaillées
+- ✅ Pages d'erreur HTML détaillées avec styling
 - ✅ 4 scripts de test fonctionnels
+- ✅ **Architecture modulaire refactorée (4 fichiers)**
+- ✅ **INTÉGRÉ dans Server.cpp** (ligne 849: dispatch /cgi-bin/)
 
 **Documentation CGI:**
 - ✅ `CGI_README.md` - Guide complet CGI
@@ -318,12 +335,13 @@ private:
 | Module                            | Status        | Pourcentage | Fichiers                |
 |-----------------------------------|---------------|-------------|-------------------------|
 | Network (sockets, poll, I/O)      | ✅ Complet    | 100%        | 4 fichiers              |
+| **Multi-ports (un seul poll)**    | ✅ Complet    | 100%        | **Intégré Server.cpp**  |
 | HTTP Parser (parsing, validation) | ✅ Complet    | 100%        | 8 fichiers              |
 | HTTP Response Builder             | ✅ Complet    | 100%        | Intégré HTTP            |
 | MIME Type detection               | ✅ Complet    | 100%        | Intégré HTTP            |
 | Intégration Network↔HTTP          | ✅ Complet    | 100%        | Server.cpp              |
 | Config Parser                     | ✅ Complet    | 100%        | 7 fichiers              |
-| CGI Handler                       | ✅ Complet    | 100%        | 2 fichiers + 4 scripts  |
+| **CGI Handler**                   | ✅ **Intégré**| 100%        | **4 fichiers + 4 scripts** |
 | HTML/CSS Assets                   | ✅ Créé       | 100%        | 5 fichiers              |
 | Makefile                          | ✅ Complet    | 100%        | Compile tout            |
 | Router                            | 🟡 Stub       | 10%         | Skeleton seulement      |
@@ -331,7 +349,7 @@ private:
 | Error Handler                     | 🟡 Hardcodé   | 30%         | Dans Server.cpp         |
 | Upload Handler                    | ❌ Manquant   | 0%          | À créer                 |
 
-**Progression globale : ~75% (8/11 modules complets, 2 partiels)**
+**Progression globale : ~80% (9/12 modules complets, 2 partiels)**
 
 ---
 
@@ -388,18 +406,33 @@ curl http://localhost:8080/test
 curl http://localhost:8080/upload
 ```
 
-### CGI fonctionne (avec intégration temporaire):
+### CGI fonctionne (INTÉGRÉ):
 ```bash
-# Ajouter dans Server.cpp ligne ~815:
-if (req.path.find("/cgi-bin/") == 0) {
-    std::string scriptPath = "." + req.path;
-    return CgiHandler::execute(req, scriptPath);
-}
+# CGI est maintenant intégré dans Server.cpp (ligne 849)
+# Plus besoin de modifications!
 
-# Recompiler et tester:
+make re
+./webserv config/default.conf
+
+# Tester les scripts CGI:
 curl http://localhost:8080/cgi-bin/hello.py
 curl http://localhost:8080/cgi-bin/env.py
 curl "http://localhost:8080/cgi-bin/form.py?name=Test&message=Hello"
+curl -X POST -d "name=John&message=HelloWorld" http://localhost:8080/cgi-bin/form.py
+curl http://localhost:8080/cgi-bin/time.py
+```
+
+### Multi-ports fonctionne:
+```bash
+# Lancer le serveur sur 3 ports simultanément
+./webserv config/multi-port.conf
+
+# Dans 3 terminaux différents:
+curl http://localhost:8080/
+curl http://localhost:8081/
+curl http://localhost:9000/
+
+# Le serveur affiche sur quel port chaque client se connecte
 ```
 
 ---
@@ -419,11 +452,35 @@ curl "http://localhost:8080/cgi-bin/form.py?name=Test&message=Hello"
 
 Vous avez déjà:
 - ✅ Un serveur HTTP/1.1 complet avec keep-alive
+- ✅ **Support multi-ports avec un seul poll() (conforme sujet)**
 - ✅ Un parser HTTP incrémental robuste
 - ✅ Un config parser nginx-like fonctionnel
-- ✅ Un CGI handler complet avec 4 scripts de test
+- ✅ **Un CGI handler complet et INTÉGRÉ avec 4 scripts de test**
 - ✅ Des assets HTML/CSS propres et organisés
-- ✅ Une architecture modulaire et propre
+- ✅ Une architecture modulaire et propre (CGI refactorisé en 4 fichiers)
 - ✅ Tout compile en C++98 sans erreurs
+- ✅ **Le serveur peut écouter sur plusieurs ports simultanément**
+- ✅ **CGI fonctionne out-of-the-box (GET, POST, formulaires)**
 
 **Il ne manque que 3 handlers pour finir!**
+
+## 🚀 NOUVEAUTÉS DE CETTE SESSION
+
+### CGI Handler Refactorisé
+- Architecture modulaire: 4 fichiers au lieu de 1 monolithe
+- CgiHandler.cpp (230 lignes): Fork/exec + pipes + timeout
+- CgiEnvironment.cpp (89 lignes): Variables CGI/1.1
+- CgiParser.cpp (75 lignes): Parsing sortie CGI
+- CgiUtils.cpp (63 lignes): Utilitaires + error pages
+
+### Support Multi-Ports
+- Un seul `poll()` surveille tous les ports (conforme RFC)
+- `Server(const Config&)` au lieu de `Server(int port)`
+- Affiche sur quel port chaque client se connecte
+- Config example: `config/multi-port.conf` (3 ports: 8080, 8081, 9000)
+
+### Intégration Complète
+- CGI dispatcher intégré dans Server.cpp (ligne 849)
+- Détection automatique `/cgi-bin/` → CgiHandler
+- Scripts CGI exécutables immédiatement
+- Pas besoin de modification pour tester

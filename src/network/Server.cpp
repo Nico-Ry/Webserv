@@ -505,23 +505,37 @@ Server::ServerException::ServerException(const std::string& message)
     : std::runtime_error(message) {
 }
 
-Server::Server(int port, int backlog)
-    : socket_manager(), multiplexer(), clients(), server_fd(-1), port(port), running(false) {
+Server::Server(const Config& cfg, int backlog)
+    : socket_manager(), multiplexer(), clients(), config(&cfg), running(false) {
 
-    std::cout << BOLD_CYAN << "=== Initializing Server on port ["
-		<< port << "] ===" << RES << std::endl;
+    std::cout << BOLD_CYAN << "=== Initializing Multi-Port Server ===" << RES << std::endl;
 
-    // Creer le socket serveur
-    server_fd = socket_manager.create_server(port, backlog);
+    if (cfg.servers.empty()) {
+        throw ServerException("No server blocks found in configuration");
+    }
 
-    std::cout << GREEN << "✓ " << RES << "Server socket created: "
-		<< RES << "fd=" << server_fd << std::endl;
+    // Creer un socket pour chaque ServerBlock dans la config
+    for (size_t i = 0; i < cfg.servers.size(); i++) {
+        int port = cfg.servers[i].port;
 
-    // Ajouter le server_fd au multiplexer pour surveiller les nouvelles connexions
-    multiplexer.add_fd(server_fd, POLLIN);
+        std::cout << BOLD_CYAN << "Setting up server on port " << port << "..." << RES << std::endl;
 
-    std::cout << GREEN << "✓ " << RES
-		<< "Server ready to accept connections" << std::endl;
+        // Creer le socket serveur
+        int fd = socket_manager.create_server(port, backlog);
+
+        // Stocker le fd et sa config associée
+        server_fds.push_back(fd);
+        fd_to_server[fd] = &cfg.servers[i];
+
+        // Ajouter au multiplexer pour surveiller les nouvelles connexions
+        multiplexer.add_fd(fd, POLLIN);
+
+        std::cout << GREEN << "✓ " << RES << "Server socket created: "
+                  << "fd=" << fd << " (port " << port << ")" << std::endl;
+    }
+
+    std::cout << GREEN << "✓ " << RES << "All servers ready to accept connections ("
+              << server_fds.size() << " port" << (server_fds.size() > 1 ? "s" : "") << ")" << std::endl;
 }
 
 Server::~Server() {
@@ -541,10 +555,14 @@ Server::~Server() {
     }
     parsers.clear();
 
-    // Fermer le socket serveur
-    if (server_fd >= 0) {
-        SocketManager::close_socket(server_fd);
+    // Fermer tous les sockets serveurs
+    for (size_t i = 0; i < server_fds.size(); i++) {
+        if (server_fds[i] >= 0) {
+            SocketManager::close_socket(server_fds[i]);
+        }
     }
+    server_fds.clear();
+    fd_to_server.clear();
 
     std::cout << GREEN << "✓ " << RES << "Server stopped" << std::endl;
 }
@@ -552,12 +570,13 @@ Server::~Server() {
 void Server::run() {
     running = true;
 
-    std::cout << std::endl
-    	<< "Multi-client server running on port "
-		<< GREEN << port << RES << std::endl
-    	<< "Test with: telnet localhost "
-		<< GREEN << port << RES << std::endl
-    	<< "(Ctrl+C to stop)\n" << std::endl;
+    std::cout << std::endl << "Multi-client server running on ports: ";
+    for (size_t i = 0; i < server_fds.size(); i++) {
+        const ServerBlock* sb = fd_to_server[server_fds[i]];
+        std::cout << GREEN << sb->port << RES;
+        if (i < server_fds.size() - 1) std::cout << ", ";
+    }
+    std::cout << std::endl << "(Ctrl+C to stop)\n" << std::endl;
 
     while (running) {
         // Attendre des evenements sur les fds surveilles
@@ -573,9 +592,10 @@ void Server::run() {
         for (size_t i = 0; i < ready_fds.size(); i++) {
             int fd = ready_fds[i];
 
-            if (fd == server_fd) {
-                // Nouvelle connexion entrante
-                acceptNewClient();
+            // Verifier si c'est un server socket (nouvelle connexion)
+            if (isServerSocket(fd)) {
+                // Nouvelle connexion entrante sur ce server socket
+                acceptNewClient(fd);
             }
             else {
                 // Evenement sur un client existant
@@ -606,7 +626,11 @@ void Server::stop() {
     running = false;
 }
 
-void Server::acceptNewClient() {
+bool Server::isServerSocket(int fd) const {
+    return fd_to_server.find(fd) != fd_to_server.end();
+}
+
+void Server::acceptNewClient(int server_fd) {
     try {
         int client_fd = socket_manager.accept_connection(server_fd);
         Connection* conn = new Connection(client_fd);
@@ -615,9 +639,11 @@ void Server::acceptNewClient() {
         // Surveiller le client pour les donnees entrantes
         multiplexer.add_fd(client_fd, POLLIN);
 
-        std::cout << GREEN << "✓ " << RES << "New client connected: "
-			<< "fd=" << client_fd << " -> (total clients: " << clients.size() << ")"
-			<< std::endl;
+        // Afficher le port du serveur qui a accepté cette connexion
+        const ServerBlock* sb = fd_to_server.find(server_fd)->second;
+        std::cout << GREEN << "✓ " << RES << "New client connected on port " << sb->port << ": "
+                  << "fd=" << client_fd << " -> (total clients: " << clients.size() << ")"
+                  << std::endl;
     }
     catch (const SocketManager::SocketException& e) {
         std::cerr << "✗ Error accepting client: " << e.what() << std::endl;
