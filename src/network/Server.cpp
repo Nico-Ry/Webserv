@@ -1,7 +1,7 @@
 #include "../../include/network/Server.hpp"
 #include "../../include/http/Status.hpp"
 #include "../../include/router/Router.hpp"
-#include "../../include/cgi/CgiHandler.hpp"
+// #include "../../include/cgi/CgiHandler.hpp"  // CGI not ready for push
 #include "colours.hpp"
 #include "utils.hpp"
 #include <iostream>
@@ -845,6 +845,8 @@ HttpResponse Server::handleHttpRequest(const HttpRequest& req) {
     // ========================================================================
     // CGI HANDLER - TEMPORAIRE (sera dans Router quand il sera fini)
     // ========================================================================
+    // COMMENTED OUT - CGI not ready for push
+    /*
     // DEBUG: Print req.path to see what we're comparing
     std::cout << "[SERVER DEBUG] req.path = \"" << req.path << "\"" << std::endl;
     std::cout << "[SERVER DEBUG] req.rawTarget = \"" << req.rawTarget << "\"" << std::endl;
@@ -861,6 +863,7 @@ HttpResponse Server::handleHttpRequest(const HttpRequest& req) {
     }
 
     std::cout << "[SERVER DEBUG] Not a CGI path, serving HTML..." << std::endl;
+    */
 
     // ========================================================================
     // HTML PAGES - TEMPORAIRE (sera dans FileHandler quand il sera fini)
