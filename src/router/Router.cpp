@@ -5,7 +5,7 @@
 #include <sstream>
 #include <stdlib.h>
 
-Router::Router() {}
+Router::Router(const Config& cfg) : cfg(cfg) {}
 
 Router::~Router() {}
 
@@ -15,9 +15,8 @@ bool	Router::isValidRequest(const HttpRequest& req, const int& clientPort) {
 
 	std::string	uri = req.rawTarget;
 
-	if (!validPort(clientPort))
-		return false;
-
+	// if (!validPort(clientPort))
+	// 	return false;
 
 
 	std::cout << BOLD_YELLOW << "~ isValidRequest ~" << RES << std::endl;

@@ -17,8 +17,8 @@ Server::ServerException::ServerException(const std::string& message)
     : std::runtime_error(message) {
 }
 
-Server::Server(int port, int backlog)
-    : socket_manager(), multiplexer(), clients(), server_fd(-1), port(port), running(false) {
+Server::Server(int port, const Config& cfg, int backlog)
+    : cfg(cfg), socket_manager(), multiplexer(), clients(), server_fd(-1), port(port), running(false) {
 
     std::cout << BOLD_CYAN << "=== Initializing Server on port ["
 		<< port << "] ===" << RES << std::endl;
@@ -259,7 +259,7 @@ void Server::processRequest(Connection* conn, int fd) {
 			printHttpRequest(req);
 
             // Generer la reponse HTTP
-			Router	requestHandler;
+			Router	requestHandler(cfg);
             HttpResponse resp = requestHandler.buildResponse(req, this->port);
 
             // Determiner si on doit fermer la connexion (keep-alive)

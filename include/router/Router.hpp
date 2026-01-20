@@ -14,7 +14,7 @@ struct HttpResponse;
 
 class Router {
 	public:
-		Router();
+		Router(const Config& cfg);
 		~Router();
 
 		const Config&	cfg;
@@ -22,7 +22,7 @@ class Router {
 		HttpResponse buildResponse(const HttpRequest& req, const int& clientPort);
 
 		bool	isValidRequest(const HttpRequest& req, const int& clientPort);
-		bool	validPort(const int& clientPort);
+		// bool	validPort(const int& clientPort);
 };
 
 #endif

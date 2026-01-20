@@ -8,6 +8,7 @@
 #include "../http/ResponseBuilder.hpp"
 #include "../http/Response.hpp"
 #include "../router/Router.hpp"
+#include "../configParser/Config.hpp"
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -21,8 +22,10 @@ public:
         explicit ServerException(const std::string& message);
     };
 
+	const Config&	cfg;
+
     // Constructeur: initialise le serveur sur un port donne
-    explicit Server(int port, int backlog = 128);
+    explicit Server(int port, const Config& cfg, int backlog = 128);
 
     // Destructeur: nettoie toutes les ressources
     ~Server();
