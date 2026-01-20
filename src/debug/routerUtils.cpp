@@ -8,3 +8,13 @@ void	printParentPaths(const DescendingStrSet& paths) {
 		std::cout << *it << std::endl;
 	}
 }
+
+
+void	printClientPort(const Router& r) {
+	std::cout << CYAN << "[PORT]\n" << std::setw(8) << RES << r.clientPort << std::endl;
+}
+
+
+void	printRouterUri(const HttpRequest& r) {
+	std::cout << CYAN << "[URI]\n" << std::setw(8) << RES << r.rawTarget << std::endl;
+}

@@ -52,7 +52,7 @@ DescendingStrSet	Router::genParentPaths(const std::string& uri) {
 	}
 
 	parentPaths.insert(uri);//				insert full URI
-	printParentPaths(parentPaths);
+	// printParentPaths(parentPaths);//		Uncomment to print all parent paths
 	return parentPaths;
 }
 
@@ -144,12 +144,11 @@ RouteResult	Router::routing(const HttpRequest& req) {
 	if (exceedsMaxSize(req.contentLength))
 		return RouteResult(413, "Payload Too Large");
 
-	
-	std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
-	std::cout << CYAN << "[PORT]\n" << std::setw(8) << RES << clientPort << std::endl;
-	std::cout << CYAN << "[URI]\n" << std::setw(8) << RES << uri << std::endl;
 
-	RouteResult	success(200);
+	// std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
+	// printClientPort(*this);
+	// printRouterUri(req);
+	RouteResult	success(200, "OK");
 	return success;
 }
 
@@ -161,7 +160,7 @@ HttpResponse Router::buildResponse(const HttpRequest& req) {
 
 
 	if (result.isSuccess()) {
-		std::cout << BOLD_GREEN << "VALID HTTP REQUEST!" << RES << std::endl;
+		std::cout << BOLD_GREEN << result.statusCode << " " << RES << result.errorMsg << std::endl;
 		// Build valid response here!
 	}
 	else {
