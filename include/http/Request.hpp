@@ -12,6 +12,8 @@ enum HttpMethod
 	METHOD_UNKNOWN
 };
 
+typedef std::map<std::string, std::string> HeaderMap;
+
 struct HttpRequest
 {
 	HttpMethod method;
