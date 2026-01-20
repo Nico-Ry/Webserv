@@ -7,10 +7,12 @@
 #include "../http/RequestParser.hpp"
 #include "../http/ResponseBuilder.hpp"
 #include "../http/Response.hpp"
+#include "../router/Router.hpp"
 #include <map>
 #include <stdexcept>
 #include <string>
 
+class Router;
 
 class Server {
 public:
@@ -43,7 +45,7 @@ private:
 
     // Traite une requete HTTP complete et retourne une reponse
     // TODO: Plus tard, cette fonction appellera le Router
-    HttpResponse handleHttpRequest(const HttpRequest& req);
+    // HttpResponse handleHttpRequest(const HttpRequest& req);
 
     // Membres
     SocketManager socket_manager;

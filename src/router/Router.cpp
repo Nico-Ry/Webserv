@@ -11,6 +11,6 @@ HttpResponse Router::handleHttpRequest(const HttpRequest& req) {
 	HttpResponse	resp;
 
 	// Build response logic from here
-
+	std::cout << "[DEBUG] handleHttpRequest:" << req.body << std::endl;
 	return resp;
 }

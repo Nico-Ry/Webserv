@@ -57,7 +57,7 @@ SRC_DEBUG			= src/debug/configParserUtils.cpp \
 					  src/debug/httpParserUtils.cpp
 
 
-SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_DEBUG)
+SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_ROUTER) $(SRC_DEBUG)
 
 # Main source
 MAIN_SRC = src/main.cpp
