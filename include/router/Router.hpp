@@ -21,19 +21,6 @@ struct HttpResponse;
 typedef std::set<std::string, std::greater<std::string> > DescendingStrSet;
 
 
-/**
- * @brief Stores resolved context for a given URI.
- * (Location rules take priority over those of Server)
- */
-struct Context {
-	std::vector<std::string>	methods;
-	std::vector<std::string>	index;
-	std::string					root;
-	std::map<int, StringVec>	errorPages;
-	bool						autoIndex;
-	size_t						maxSize;
-};
-
 
 /**
  * @brief Keeps track of status code and potential error message
@@ -63,10 +50,9 @@ class Router {
 
 	const Config&		cfg;//			Config as built by configParser
 	const int&			clientPort;//	Port attached to HTTP request
-	Context				rules;//		rules for the given server and location
 
 	const ServerBlock	*server;//		Pointer to ServerBlock matching HTTP request
-	const LocationBlock	*location;//	Pointer to LocationBlock matching HTTP request
+	const LocationBlock	*rules;//		Pointer to LocationBlock matching HTTP request
 	LocationBlock		defaultLoc;//	Only used if "/" is not configured in Config
 
 //---------------------------------------------------------------------------//

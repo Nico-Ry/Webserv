@@ -78,18 +78,18 @@ void	Router::getLocation(const std::string& uri) {
 			if (server->locations[i].uri == "/")
 				fallback = &server->locations[i];
 			if (server->locations[i].uri == longestUri) {
-				this->location = &server->locations[i];
+				this->rules = &server->locations[i];
 				return;
 			}
 		}
 	}
 // No matches found, fallback to '/', validate existence of file later
 	if (fallback)
-		this->location = fallback;
+		this->rules = fallback;
 // No "/" Location Block, build default one from ServerBlock
 	else {
 		this->defaultLoc = LocationBlock(*server);
-		this->location = &defaultLoc;
+		this->rules = &defaultLoc;
 	}
 }
 
@@ -113,8 +113,8 @@ bool	Router::methodAllowed(const HttpMethod& method) {
 			break;
 	}
 
-	for (size_t i=0; i < location->methods.size(); ++i) {
-		if (target == location->methods[i])
+	for (size_t i=0; i < rules->methods.size(); ++i) {
+		if (target == rules->methods[i])
 			return true;
 	}
 	return false;
@@ -122,7 +122,7 @@ bool	Router::methodAllowed(const HttpMethod& method) {
 
 
 bool	Router::exceedsMaxSize(const size_t& len) {
-	if (len >= location->clientMaxBodySize)
+	if (len >= rules->clientMaxBodySize)
 		return true;
 	return false;
 }
@@ -143,6 +143,8 @@ RouteResult	Router::routing(const HttpRequest& req) {
 		return RouteResult(405, "Method Not Allowed");
 	if (exceedsMaxSize(req.contentLength))
 		return RouteResult(413, "Payload Too Large");
+
+	
 	std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
 	std::cout << CYAN << "[PORT]\n" << std::setw(8) << RES << clientPort << std::endl;
 	std::cout << CYAN << "[URI]\n" << std::setw(8) << RES << uri << std::endl;
