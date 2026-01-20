@@ -6,6 +6,8 @@
 #include "../configParser/Config.hpp"
 #include "../configParser/LocationBlock.hpp"
 #include "../configParser/ServerBlock.hpp"
+#include <set>
+#include <vector>
 #include <iostream>
 #include <iomanip>
 #include "colours.hpp"
@@ -13,6 +15,11 @@
 class Config;
 struct HttpRequest;
 struct HttpResponse;
+
+
+// Set of strings ordered in desccending order (longest to shortest path)
+typedef std::set<std::string, std::greater<std::string> > DescendingStrSet;
+
 
 /**
  * @brief Stores resolved context for a given URI.
@@ -50,18 +57,22 @@ class Router {
 		Router(const Config& cfg, const int& port);
 		~Router();
 
-		const Config&	cfg;
+	//				MEMBERS
+
+		const Config&	cfg;//			Config as built by configParser
 		const int&		clientPort;//	Port attached to HTTP request
 		Context			rules;//		rules for the given server and location
 
 		ServerBlock		server;//		copy of ServerBlock matching HTTP request
-		// LocationBlock	location;//		copy of LocationBlock matching HTTP request
+		LocationBlock	location;//		copy of LocationBlock matching HTTP request
 
-		HttpResponse	buildResponse(const HttpRequest& req);
+	//				FUNCTIONS
 
-		RouteResult		routing(const HttpRequest& req);
-		bool			getServer();
-		bool			getLocation(const std::string& uri);
+		HttpResponse		buildResponse(const HttpRequest& req);
+		RouteResult			routing(const HttpRequest& req);
+		bool				getServer();
+		void				getLocation(const std::string& uri);
+		DescendingStrSet	genParentPaths(const std::string& uri);
 };
 
 #endif

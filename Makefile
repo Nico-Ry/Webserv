@@ -52,9 +52,12 @@ SRC_ROUTER			= $(addprefix $(ROUTER_DIR), \
 						Router.cpp \
 						)
 
-
-SRC_DEBUG			= src/debug/configParserUtils.cpp \
-					  src/debug/httpParserUtils.cpp
+DEBUG_DIR			= src/debug/
+SRC_DEBUG			= $(addprefix $(DEBUG_DIR), \
+						configParserUtils.cpp \
+						httpParserUtils.cpp \
+						routerUtils.cpp \
+						)
 
 
 SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_ROUTER) $(SRC_DEBUG)

@@ -32,6 +32,7 @@ class ServerBlock;
  */
 class LocationBlock {
 	public:
+		LocationBlock();
 		LocationBlock(const ServerBlock& s);
 		~LocationBlock();
 

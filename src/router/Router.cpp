@@ -2,6 +2,7 @@
 #include "http/RequestParser.hpp"
 #include "http/Response.hpp"
 #include "router/Router.hpp"
+#include "utils.hpp"
 #include <sstream>
 #include <stdlib.h>
 
@@ -11,7 +12,7 @@ Router::~Router() {}
 
 /**
  * @brief Finds the `ServerBlock` that matches the client connection port.
- * If found, stores it in `this->server`
+ * If found, makes a copy of it in `this->server`
  */
 bool	Router::getServer() {
 	for (size_t i=0; i < cfg.servers.size(); ++i) {
@@ -23,10 +24,71 @@ bool	Router::getServer() {
 	return false;
 }
 
-bool	Router::getLocation(const std::string& uri) {
-	// build thing that removes everything from right to left up until the next '/'
-	// check all server.locations[i] for matching uri
-	//if no matching, trim right side and try again until no more to remove.
+
+/**
+ * @brief Genrates a set filled with all parent paths in descending order (longest to shortest).
+ * @note Such that: `/www/images/data` would produce: `/www/images/data`, `/www/images`, `/www` and `/`
+ */
+DescendingStrSet	Router::genParentPaths(const std::string& uri) {
+	DescendingStrSet	parentPaths;
+
+// start by inserting root as fallback
+	parentPaths.insert("/");
+
+// defensive coding in case empty URI
+	if (uri.empty())
+		return parentPaths;
+
+// Read URI char by char inserting everything that's been read
+// into buf. Once "/" is encountered insert buf in parentPaths.
+
+	std::string	buf;
+	for (size_t i=0; i < uri.length(); ++i) {
+		char c = uri[i];
+
+		if (c == '/' && buf.length() > 1)// insert if longer than "/"
+				parentPaths.insert(buf);
+		buf += c;
+	}
+
+	parentPaths.insert(uri);//				insert full URI
+	printParentPaths(parentPaths);
+	return parentPaths;
+}
+
+/**
+ * @brief finds the longest matching Location Block for the given URI.
+ * @attention Just because no location blocks match the URI does not mean the
+ * file/directory doesn't exist. In case no matches are found, we fallback to '/'.
+ * Actual validation of existence will be performed later.
+ */
+void	Router::getLocation(const std::string& uri) {
+
+	DescendingStrSet	paths = genParentPaths(uri);
+
+	size_t fallback = 0;
+// iterate through parent paths from longest to shortest
+	for (DescendingStrSet::iterator it=paths.begin(); it != paths.end(); ++it)
+	{
+		std::string	longestUri = *it;
+
+		//check if longest URI matches any location block in server
+		for (size_t i=0; i < server.locations.size(); ++i) {
+			//store index of fallback LocationBlock
+			if (server.locations[i].uri == "/")
+				fallback = i;
+			if (server.locations[i].uri == longestUri) {
+				this->location = server.locations[i];
+				return;
+			}
+		}
+	}
+// No matches found, fallback to '/', validate existence of file later
+	if (fallback)
+		this->location = server.locations[fallback];
+// No "/" Location Block, build default one from ServerBlock
+	else
+		this->location = LocationBlock(server);
 }
 
 
@@ -40,8 +102,9 @@ RouteResult	Router::routing(const HttpRequest& req) {
 
 	if (!getServer())
 		return RouteResult(500, "No Server configured for this port");
-	if (!getLocation(req.rawTarget))
-		return RouteResult(404, "Not Found");
+	getLocation(uri);
+	
+
 
 	std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
 	std::cout << CYAN << "[PORT]\n" << std::setw(8) << RES << clientPort << std::endl;

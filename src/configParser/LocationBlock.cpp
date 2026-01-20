@@ -17,6 +17,14 @@
  * @attention Note that some element such as `errorPages` are purposely
  * omitted from being copied over to the LocationBlock
  */
+LocationBlock::LocationBlock() {}
+
+
+/**
+ * @brief Builds a LocationBlock, copying over root, index, autoIndex and clientMaxBodySize
+ * from the ServerBlock provided
+ * @note Sets `hasRediect` to false and `redirectCode` to 0
+ */
 LocationBlock::LocationBlock(const ServerBlock& s) :
 	root(s.root),
 	index(s.index),
