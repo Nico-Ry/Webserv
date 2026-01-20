@@ -102,9 +102,7 @@ int main(int argc, char** argv) {
     } catch (const std::exception& e) {
         std::cerr << "✗ Unexpected Error: " << e.what() << std::endl;
         return 1;
-    } catch (std::runtime_error& e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
+    }
 
     return 0;
 }

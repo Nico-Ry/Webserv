@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Not Found</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: var(--spacing-xl) 0;
+        }
+        .error-code {
+            font-size: 120px;
+            font-weight: 700;
+            color: var(--color-primary);
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/" class="navbar-brand">Webserv</a>
+            <ul class="navbar-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/test">Test</a></li>
+                <li><a href="/upload">Upload</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="error-container">
+            <div class="error-code">404</div>
+            <h1 style="font-size: 48px; margin: var(--spacing-md) 0;">Page Not Found</h1>
+            <p style="color: #666; font-size: 18px; margin-bottom: var(--spacing-lg);">The requested page does not exist.</p>
+            <a href="/" class="btn">Go to Home</a>
+        </div>
+    </div>
+</body>
+</html>

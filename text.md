@@ -1,205 +1,429 @@
- 📊 INVENTAIRE COMPLET - Ce que vous avez VS ce qui manque
+📊 INVENTAIRE COMPLET - Ce que vous avez VS ce qui manque
 
-  ✅ CE QUI EXISTE DÉJÀ (COMPLET)
+## ✅ CE QUI EXISTE DÉJÀ (COMPLET)
 
-  1. Module Network (Votre travail - branche network)
+### 1. Module Network ✅ COMPLET
+**Localisation:** `include/network/` + `src/network/`
 
-  include/network/
-  ├── SocketManager.hpp      ✅ Création socket, bind, listen, accept
-  ├── IOMultiplexer.hpp      ✅ poll() pour multiplexage I/O
-  ├── Connection.hpp         ✅ Gestion connexions (recv/send non-bloquant)
-  └── Server.hpp             ✅ Boucle événementielle, gestion clients
+```
+include/network/
+├── SocketManager.hpp      ✅ Création socket, bind, listen, accept
+├── IOMultiplexer.hpp      ✅ poll() pour multiplexage I/O
+├── Connection.hpp         ✅ Gestion connexions (recv/send non-bloquant)
+└── Server.hpp             ✅ Boucle événementielle, gestion clients
 
-  src/network/
-  ├── SocketManager.cpp      ✅ Implémenté
-  ├── IOMultiplexer.cpp      ✅ Implémenté
-  ├── Connection.cpp         ✅ Implémenté
-  └── Server.cpp             ✅ Implémenté (mais processRequest() fait juste echo)
+src/network/
+├── SocketManager.cpp      ✅ Implémenté
+├── IOMultiplexer.cpp      ✅ Implémenté
+├── Connection.cpp         ✅ Implémenté
+└── Server.cpp             ✅ Implémenté + intégré avec HTTP Parser
+```
 
-  2. Module HTTP Parser (Travail de Nico - branche nico)
+### 2. Module HTTP Parser ✅ COMPLET
+**Localisation:** `include/http/` + `src/http/`
 
-  include/http/
-  ├── Request.hpp            ✅ Structure HttpRequest (méthode, headers, body)
-  ├── RequestParser.hpp      ✅ Parser HTTP avec state machine
-  ├── Response.hpp           ✅ Structure HttpResponse
-  ├── ResponseBuilder.hpp    ✅ Construit réponse HTTP formatée
-  ├── Mime.hpp              ✅ Détection MIME types (.html, .css, .jpg, etc.)
-  └── Status.hpp            ✅ Codes HTTP (200, 404, 500, etc.)
+```
+include/http/
+├── Request.hpp            ✅ Structure HttpRequest (méthode, headers, body)
+├── RequestParser.hpp      ✅ Parser HTTP avec state machine
+├── Response.hpp           ✅ Structure HttpResponse
+├── ResponseBuilder.hpp    ✅ Construit réponse HTTP formatée
+├── Mime.hpp              ✅ Détection MIME types (.html, .css, .jpg, etc.)
+└── Status.hpp            ✅ Codes HTTP (200, 404, 500, etc.)
 
-  src/http/
-  ├── RequestParser.Core1.cpp        ✅ feed(), reset(), isDone(), hasError()
-  ├── RequestParser.StartLine3.cpp   ✅ Parse "GET /path HTTP/1.1"
-  ├── RequestParser.Headers4.cpp     ✅ Parse headers + validation
-  ├── RequestParser.Body5.cpp        ✅ Parse body (Content-Length + chunked)
-  ├── RequestParser.Utils2.cpp       ✅ Utilitaires (trim, toLower, readLine)
-  ├── RequestParser.Connection6.cpp  ✅ Gestion keep-alive
-  ├── ResponseBuilder7.cpp           ✅ Construit réponse HTTP complète
-  └── Mime8.cpp                      ✅ Détection MIME types
+src/http/
+├── RequestParser.Core1.cpp        ✅ feed(), reset(), isDone(), hasError()
+├── RequestParser.StartLine3.cpp   ✅ Parse "GET /path HTTP/1.1"
+├── RequestParser.Headers4.cpp     ✅ Parse headers + validation
+├── RequestParser.Body5.cpp        ✅ Parse body (Content-Length + chunked)
+├── RequestParser.Utils2.cpp       ✅ Utilitaires (trim, toLower, readLine)
+├── RequestParser.Connection6.cpp  ✅ Gestion keep-alive
+├── ResponseBuilder7.cpp           ✅ Construit réponse HTTP complète
+└── Mime8.cpp                      ✅ Détection MIME types
+```
 
-  Fonctionnalités HTTP Parser (TOUTES IMPLÉMENTÉES) :
-  - ✅ Parse start line (méthode, URI, version HTTP)
-  - ✅ Validation HTTP/1.0 et HTTP/1.1
-  - ✅ Parse headers (case-insensitive, normalization)
-  - ✅ Validation Host header (requis en HTTP/1.1)
-  - ✅ Parse body avec Content-Length
-  - ✅ Parse body avec Transfer-Encoding: chunked
-  - ✅ Détection des erreurs (400, 501, etc.)
-  - ✅ Support keep-alive (connexions persistantes)
-  - ✅ Protection contre requêtes trop longues
-  - ✅ Parsing incrémental (données reçues en morceaux)
-  - ✅ Construction réponse HTTP complète
-  - ✅ Headers automatiques (Date, Server, Content-Length, Connection)
-  - ✅ Détection MIME types
+**Fonctionnalités HTTP Parser (TOUTES IMPLÉMENTÉES):**
+- ✅ Parse start line (méthode, URI, version HTTP)
+- ✅ Validation HTTP/1.0 et HTTP/1.1
+- ✅ Parse headers (case-insensitive, normalization)
+- ✅ Validation Host header (requis en HTTP/1.1)
+- ✅ Parse body avec Content-Length
+- ✅ Parse body avec Transfer-Encoding: chunked
+- ✅ Détection des erreurs (400, 501, etc.)
+- ✅ Support keep-alive (connexions persistantes)
+- ✅ Protection contre requêtes trop longues
+- ✅ Parsing incrémental (données reçues en morceaux)
+- ✅ Construction réponse HTTP complète
+- ✅ Headers automatiques (Date, Server, Content-Length, Connection)
+- ✅ Détection MIME types
 
-  ---
-  ❌ CE QUI MANQUE (À IMPLÉMENTER)
+### 3. Intégration Network ↔ HTTP ✅ COMPLET
 
-  1. INTÉGRATION Network ↔ HTTP 🔴 CRITIQUE
+**Status:** INTÉGRÉ dans Server.cpp!
 
-  Problème : Les deux modules ne sont pas connectés !
-  // Server.cpp:183 - Actuellement ça fait juste echo !
-  void Server::processRequest(Connection* conn) {
-      conn->send_buffer = conn->recv_buffer;  // ❌ Simple echo
-      conn->recv_buffer.clear();
-  }
+```cpp
+// Server.cpp:708 - processRequest() utilise HttpRequestParser
+void Server::processRequest(Connection* conn, int fd) {
+    // Crée un parser par connexion (keep-alive)
+    if (parsers.find(fd) == parsers.end()) {
+        parsers[fd] = new HttpRequestParser();
+    }
 
-  À faire :
-  - Connecter Server::processRequest() avec HttpRequestParser
-  - Utiliser ResponseBuilder pour générer réponses HTTP
-  - Gérer les parsers par connexion (keep-alive)
+    // Parse les données reçues
+    parser->feed(conn->recv_buffer);
 
-  2. Config Parser ❌ PAS TROUVÉ
+    // Si requête complète, générer réponse
+    if (parser->isDone()) {
+        HttpResponse resp = Router::handleHttpRequest(req);
+        conn->send_buffer = ResponseBuilder::build(resp, closeConnection);
+    }
+}
+```
 
-  Le sujet demande un fichier de configuration type nginx :
-  server {
-      listen 8080;
-      server_name localhost;
-      root /var/www/html;
-      index index.html;
+- ✅ Parser par connexion (keep-alive)
+- ✅ Parsing incrémental
+- ✅ Gestion des erreurs HTTP
+- ✅ Construction réponse HTTP
+- ✅ Intégration complète Network + HTTP
 
-      location / {
-          allowed_methods GET POST DELETE;
-      }
+### 4. Config Parser ✅ COMPLET
+**Localisation:** `include/configParser/` + `src/configParser/`
 
-      location /uploads {
-          client_max_body_size 10M;
-          upload_path /tmp/uploads;
-      }
+```
+include/configParser/
+├── Config.hpp             ✅ Container principal (vector<ServerBlock>)
+├── ConfigParser.hpp       ✅ Parser de tokens
+├── ServerBlock.hpp        ✅ Config d'un serveur (port, root, locations)
+├── LocationBlock.hpp      ✅ Config d'une location (uri, methods, root)
+└── Tokeniser.hpp          ✅ Tokenisation du fichier config
 
-      location /cgi-bin {
-          cgi_extension .py .php;
-          cgi_path /usr/bin/python3;
-      }
-  }
+src/configParser/
+├── Config.cpp             ✅ Implémenté
+├── ConfigParser.cpp       ✅ Implémenté
+├── ServerBlock.cpp        ✅ Implémenté
+├── LocationBlock.cpp      ✅ Implémenté
+├── Tokeniser.cpp          ✅ Implémenté
+├── parseServerBlock.cpp   ✅ Parse directives server{}
+└── parseLocationBlock.cpp ✅ Parse directives location{}
+```
 
-  À implémenter :
-  - Parser le fichier config
-  - Stocker la configuration (ports, routes, méthodes, limites)
-  - Permettre plusieurs serveurs virtuels (multi-port)
+**Fonctionnalités Config Parser:**
+- ✅ Parse fichier config style nginx
+- ✅ Support multi-serveurs (plusieurs server{})
+- ✅ Support locations imbriquées
+- ✅ Validation: port requis, root requis
+- ✅ Détection ports dupliqués
+- ✅ Directives: listen, root, index, autoIndex, methods, errorPages, clientMaxBodySize
+- ✅ Héritage location → server
 
-  3. Router ❌ PAS TROUVÉ
+**Fichiers config existants:**
+- ✅ `config/default.conf` - Config de base
+- ✅ `config/test.conf` - Config de test
+- ✅ `config/webserv.conf` - Config pointant vers www/
+- ✅ `config/error/*.conf` - Configs invalides pour tests
 
-  Système pour router les requêtes vers les bons handlers.
+### 5. CGI Handler ✅ COMPLET (NOUVEAU!)
+**Localisation:** `include/cgi/` + `src/cgi/` + `cgi-bin/`
 
-  À implémenter :
-  - Matching d'URL (/, /api/*, /uploads, etc.)
-  - Vérification des méthodes autorisées (GET, POST, DELETE)
-  - Dispatch vers le bon handler (file, CGI, upload, error)
+```
+include/cgi/
+└── CgiHandler.hpp         ✅ Interface CGI Handler (750+ lignes)
 
-  4. File Handler ❌ PAS TROUVÉ
+src/cgi/
+└── CgiHandler.cpp         ✅ Implémentation complète
 
-  Servir des fichiers statiques (HTML, CSS, JS, images).
+cgi-bin/
+├── hello.py               ✅ Script de test: page simple
+├── env.py                 ✅ Script de test: affiche variables CGI
+├── form.py                ✅ Script de test: formulaire GET/POST
+├── time.py                ✅ Script de test: affiche l'heure
+└── README.md              ✅ Documentation scripts CGI
+```
 
-  À implémenter :
-  - Ouvrir et lire fichiers depuis filesystem
-  - Gérer répertoires (index.html auto)
-  - Listing de répertoire (autoindex on/off)
-  - Vérifier permissions (403 Forbidden)
-  - Gérer fichiers inexistants (404 Not Found)
-  - Définir Content-Type avec MIME types
+**Fonctionnalités CGI Handler:**
+- ✅ Fork + exec pour exécution scripts
+- ✅ Pipes stdin/stdout
+- ✅ Variables d'environnement CGI (REQUEST_METHOD, PATH_INFO, QUERY_STRING, HTTP_*, etc.)
+- ✅ Support POST (body passé en stdin)
+- ✅ Parsing sortie CGI (headers + body)
+- ✅ Timeout configurable (défaut: 30s)
+- ✅ Gestion erreurs (404, 500, 502, 504)
+- ✅ Auto-détection interpréteur (.py, .php, .pl, .sh, .rb)
+- ✅ Vérification existence + permissions
+- ✅ Pages d'erreur HTML détaillées
+- ✅ 4 scripts de test fonctionnels
 
-  5. CGI Handler ❌ PAS TROUVÉ
+**Documentation CGI:**
+- ✅ `CGI_README.md` - Guide complet CGI
+- ✅ `CGI_INTEGRATION.md` - Guide d'intégration
+- ✅ `cgi-bin/README.md` - Créer ses propres scripts
 
-  Exécuter des scripts CGI (Python, PHP, etc.).
+### 6. HTML/CSS Assets ✅ CRÉÉ
+**Localisation:** `www/`
 
-  À implémenter :
-  - Fork + exec pour lancer script
-  - Passer variables d'environnement CGI (PATH_INFO, QUERY_STRING, etc.)
-  - Passer le body en stdin (pour POST)
-  - Capturer stdout du script
-  - Timeout si script trop long
-  - Gérer erreurs (500, 502, 504)
+```
+www/
+├── css/
+│   └── style.css          ✅ CSS commun (navbar, buttons, containers)
+├── pages/
+│   ├── index.html         ✅ Page d'accueil
+│   ├── test.html          ✅ Page de test HTTP methods
+│   ├── upload.html        ✅ Page d'upload
+│   └── 404.html           ✅ Page d'erreur 404
+└── README.md              ✅ Documentation structure www/
+```
 
-  6. Error Handler ❌ PAS TROUVÉ
+**Note:** Les fichiers HTML existent mais ne sont **pas encore servis** par le serveur. Server.cpp utilise encore du HTML hardcodé. Nécessite FileHandler pour servir ces fichiers.
 
-  Générer pages d'erreur personnalisées.
+**Documentation HTML:**
+- ✅ `MIGRATION_HTML.md` - Guide migration HTML hardcodé → fichiers
 
-  À implémenter :
-  - Pages d'erreur par défaut (404, 500, etc.)
-  - Pages d'erreur personnalisées (depuis config)
-  - Génération automatique de HTML d'erreur
+### 7. Makefile ✅ COMPLET
 
-  7. Upload Handler ❌ PAS TROUVÉ
+```makefile
+SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER)
+       $(SRC_ROUTER) $(SRC_CGI) $(SRC_DEBUG)
+```
 
-  Gérer l'upload de fichiers (POST avec body).
+- ✅ Compile tous les modules
+- ✅ C++98 compliant
+- ✅ Flags: -Wall -Wextra -Werror
+- ✅ Structure obj/ organisée
+- ✅ Colors + emojis
 
-  À implémenter :
-  - Recevoir body multipart/form-data
-  - Parser boundaries multipart
-  - Sauvegarder fichiers sur disque
-  - Limite de taille (client_max_body_size)
-  - Retourner 201 Created ou 413 Payload Too Large
+---
 
-  8. Makefile complet ❌ INCOMPLET
+## ⚠️ CE QUI MANQUE (À IMPLÉMENTER)
 
-  Actuellement il ne compile que la partie network.
+### 1. Router 🟡 STUB SEULEMENT
+**Localisation:** `include/router/Router.hpp` + `src/router/Router.cpp`
 
-  À fixer :
-  INCLUDES = -I./include  # Inclure tous les headers
-  SRC_NETWORK = $(wildcard src/network/*.cpp)
-  SRC_HTTP = $(wildcard src/http/*.cpp)
-  SRC_CONFIG = $(wildcard src/config/*.cpp)
-  SRC_CORE = $(wildcard src/core/*.cpp)
-  SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG) $(SRC_CORE)
+**Status actuel:**
+```cpp
+HttpResponse Router::handleHttpRequest(const HttpRequest& req) {
+    (void)req;  // Unused - stub
+    HttpResponse resp(200, "OK");
+    resp.body = "<h1>Router stub</h1>";
+    return resp;
+}
+```
 
-  ---
-  📋 RÉCAPITULATIF
+**À implémenter:**
+- ❌ Matching d'URL (/, /api/*, /uploads, /cgi-bin, etc.)
+- ❌ Vérification des méthodes autorisées (GET, POST, DELETE)
+- ❌ Dispatch vers handlers (file, CGI, upload, error)
+- ❌ Appliquer config (LocationBlock + ServerBlock)
+- ❌ Gestion priorité routes (plus spécifique = prioritaire)
 
-  | Module                            | Status      | Pourcentage |
-  |-----------------------------------|-------------|-------------|
-  | Network (sockets, poll, I/O)      | ✅ Complet  | 100%        |
-  | HTTP Parser (parsing, validation) | ✅ Complet  | 100%        |
-  | HTTP Response Builder             | ✅ Complet  | 100%        |
-  | MIME Type detection               | ✅ Complet  | 100%        |
-  | Intégration Network↔HTTP          | ❌ Manquant | 0%          |
-  | Config Parser                     | ❌ Manquant | 0%          |
-  | Router                            | ❌ Manquant | 0%          |
-  | File Handler                      | ❌ Manquant | 0%          |
-  | CGI Handler                       | ❌ Manquant | 0%          |
-  | Error Handler                     | ❌ Manquant | 0%          |
-  | Upload Handler                    | ❌ Manquant | 0%          |
+**Exemple architecture finale:**
+```cpp
+HttpResponse Router::handleHttpRequest(const HttpRequest& req) {
+    LocationBlock* location = matchLocation(req.path);
 
-  Progression globale : ~40% (4/11 modules)
+    if (!isMethodAllowed(req.method, location))
+        return ErrorHandler::methodNotAllowed(405);
 
-  ---
-  🎯 BONNE NOUVELLE
+    if (CgiHandler::isCgiScript(req.path))
+        return CgiHandler::execute(req, ...);
 
-  Votre collègue Nico a DÉJÀ FAIT toute la partie :
-  - ✅ Parse format HTTP
-  - ✅ Validate HTTP
-  - ✅ Build request structure
-  - ✅ Detect request type (méthode GET/POST/DELETE)
-  - ✅ Detect MIME types
+    if (req.method == GET)
+        return FileHandler::serveFile(req.path, location);
 
-  Donc le parser/validation HTTP est COMPLET ! Il ne manque "que" :
-  1. L'intégration avec votre code network
-  2. Les handlers pour traiter les requêtes (file, CGI, upload)
-  3. Le config parser
-  4. Le router
+    if (req.method == POST && req.path == "/upload")
+        return UploadHandler::handle(req, location);
 
-● Qu'est-ce que vous voulez faire maintenant ?
+    return ErrorHandler::notFound(404);
+}
+```
 
-  1. Intégrer Network + HTTP Parser (priorité absolue) ?
-  2. Créer le Router + File Handler pour servir des fichiers statiques ?
-  3. Créer le Config Parser ?
-  4. Autre chose ?
+### 2. File Handler ❌ PAS TROUVÉ
+
+**À créer:** `include/handlers/FileHandler.hpp` + `src/handlers/FileHandler.cpp`
+
+**À implémenter:**
+- ❌ Ouvrir et lire fichiers depuis filesystem
+- ❌ Gérer répertoires (index.html auto)
+- ❌ Listing de répertoire (autoindex on/off)
+- ❌ Vérifier permissions (403 Forbidden)
+- ❌ Gérer fichiers inexistants (404 Not Found)
+- ❌ Définir Content-Type avec MIME types existant
+- ❌ Servir les fichiers HTML depuis www/pages/
+- ❌ Servir le CSS depuis www/css/
+
+**Exemple:**
+```cpp
+class FileHandler {
+public:
+    static HttpResponse serveFile(const std::string& filepath,
+                                  const LocationBlock& location);
+    static bool fileExists(const std::string& path);
+    static std::string resolvePath(const std::string& root,
+                                   const std::string& uri);
+};
+```
+
+### 3. Error Handler ❌ PAS TROUVÉ
+
+**À créer:** `include/handlers/ErrorHandler.hpp` + `src/handlers/ErrorHandler.cpp`
+
+**Status actuel:** Pages d'erreur hardcodées dans Server.cpp (lignes 460-501)
+
+**À implémenter:**
+- ❌ Pages d'erreur par défaut (404, 403, 500, etc.)
+- ❌ Pages d'erreur personnalisées (depuis config errorPages)
+- ❌ Génération automatique de HTML d'erreur
+- ❌ Utiliser les fichiers www/pages/404.html etc.
+
+**Exemple:**
+```cpp
+class ErrorHandler {
+public:
+    static HttpResponse notFound(int statusCode);
+    static HttpResponse methodNotAllowed(int statusCode);
+    static HttpResponse internalError(int statusCode);
+};
+```
+
+### 4. Upload Handler ❌ PAS TROUVÉ
+
+**À créer:** `include/handlers/UploadHandler.hpp` + `src/handlers/UploadHandler.cpp`
+
+**À implémenter:**
+- ❌ Recevoir body multipart/form-data
+- ❌ Parser boundaries multipart
+- ❌ Sauvegarder fichiers sur disque
+- ❌ Limite de taille (clientMaxBodySize)
+- ❌ Retourner 201 Created ou 413 Payload Too Large
+- ❌ Gérer plusieurs fichiers
+- ❌ Générer noms uniques pour fichiers
+
+**Exemple:**
+```cpp
+class UploadHandler {
+public:
+    static HttpResponse handle(const HttpRequest& req,
+                              const LocationBlock& location);
+private:
+    static bool parseMultipart(const std::string& body,
+                              const std::string& boundary);
+    static void saveFile(const std::string& filename,
+                        const std::string& content);
+};
+```
+
+---
+
+## 📋 RÉCAPITULATIF
+
+| Module                            | Status        | Pourcentage | Fichiers                |
+|-----------------------------------|---------------|-------------|-------------------------|
+| Network (sockets, poll, I/O)      | ✅ Complet    | 100%        | 4 fichiers              |
+| HTTP Parser (parsing, validation) | ✅ Complet    | 100%        | 8 fichiers              |
+| HTTP Response Builder             | ✅ Complet    | 100%        | Intégré HTTP            |
+| MIME Type detection               | ✅ Complet    | 100%        | Intégré HTTP            |
+| Intégration Network↔HTTP          | ✅ Complet    | 100%        | Server.cpp              |
+| Config Parser                     | ✅ Complet    | 100%        | 7 fichiers              |
+| CGI Handler                       | ✅ Complet    | 100%        | 2 fichiers + 4 scripts  |
+| HTML/CSS Assets                   | ✅ Créé       | 100%        | 5 fichiers              |
+| Makefile                          | ✅ Complet    | 100%        | Compile tout            |
+| Router                            | 🟡 Stub       | 10%         | Skeleton seulement      |
+| File Handler                      | ❌ Manquant   | 0%          | À créer                 |
+| Error Handler                     | 🟡 Hardcodé   | 30%         | Dans Server.cpp         |
+| Upload Handler                    | ❌ Manquant   | 0%          | À créer                 |
+
+**Progression globale : ~75% (8/11 modules complets, 2 partiels)**
+
+---
+
+## 🎯 PROCHAINES ÉTAPES
+
+### Priorité 1: File Handler (CRITIQUE)
+**Responsable:** Équipe
+
+Sans FileHandler, impossible de servir les fichiers HTML/CSS créés dans www/.
+Actuellement Server.cpp génère du HTML hardcodé (500 lignes).
+
+**Impact:**
+- Bloque migration HTML hardcodé → fichiers
+- Bloque test de l'interface web proprement
+- Bloque intégration complète du Router
+
+### Priorité 2: Router complet (CRITIQUE)
+**Responsable:** Équipe
+
+Le Router existe mais est un stub. Il doit:
+- Matcher les URLs avec LocationBlock
+- Vérifier méthodes autorisées
+- Dispatcher vers FileHandler / CgiHandler / UploadHandler / ErrorHandler
+
+**Impact:**
+- Bloque intégration de tous les handlers
+- Bloque utilisation de la config
+- Bloque fonctionnement complet du serveur
+
+### Priorité 3: Error Handler
+**Responsable:** Équipe
+
+Actuellement les pages d'erreur sont hardcodées dans Server.cpp.
+À déplacer dans ErrorHandler propre et utiliser www/pages/404.html.
+
+### Priorité 4: Upload Handler
+**Responsable:** Équipe
+
+Dernière pièce manquante pour un serveur web complet.
+Parsing multipart/form-data + sauvegarde fichiers.
+
+---
+
+## 🚀 POUR TESTER MAINTENANT
+
+### Serveur fonctionne avec HTML hardcodé:
+```bash
+make re
+./webserv config/default.conf
+
+# Tester
+curl http://localhost:8080/
+curl http://localhost:8080/test
+curl http://localhost:8080/upload
+```
+
+### CGI fonctionne (avec intégration temporaire):
+```bash
+# Ajouter dans Server.cpp ligne ~815:
+if (req.path.find("/cgi-bin/") == 0) {
+    std::string scriptPath = "." + req.path;
+    return CgiHandler::execute(req, scriptPath);
+}
+
+# Recompiler et tester:
+curl http://localhost:8080/cgi-bin/hello.py
+curl http://localhost:8080/cgi-bin/env.py
+curl "http://localhost:8080/cgi-bin/form.py?name=Test&message=Hello"
+```
+
+---
+
+## 📚 DOCUMENTATION DISPONIBLE
+
+- ✅ `CLAUDE.md` - Architecture complète du projet
+- ✅ `CGI_README.md` - Guide CGI complet (À LIRE!)
+- ✅ `CGI_INTEGRATION.md` - Intégration CGI détaillée
+- ✅ `MIGRATION_HTML.md` - Migration HTML hardcodé → fichiers
+- ✅ `www/README.md` - Structure www/
+- ✅ `cgi-bin/README.md` - Créer scripts CGI
+
+---
+
+## ✨ CE QUI EST IMPRESSIONNANT
+
+Vous avez déjà:
+- ✅ Un serveur HTTP/1.1 complet avec keep-alive
+- ✅ Un parser HTTP incrémental robuste
+- ✅ Un config parser nginx-like fonctionnel
+- ✅ Un CGI handler complet avec 4 scripts de test
+- ✅ Des assets HTML/CSS propres et organisés
+- ✅ Une architecture modulaire et propre
+- ✅ Tout compile en C++98 sans erreurs
+
+**Il ne manque que 3 handlers pour finir!**

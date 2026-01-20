@@ -1,6 +1,7 @@
 #include "../../include/network/Server.hpp"
 #include "../../include/http/Status.hpp"
-#include "router/Router.hpp"
+#include "../../include/router/Router.hpp"
+#include "../../include/cgi/CgiHandler.hpp"
 #include "colours.hpp"
 #include "utils.hpp"
 #include <iostream>
@@ -746,7 +747,9 @@ void Server::processRequest(Connection* conn, int fd) {
 			printHttpRequest(req);
 
             // Generer la reponse HTTP
-            HttpResponse resp = Router::handleHttpRequest(req);
+            //HttpResponse resp = Router::handleHttpRequest(req); (Lance depuis Router)
+            HttpResponse resp = this->handleHttpRequest(req); // Lancement depuis HTML Server.cpp
+
 
             // Determiner si on doit fermer la connexion (keep-alive)
             bool closeConnection = parser->shouldCloseConnection();
@@ -813,6 +816,29 @@ void Server::processRequest(Connection* conn, int fd) {
 //
 // ============================================================================
 HttpResponse Server::handleHttpRequest(const HttpRequest& req) {
+    // ========================================================================
+    // CGI HANDLER - TEMPORAIRE (sera dans Router quand il sera fini)
+    // ========================================================================
+    // DEBUG: Print req.path to see what we're comparing
+    std::cout << "[SERVER DEBUG] req.path = \"" << req.path << "\"" << std::endl;
+    std::cout << "[SERVER DEBUG] req.rawTarget = \"" << req.rawTarget << "\"" << std::endl;
+    std::cout << "[SERVER DEBUG] Checking if path starts with /cgi-bin/..." << std::endl;
+
+    // Utiliser rawTarget si path est vide (fallback)
+    std::string pathToCheck = req.path.empty() ? req.rawTarget : req.path;
+
+    // Si le path commence par /cgi-bin/, dispatcher vers CgiHandler
+    if (pathToCheck.find("/cgi-bin/") == 0) {
+        std::cout << "[SERVER DEBUG] CGI path detected! Calling CgiHandler..." << std::endl;
+        std::string scriptPath = "." + pathToCheck;
+        return CgiHandler::execute(req, scriptPath);
+    }
+
+    std::cout << "[SERVER DEBUG] Not a CGI path, serving HTML..." << std::endl;
+
+    // ========================================================================
+    // HTML PAGES - TEMPORAIRE (sera dans FileHandler quand il sera fini)
+    // ========================================================================
     HttpResponse resp(200, "OK");
     resp.headers["Content-Type"] = "text/html; charset=utf-8";
 

@@ -53,11 +53,19 @@ SRC_ROUTER			= $(addprefix $(ROUTER_DIR), \
 						)
 
 
+CGI_DIR				= src/cgi/
+SRC_CGI				= $(addprefix $(CGI_DIR), \
+						CgiHandler.cpp \
+						CgiEnvironment.cpp \
+						CgiParser.cpp \
+						CgiUtils.cpp \
+						)
+
 SRC_DEBUG			= src/debug/configParserUtils.cpp \
 					  src/debug/httpParserUtils.cpp
 
 
-SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_DEBUG)
+SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_ROUTER) $(SRC_CGI) $(SRC_DEBUG)
 
 # Main source
 MAIN_SRC = src/main.cpp
