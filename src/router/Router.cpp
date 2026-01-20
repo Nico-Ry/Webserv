@@ -17,7 +17,7 @@ Router::~Router() {}
 bool	Router::getServer() {
 	for (size_t i=0; i < cfg.servers.size(); ++i) {
 		if (cfg.servers[i].port == this->clientPort) {
-			this->server = cfg.servers[i];
+			this->server = &cfg.servers[i];
 			return true;
 		}
 	}
@@ -66,29 +66,58 @@ void	Router::getLocation(const std::string& uri) {
 
 	DescendingStrSet	paths = genParentPaths(uri);
 
-	size_t fallback = 0;
+	const LocationBlock* fallback = NULL;
 // iterate through parent paths from longest to shortest
 	for (DescendingStrSet::iterator it=paths.begin(); it != paths.end(); ++it)
 	{
 		std::string	longestUri = *it;
 
 		//check if longest URI matches any location block in server
-		for (size_t i=0; i < server.locations.size(); ++i) {
+		for (size_t i=0; i < server->locations.size(); ++i) {
 			//store index of fallback LocationBlock
-			if (server.locations[i].uri == "/")
-				fallback = i;
-			if (server.locations[i].uri == longestUri) {
-				this->location = server.locations[i];
+			if (server->locations[i].uri == "/")
+				fallback = &server->locations[i];
+			if (server->locations[i].uri == longestUri) {
+				this->location = &server->locations[i];
 				return;
 			}
 		}
 	}
 // No matches found, fallback to '/', validate existence of file later
 	if (fallback)
-		this->location = server.locations[fallback];
+		this->location = fallback;
 // No "/" Location Block, build default one from ServerBlock
-	else
-		this->location = LocationBlock(server);
+	else {
+		this->defaultLoc = LocationBlock(*server);
+		this->location = &defaultLoc;
+	}
+}
+
+
+bool	Router::methodAllowed(const HttpMethod& method) {
+	std::string	target;
+
+//	Convert enum to string
+	switch (method) {
+		case 0:
+			target = "GET";
+			break;
+		case 1:
+			target = "POST";
+			break;
+		case 2:
+			target = "DELETE";
+			break;
+		default:
+			target = "NOT IMPLEMENTED";
+			break;
+	}
+
+	for (size_t i=0; i < location->methods.size(); ++i) {
+		if (target == location->methods[i])
+			return true;
+	}
+	return false;
 }
 
 
@@ -101,10 +130,10 @@ RouteResult	Router::routing(const HttpRequest& req) {
 	std::string	uri = req.rawTarget;
 
 	if (!getServer())
-		return RouteResult(500, "No Server configured for this port");
+		return RouteResult(512, "No Server configured for this port");
 	getLocation(uri);
-	
-
+	if (!methodAllowed(req.method))
+		return RouteResult(405, "Method Not Allowed");
 
 	std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
 	std::cout << CYAN << "[PORT]\n" << std::setw(8) << RES << clientPort << std::endl;
@@ -124,7 +153,8 @@ HttpResponse Router::buildResponse(const HttpRequest& req) {
 		// Build valid response here!
 	}
 	else {
-		std::cout << BOLD_RED << "REQUEST NOT VALID, PLEASE BUILD ERROR RESPONSE!" << RES << std::endl;
+		std::cout << BOLD_RED << result.statusCode << " "
+			<< RES << result.errorMsg << std::endl;
 		// Build error response here!
 	}
 

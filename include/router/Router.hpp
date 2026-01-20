@@ -57,22 +57,34 @@ class Router {
 		Router(const Config& cfg, const int& port);
 		~Router();
 
-	//				MEMBERS
+//---------------------------------------------------------------------------//
+//								 MEMBERS
+//---------------------------------------------------------------------------//
 
-		const Config&	cfg;//			Config as built by configParser
-		const int&		clientPort;//	Port attached to HTTP request
-		Context			rules;//		rules for the given server and location
+	const Config&		cfg;//			Config as built by configParser
+	const int&			clientPort;//	Port attached to HTTP request
+	Context				rules;//		rules for the given server and location
 
-		ServerBlock		server;//		copy of ServerBlock matching HTTP request
-		LocationBlock	location;//		copy of LocationBlock matching HTTP request
+	const ServerBlock	*server;//		Pointer to ServerBlock matching HTTP request
+	const LocationBlock	*location;//	Pointer to LocationBlock matching HTTP request
+	LocationBlock		defaultLoc;//	Only used if "/" is not configured in Config
 
-	//				FUNCTIONS
+//---------------------------------------------------------------------------//
+//								FUNCTIONS
+//---------------------------------------------------------------------------//
+//						ROUTING
 
-		HttpResponse		buildResponse(const HttpRequest& req);
-		RouteResult			routing(const HttpRequest& req);
-		bool				getServer();
-		void				getLocation(const std::string& uri);
-		DescendingStrSet	genParentPaths(const std::string& uri);
+	HttpResponse		buildResponse(const HttpRequest& req);
+	RouteResult			routing(const HttpRequest& req);
+
+
+//					 REQUEST VALIDATION
+
+	bool				getServer();
+	void				getLocation(const std::string& uri);
+	DescendingStrSet	genParentPaths(const std::string& uri);
+	bool				methodAllowed(const HttpMethod& method);
+
 };
 
 #endif
