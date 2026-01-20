@@ -259,8 +259,8 @@ void Server::processRequest(Connection* conn, int fd) {
 			printHttpRequest(req);
 
             // Generer la reponse HTTP
-			Router	requestHandler(cfg);
-            HttpResponse resp = requestHandler.buildResponse(req, this->port);
+			Router	requestHandler(cfg, this->port);
+            HttpResponse resp = requestHandler.buildResponse(req);
 
             // Determiner si on doit fermer la connexion (keep-alive)
             bool closeConnection = parser->shouldCloseConnection();

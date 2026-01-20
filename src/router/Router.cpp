@@ -5,32 +5,44 @@
 #include <sstream>
 #include <stdlib.h>
 
-Router::Router(const Config& cfg) : cfg(cfg) {}
+Router::Router(const Config& cfg, const int& port) : cfg(cfg), clientPort(port) {}
 
 Router::~Router() {}
 
 
+bool	Router::getServer() {
+	for (size_t i=0; i < cfg.servers.size(); ++i) {
+		if (cfg.servers[i].port == this->clientPort) {
+			this->server = cfg.servers[i];
+			return true;
+		}
+	}
+	return false;
+}
 
-bool	Router::isValidRequest(const HttpRequest& req, const int& clientPort) {
+
+RouteResult	Router::routing(const HttpRequest& req) {
 
 	std::string	uri = req.rawTarget;
 
-	// if (!validPort(clientPort))
-	// 	return false;
+	if (!getServer())
+		return RouteResult(500, "No Server configured for this port");
 
 
-	std::cout << BOLD_YELLOW << "~ isValidRequest ~" << RES << std::endl;
+	std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
 	std::cout << CYAN << "[PORT]\n" << std::setw(8) << RES << clientPort << std::endl;
 	std::cout << CYAN << "[URI]\n" << std::setw(8) << RES << uri << std::endl;
 
-	return true;
+	RouteResult	success(200);
+	return success;
 }
 
-HttpResponse Router::buildResponse(const HttpRequest& req, const int& clientPort) {
+HttpResponse Router::buildResponse(const HttpRequest& req) {
 	HttpResponse	resp;
+	RouteResult		result = routing(req);
 
 
-	if (isValidRequest(req, clientPort)) {
+	if (result.isSuccess()) {
 		std::cout << BOLD_GREEN << "VALID HTTP REQUEST!" << RES << std::endl;
 		// Build valid response here!
 	}
@@ -39,7 +51,7 @@ HttpResponse Router::buildResponse(const HttpRequest& req, const int& clientPort
 		// Build error response here!
 	}
 
-	resp.body = "caca";
+	// resp.body = "caca";
 
 	return resp;
 }
