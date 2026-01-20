@@ -121,6 +121,13 @@ bool	Router::methodAllowed(const HttpMethod& method) {
 }
 
 
+bool	Router::exceedsMaxSize(const size_t& len) {
+	if (len >= location->clientMaxBodySize)
+		return true;
+	return false;
+}
+
+
 /**
  * @brief Validates all Routing is correct for a given HTTP request
  * @note checks: Port, URI, etc.
@@ -134,7 +141,8 @@ RouteResult	Router::routing(const HttpRequest& req) {
 	getLocation(uri);
 	if (!methodAllowed(req.method))
 		return RouteResult(405, "Method Not Allowed");
-
+	if (exceedsMaxSize(req.contentLength))
+		return RouteResult(413, "Payload Too Large");
 	std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
 	std::cout << CYAN << "[PORT]\n" << std::setw(8) << RES << clientPort << std::endl;
 	std::cout << CYAN << "[URI]\n" << std::setw(8) << RES << uri << std::endl;
@@ -142,6 +150,8 @@ RouteResult	Router::routing(const HttpRequest& req) {
 	RouteResult	success(200);
 	return success;
 }
+
+
 
 HttpResponse Router::buildResponse(const HttpRequest& req) {
 	HttpResponse	resp;

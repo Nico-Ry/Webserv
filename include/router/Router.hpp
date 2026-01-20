@@ -84,6 +84,7 @@ class Router {
 	void				getLocation(const std::string& uri);
 	DescendingStrSet	genParentPaths(const std::string& uri);
 	bool				methodAllowed(const HttpMethod& method);
+	bool				exceedsMaxSize(const size_t& len);
 
 };
 
