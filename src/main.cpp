@@ -86,12 +86,13 @@ int main(int argc, char** argv) {
         signal(SIGPIPE, SIG_IGN);  // Ignorer SIGPIPE
 
         // Creer et lancer le serveur
-        Server server(cfg.servers[0].port, cfg); // for now just give 1st server port
-        g_server = &server;
+		// for (size_t i=0; i < cfg.servers.size(); ++i) {
+		Server server(cfg.servers[0].port, cfg); // for now just give 1st server port
+		g_server = &server;
 
-        server.run();
+		server.run();
 
-        g_server = NULL;
+		g_server = NULL;
 
     } catch (const Server::ServerException& e) {
         std::cerr << "✗ Server Error: " << e.what() << std::endl;
