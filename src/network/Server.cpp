@@ -1,7 +1,7 @@
 #include "../../include/network/Server.hpp"
 #include "../../include/http/Status.hpp"
 #include "../../include/router/Router.hpp"
-// #include "../../include/cgi/CgiHandler.hpp"  // CGI not ready for push
+// #include "../../include/cgi/CgiHandler.hpp"
 #include "colours.hpp"
 #include "utils.hpp"
 #include <iostream>
