@@ -61,6 +61,7 @@ class Router {
 
 		RouteResult		routing(const HttpRequest& req);
 		bool			getServer();
+		bool			getLocation(const std::string& uri);
 };
 
 #endif
