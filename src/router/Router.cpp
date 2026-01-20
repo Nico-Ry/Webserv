@@ -1,6 +1,3 @@
-#include "http/Request.hpp"
-#include "http/RequestParser.hpp"
-#include "http/Response.hpp"
 #include "router/Router.hpp"
 #include "utils.hpp"
 #include <sstream>
@@ -98,20 +95,14 @@ bool	Router::methodAllowed(const HttpMethod& method) {
 	std::string	target;
 
 //	Convert enum to string
-	switch (method) {
-		case 0:
-			target = "GET";
-			break;
-		case 1:
-			target = "POST";
-			break;
-		case 2:
-			target = "DELETE";
-			break;
-		default:
-			target = "NOT IMPLEMENTED";
-			break;
-	}
+	if (method == METHOD_GET)
+		target = "GET";
+	else if (method == METHOD_DELETE)
+		target = "DELETE";
+	else if (method == METHOD_POST)
+		target = "POST";
+	else
+		target = "NOT IMPLEMENTED";
 
 	for (size_t i=0; i < rules->methods.size(); ++i) {
 		if (target == rules->methods[i])
@@ -144,6 +135,22 @@ RouteResult	Router::routing(const HttpRequest& req) {
 	if (exceedsMaxSize(req.contentLength))
 		return RouteResult(413, "Payload Too Large");
 
+// Build path using root of context + request target
+	std::string fullUri = rules->root + req.rawTarget;
+	std::cout << "TARGET PATH:\n" << BOLD_RED << fullUri << RES << std::endl;
+
+// Split logic to handle GET, DELETE and POST separately
+	if (req.method == METHOD_GET)
+		handleGet(fullUri);
+
+	// else if (req.method == METHOD_DELETE)
+		//handleDelete(path);
+
+	// else if (req.method == METHOD_POST)
+		//handlePost(path);
+
+	else
+		return RouteResult(501, "Not Implemented");
 
 	// std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
 	// printClientPort(*this);

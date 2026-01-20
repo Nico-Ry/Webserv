@@ -3,6 +3,7 @@
 
 #include "../http/Request.hpp"
 #include "../http/Response.hpp"
+#include "http/RequestParser.hpp"
 #include "../configParser/Config.hpp"
 #include "../configParser/LocationBlock.hpp"
 #include "../configParser/ServerBlock.hpp"
@@ -64,7 +65,7 @@ class Router {
 	RouteResult			routing(const HttpRequest& req);
 
 
-//					 REQUEST VALIDATION
+//					 	REQUEST VALIDATION
 
 	bool				getServer();
 	void				getLocation(const std::string& uri);
@@ -72,6 +73,9 @@ class Router {
 	bool				methodAllowed(const HttpMethod& method);
 	bool				exceedsMaxSize(const size_t& len);
 
+//						METHOD HANDLING
+
+	RouteResult			handleGet(const std::string& uri);
 };
 
 #endif

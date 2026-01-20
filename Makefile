@@ -50,6 +50,7 @@ SRC_CONFIG_PARSER	= $(addprefix $(CP_DIR), \
 ROUTER_DIR			= src/router/
 SRC_ROUTER			= $(addprefix $(ROUTER_DIR), \
 						Router.cpp \
+						handleGet.cpp \
 						)
 
 DEBUG_DIR			= src/debug/
