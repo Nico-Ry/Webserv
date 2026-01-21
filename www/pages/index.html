@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv - Home</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .hero {
+            text-align: center;
+            padding: var(--spacing-xl) 0;
+            margin-bottom: var(--spacing-xl);
+        }
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 24px;
+            color: #666;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+        }
+        .card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            transition: all 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            font-size: 32px;
+            margin-bottom: var(--spacing-sm);
+        }
+        .card p {
+            color: #666;
+            margin-bottom: var(--spacing-md);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/" class="navbar-brand">Webserv</a>
+            <ul class="navbar-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/test">Test</a></li>
+                <li><a href="/upload">Upload</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>Webserv</h1>
+            <p>High-Performance C++98 HTTP Server</p>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <h2>Test Methods</h2>
+                <p>Test HTTP methods (GET, POST, DELETE) with interactive buttons</p>
+                <a href="/test" class="btn">Go to Test</a>
+            </div>
+            <div class="card">
+                <h2>Upload Files</h2>
+                <p>Test file uploads with POST requests (coming soon)</p>
+                <a href="/upload" class="btn">Go to Upload</a>
+            </div>
+            <div class="card">
+                <h2>Documentation</h2>
+                <p>Network layer fully integrated with HTTP parser</p>
+                <a href="/test" class="btn">View Status</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

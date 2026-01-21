@@ -1,8 +1,13 @@
 .DS_Store
 tests/
 texte.md
+.md
 
 obj/
 
-#Executable
 webserv
+
+
+/www/
+cgi/*
+cgi-bin/

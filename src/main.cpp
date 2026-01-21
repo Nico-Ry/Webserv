@@ -85,10 +85,9 @@ int main(int argc, char** argv) {
         signal(SIGINT, signal_handler);
         signal(SIGPIPE, SIG_IGN);  // Ignorer SIGPIPE
 
-        // Creer et lancer le serveur
-		// for (size_t i=0; i < cfg.servers.size(); ++i) {
-		Server server(cfg.servers[0].port, cfg); // for now just give 1st server port
-		g_server = &server;
+        // Creer et lancer le serveur multi-ports
+        Server server(cfg); // Passe toute la config (supporte multi-ports)
+        g_server = &server;
 
 		server.run();
 
@@ -103,9 +102,7 @@ int main(int argc, char** argv) {
     } catch (const std::exception& e) {
         std::cerr << "✗ Unexpected Error: " << e.what() << std::endl;
         return 1;
-    } catch (std::runtime_error& e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
+    }
 
     return 0;
 }
