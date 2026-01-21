@@ -58,7 +58,6 @@ void	printHttpRequest(const HttpRequest& req);
 //---------------------------------------------------------------------------//
 
 void	printParentPaths(const DescendingStrSet& paths);
-void	printClientPort(const Router& r);
 void	printRouterUri(const HttpRequest& r);
 
 #endif

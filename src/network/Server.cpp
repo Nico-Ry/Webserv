@@ -292,7 +292,7 @@ void Server::processRequest(Connection* conn, int fd) {
 		printHttpRequest(req);
 
 		// Generer la reponse HTTP
-		Router	requestHandler(cfg, this->port);
+		Router	requestHandler(*config);
 		HttpResponse resp = requestHandler.buildResponse(req);
 		// HttpResponse resp = this->handleHttpRequest(req); // Lancement depuis HTML Server.cpp
 

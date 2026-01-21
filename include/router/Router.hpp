@@ -42,7 +42,7 @@ struct RouteResult {
 class Router {
 
 	public:
-		Router(const Config& cfg, const int& port);
+		Router(const Config& cfg);
 		~Router();
 
 //---------------------------------------------------------------------------//
@@ -50,7 +50,6 @@ class Router {
 //---------------------------------------------------------------------------//
 
 	const Config&		cfg;//			Config as built by configParser
-	const int&			clientPort;//	Port attached to HTTP request
 
 	const ServerBlock	*server;//		Pointer to ServerBlock matching HTTP request
 	const LocationBlock	*rules;//		Pointer to LocationBlock matching HTTP request

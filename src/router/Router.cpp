@@ -3,23 +3,23 @@
 #include <sstream>
 #include <stdlib.h>
 
-Router::Router(const Config& cfg, const int& port) : cfg(cfg), clientPort(port) {}
+Router::Router(const Config& cfg) : cfg(cfg) {}
 
 Router::~Router() {}
 
-/**
- * @brief Finds the `ServerBlock` that matches the client connection port.
- * If found, makes a copy of it in `this->server`
- */
-bool	Router::getServer() {
-	for (size_t i=0; i < cfg.servers.size(); ++i) {
-		if (cfg.servers[i].port == this->clientPort) {
-			this->server = &cfg.servers[i];
-			return true;
-		}
-	}
-	return false;
-}
+// /**
+//  * @brief Finds the `ServerBlock` that matches the client connection port.
+//  * If found, makes a copy of it in `this->server`
+//  */
+// bool	Router::getServer() {
+// 	for (size_t i=0; i < cfg.servers.size(); ++i) {
+// 		if (cfg.servers[i].port == this->clientPort) {
+// 			this->server = &cfg.servers[i];
+// 			return true;
+// 		}
+// 	}
+// 	return false;
+// }
 
 
 /**
@@ -126,8 +126,8 @@ bool	Router::exceedsMaxSize(const size_t& len) {
 RouteResult	Router::routing(const HttpRequest& req) {
 
 	std::string	uri = req.rawTarget;
-	if (!getServer())
-		return RouteResult(512, "No Server configured for this port");
+	// if (!getServer())
+	// 	return RouteResult(512, "No Server configured for this port");
 	getLocation(uri);
 	if (!methodAllowed(req.method))
 		return RouteResult(405, "Method Not Allowed");
@@ -154,7 +154,6 @@ RouteResult	Router::routing(const HttpRequest& req) {
 		return RouteResult(501, "Not Implemented");
 
 	// std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
-	// printClientPort(*this);
 	// printRouterUri(req);
 	RouteResult	success(200, "OK");
 	return success;
