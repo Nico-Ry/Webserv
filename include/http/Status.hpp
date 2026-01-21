@@ -18,9 +18,10 @@ inline std::string reasonPhrase(int code)
 		case 405: return "Method Not Allowed";
 		case 413: return "Payload Too Large";
 		case 500: return "Internal Server Error";
+		case 501: return "Not Implemented";
 		case 502: return "Bad Gateway";
 		case 504: return "Gateway Timeout";
 	}
-	return "Unknown";
+	return "Error code not added to Status.hpp";
 }
 #endif

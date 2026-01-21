@@ -89,7 +89,8 @@ void	HttpRequestParser::feed(const std::string &data)
 			break ;
 	}
 	// [DEBUG]
-	// printHttpRequest(_req);
+	std::cout << GOLD << _state << RES << std::endl;
+	printHttpRequest(_req);
 }
 
 

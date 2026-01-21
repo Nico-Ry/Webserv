@@ -58,12 +58,25 @@ std::string	ResponseBuilder::buildDateValue()
 	- Blank line
 	- Body
 */
+
+/**
+ * @brief 	build(resp, closeConnection)
+
+	This returns the full HTTP response message:
+
+	- Status line
+	- Headers
+	- Blank line
+	- Body
+	@attention Need to make this have different behaviour based on error code
+ */
 std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnection)
 {
 	std::string											out;
 	std::map<std::string, std::string>::const_iterator	it;
 	bool												hasContentLength;
 
+	// TODO: adapt behaviour based on status code
 	/*
 		1) Status line
 		We always respond using HTTP/1.1 for simplicity.

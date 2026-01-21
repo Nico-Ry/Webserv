@@ -232,46 +232,50 @@ void Server::processRequest(Connection* conn, int fd) {
     parser->feed(conn->recv_buffer);
     conn->recv_buffer.clear();
 
+
+	if (parser->hasError()) {
+		// Generer une reponse d'erreur HTTP
+		int errorCode = parser->getErrorStatus();
+		HttpResponse resp(errorCode, reasonPhrase(errorCode));
+
+
+	// Build HTML Error Page
+		resp.headers["Content-Type"] = "text/html";
+		resp.body = "<html><body><h1>Error " + intToString(errorCode)
+					+ "</h1><p>" + reasonPhrase(errorCode) + "</p></body></html>";
+
+		// std::cout << "  [fd=" << fd << "] HTTP Error: " << errorCode << std::endl;
+		std::cerr << RED << resp.statusCode << RES << " " << resp.reason << std::endl;
+		// Toujours fermer connexion sur erreur
+		conn->send_buffer = ResponseBuilder::build(resp, true);
+	}
+
     // Verifier si la requete est complete
-    if (parser->isDone()) {
-        if (parser->hasError()) {
-            // Generer une reponse d'erreur HTTP
-            int errorCode = parser->getErrorStatus();
-            HttpResponse resp(errorCode, reasonPhrase(errorCode));
-            resp.headers["Content-Type"] = "text/html";
-            resp.body = "<html><body><h1>Error " + intToString(errorCode)
-                      + "</h1><p>" + reasonPhrase(errorCode) + "</p></body></html>";
+    else if (parser->isDone()) {
 
-            std::cout << "  [fd=" << fd << "] HTTP Error: " << errorCode << std::endl;
+		// Traiter la requete HTTP valide
+		const HttpRequest& req = parser->getRequest();
 
-            // Toujours fermer connexion sur erreur
-            conn->send_buffer = ResponseBuilder::build(resp, true);
-        }
-        else {
-            // Traiter la requete HTTP valide
-            const HttpRequest& req = parser->getRequest();
+		// std::cout << "  [fd=" << fd << "] HTTP Request: "
+		//          << (req.method == METHOD_GET ? "GET" :
+		//              req.method == METHOD_POST ? "POST" :
+		//              req.method == METHOD_DELETE ? "DELETE" : "UNKNOWN")
+		//          << " " << req.rawTarget << " " << req.httpVersion << std::endl;
+		printHttpRequest(req);
 
-            // std::cout << "  [fd=" << fd << "] HTTP Request: "
-            //          << (req.method == METHOD_GET ? "GET" :
-            //              req.method == METHOD_POST ? "POST" :
-            //              req.method == METHOD_DELETE ? "DELETE" : "UNKNOWN")
-            //          << " " << req.rawTarget << " " << req.httpVersion << std::endl;
-			printHttpRequest(req);
+		// Generer la reponse HTTP
+		Router	requestHandler(cfg, this->port);
+		HttpResponse resp = requestHandler.buildResponse(req);
 
-            // Generer la reponse HTTP
-			Router	requestHandler(cfg, this->port);
-            HttpResponse resp = requestHandler.buildResponse(req);
+		// Determiner si on doit fermer la connexion (keep-alive)
+		bool closeConnection = parser->shouldCloseConnection();
+		conn->send_buffer = ResponseBuilder::build(resp, closeConnection);//TODO: NEED TO ADAPT BEHAVIOUR FOR DIFFERNT STATUS CODES
 
-            // Determiner si on doit fermer la connexion (keep-alive)
-            bool closeConnection = parser->shouldCloseConnection();
-            conn->send_buffer = ResponseBuilder::build(resp, closeConnection);
+		// std::cout << "  [fd=" << fd << "] HTTP Response: " << resp.statusCode
+		//          << " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
+		std::cout << BOLD_GREEN << "[HTTP Response] " << RES << resp.statusCode
+					<< " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
 
-            // std::cout << "  [fd=" << fd << "] HTTP Response: " << resp.statusCode
-            //          << " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
-			std::cout << BOLD_GREEN << "[HTTP Response] " << RES << resp.statusCode
-                     << " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
-
-		}
 
         // Reset parser pour la prochaine requete (keep-alive)
         parser->reset();
