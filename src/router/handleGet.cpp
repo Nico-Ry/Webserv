@@ -34,7 +34,7 @@ static bool isFile(const std::string& p)
 HttpResponse	Router::handleGet(const std::string& requestedPath)
 {
 	std::string resolvedPath = getResolvedPath(requestedPath, *rules);
-	std::cout << YELLOW<<"[DEBUG] " << BOLD_BLUE <<"ResolvedPath" << resolvedPath << RES << std::endl;
+	std::cout << YELLOW<<"[DEBUG] " << BOLD_BLUE <<"ResolvedPath " << resolvedPath << RES << std::endl;
 
 	// 1) not found
 	if (!exists(resolvedPath)){
