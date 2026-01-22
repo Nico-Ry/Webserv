@@ -1,17 +1,8 @@
 #include "router/Router.hpp"
 #include "router/PathUtils.hpp"
-
-// RouteResult	Router::handleGet(const std::string& uri) {
-// 	// GET LOGIC GOES HERE
-
-
-// 	(void)uri;
-// 	RouteResult	success(200, "OK");
-// 	return success;
-// }
-
 #include <sys/stat.h>
 
+// ---------- helpers ----------
 static bool exists(const std::string& p)
 {
 	struct stat st;
@@ -39,6 +30,7 @@ static bool isFile(const std::string& p)
 	return (S_ISREG(st.st_mode));
 }
 
+// ---------- GET ----------
 RouteResult Router::handleGet(const std::string& urlPath)
 {
 	// rules must already be set by routing() via getLocation()
@@ -52,20 +44,35 @@ RouteResult Router::handleGet(const std::string& urlPath)
 	std::string fsPath = mapUrlToFs(urlPath, *rules);
 	std::cout << YELLOW<<"[DEBUG] "<<BOLD_BLUE<<"Mapped URL path '" << urlPath << "' to filesystem path '" << fsPath << "'\n";
 
+	// 1) not found
 	if (!exists(fsPath))
-		return (RouteResult(404, "Not Found"));
-
-	if (isFile(fsPath))
-		return (RouteResult(200, "OK"));
-
-	if (isDir(fsPath))
 	{
-		// For now, just say "directory exists".
-		// Next: try index files, then autoindex.
-		if (rules->autoIndex)
-			return (RouteResult(200, "OK"));
-		return (RouteResult(403, "Forbidden"));
+		return RouteResult(404, "Not Found");
 	}
 
-	return (RouteResult(404, "Not Found"));
+	// 2) regular file -> serve it
+	if (isFile(fsPath))
+	{
+		return RouteResult(200, "OK", fsPath);
+	}
+
+	// 3) directory -> try index files
+	if (isDir(fsPath))
+	{
+		for (size_t i = 0; i < rules->index.size(); ++i)
+		{
+			std::string candidate = joinPath(fsPath, rules->index[i]);
+
+			if (isFile(candidate))
+			{
+				return RouteResult(200, "OK", candidate);
+			}
+		}
+
+		// No autoindex yet, so directory without index is forbidden
+		return RouteResult(403, "Forbidden");
+	}
+
+	// Unknown file type -> treat as not found
+	return RouteResult(404, "Not Found");
 }

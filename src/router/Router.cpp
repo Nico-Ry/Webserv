@@ -140,7 +140,7 @@ RouteResult	Router::routing(const HttpRequest& req) {
 // Build path using root of context + request target
 	// std::string fullUri = rules->root + req.rawTarget;//CHANGEME
 	const std::string& urlPath = req.path;
-	
+
 	std::cout << "TARGET PATH:\n" << BOLD_RED << req.path << RES << std::endl;
 
 
@@ -167,6 +167,22 @@ RouteResult	Router::routing(const HttpRequest& req) {
 }
 
 
+
+//helper function to read file into string
+static bool readFileToString(const std::string& path, std::string& out)
+{
+	std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
+
+	if (!ifs.is_open())
+	{
+		return false;
+	}
+
+	std::ostringstream oss;
+	oss << ifs.rdbuf();
+	out = oss.str();
+	return true;
+}
 
 HttpResponse Router::buildResponse(const HttpRequest& req) {
 	//Kept RouteResult as may need Location pointer for POST so we can provide the path of where the upload occured

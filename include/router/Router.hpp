@@ -31,12 +31,20 @@ struct RouteResult {
 	int				statusCode;
 	std::string		errorMsg;
 	LocationBlock*	location;
+	std::string		resolvedPath; // filesystem path of file to serve (GET)
 
-	RouteResult(int code) : statusCode(code), errorMsg(""), location(NULL) {}
-	RouteResult(int code, const std::string& msg) : statusCode(code), errorMsg(msg), location(NULL) {}
+	RouteResult(int code)
+		: statusCode(code), errorMsg(""), location(NULL), resolvedPath("") {}
+
+	RouteResult(int code, const std::string& msg)
+		: statusCode(code), errorMsg(msg), location(NULL), resolvedPath("") {}
+
+	RouteResult(int code, const std::string& msg, const std::string& path)
+		: statusCode(code), errorMsg(msg), location(NULL), resolvedPath(path) {}
 
 	bool isSuccess() const { return statusCode >= 200 && statusCode < 300; }
 };
+
 
 
 class Router {
