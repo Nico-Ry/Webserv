@@ -4,15 +4,22 @@
 #include <string>
 #include <map>
 
+typedef std::map<std::string, std::string> StringMap;
+
 struct HttpResponse
 {
-	int statusCode;
+	int			statusCode;
 	std::string reason; // "OK", "Not Found", etc.
-	std::map<std::string, std::string> headers;
+	StringMap	headers;
 	std::string body;
+	bool		isRedirect;
+	std::string	redirectTarget;
 
-	HttpResponse(int code = 200, const std::string &msg = "OK")
+	// HttpResponse(int code = 200, const std::string &msg = "OK")
+	// 	: statusCode(code), reason(msg) {}
+	HttpResponse(int code, const std::string& msg)
 		: statusCode(code), reason(msg) {}
+	bool isSuccess() const { return statusCode >= 200 && statusCode < 300; }
 };
 
 #endif

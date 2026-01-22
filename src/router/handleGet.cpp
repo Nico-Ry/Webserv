@@ -31,19 +31,21 @@ static bool isFile(const std::string& p)
 }
 
 // ---------- GET ----------
-RouteResult Router::handleGet(const std::string& requestedPath)
+HttpResponse	Router::handleGet(const std::string& requestedPath)
 {
 	std::string resolvedPath = getResolvedPath(requestedPath, *rules);
 	std::cout << YELLOW<<"[DEBUG] " << BOLD_BLUE <<"ResolvedPath" << resolvedPath << RES << std::endl;
 
 	// 1) not found
-	if (!exists(resolvedPath))
-		return RouteResult(404, "Not Found");
+	if (!exists(resolvedPath)){
+		std::cout << ORANGE << "DOES NOT EXIST! " << RES << resolvedPath << std::endl;
+		return HttpResponse(404, "Not Found");
+	}
 
 	// 2) regular file -> serve it
 	if (isFile(resolvedPath))
 	{
-		return RouteResult(200, "OK", resolvedPath);
+		return HttpResponse(200, "OK");
 	}
 
 	// 3) directory -> try index files
@@ -55,14 +57,14 @@ RouteResult Router::handleGet(const std::string& requestedPath)
 
 			if (isFile(candidate))
 			{
-				return RouteResult(200, "OK", candidate);
+				return HttpResponse(200, "OK");
 			}
 		}
 
 		// No autoindex yet, so directory without index is forbidden
-		return RouteResult(403, "Forbidden");
+		return HttpResponse(403, "Forbidden");
 	}
 
 	// Unknown file type -> treat as not found
-	return RouteResult(404, "Not Found");
+	return HttpResponse(404, "Not Found");
 }

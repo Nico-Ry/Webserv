@@ -125,12 +125,12 @@ bool	Router::exceedsMaxSize(const size_t& len) {
  * @brief Validates all Routing is correct for a given HTTP request
  * @note checks: Port, URI, Max Size.
  */
-RouteResult	Router::routing(const HttpRequest& req) {
+HttpResponse	Router::routing(const HttpRequest& req) {
 
 // Find correct context for requestURI
 	getLocation(req.path);
 	if (!rules)// should never happen, defensive coding
-		return (RouteResult(500, "Internal Server Error"));
+		return (HttpResponse(500, "Internal Server Error"));
 
 // TODO: a function that matches redirection code with
 //       the appropriate redirection message and stores
@@ -143,10 +143,10 @@ RouteResult	Router::routing(const HttpRequest& req) {
 
 
 	if (!methodAllowed(req.method))
-		return RouteResult(405, "Method Not Allowed");
+		return HttpResponse(405, "Method Not Allowed");
 
 	if (exceedsMaxSize(req.contentLength))
-		return RouteResult(413, "Payload Too Large");
+		return HttpResponse(413, "Payload Too Large");
 
 // Split logic to handle GET, DELETE and POST separately
 	if (req.method == METHOD_GET)
@@ -158,7 +158,7 @@ RouteResult	Router::routing(const HttpRequest& req) {
 	// else if (req.method == METHOD_POST)
 		//return handlePost(path);
 
-	return RouteResult(501, "Not Implemented");
+	return HttpResponse(501, "Not Implemented");
 }
 
 
@@ -180,22 +180,31 @@ RouteResult	Router::routing(const HttpRequest& req) {
 // }
 
 HttpResponse Router::buildResponse(const HttpRequest& req) {
-	//Kept RouteResult as may need Location pointer for POST so we can provide the path of where the upload occured
+	//Kept HttpResponse as may need Location pointer for POST so we can provide the path of where the upload occured
 
-	HttpResponse	resp;
-	RouteResult		result = routing(req);
-
+	HttpResponse		result = routing(req);
 
 	if (result.isSuccess()) {
-		std::cout << BOLD_GREEN << result.statusCode << " " << RES << result.errorMsg << std::endl;
-		// Build valid response here!
+	std::cout << BOLD_GREEN << result.statusCode
+		<< RES << " " << result.reason << std::endl;
 	}
 	else {
-		std::cout << BOLD_RED << result.statusCode << " "
-			<< RES << result.errorMsg << std::endl;
-		// Build error response here!
+	std::cout << BOLD_RED << result.statusCode
+		<< RES << " " << result.reason << std::endl;
 	}
 
+	return result;
 
-	return resp;
+	// if (result.isSuccess()) {
+	// 	std::cout << BOLD_GREEN << result.statusCode << " " << RES << result.errorMsg << std::endl;
+	// 	// Build valid response here!
+	// }
+	// else {
+	// 	std::cout << BOLD_RED << result.statusCode << " "
+	// 		<< RES << result.errorMsg << std::endl;
+	// 	// Build error response here!
+	// }
+
+
+	// return resp;
 }
