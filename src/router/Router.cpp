@@ -158,7 +158,7 @@ RouteResult	Router::routing(const HttpRequest& req) {
 		//handlePost(path);
 
 	//else//NICO changes this
-		return RouteResult(501, "Not Implemented");
+	return RouteResult(501, "Not Implemented");
 
 	// std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
 	// printRouterUri(req);
@@ -169,20 +169,20 @@ RouteResult	Router::routing(const HttpRequest& req) {
 
 
 //helper function to read file into string
-static bool readFileToString(const std::string& path, std::string& out)
-{
-	std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
+// static bool readFileToString(const std::string& path, std::string& out)
+// {
+// 	std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
 
-	if (!ifs.is_open())
-	{
-		return false;
-	}
+// 	if (!ifs.is_open())
+// 	{
+// 		return false;
+// 	}
 
-	std::ostringstream oss;
-	oss << ifs.rdbuf();
-	out = oss.str();
-	return true;
-}
+// 	std::ostringstream oss;
+// 	oss << ifs.rdbuf();
+// 	out = oss.str();
+// 	return true;
+// }
 
 HttpResponse Router::buildResponse(const HttpRequest& req) {
 	//Kept RouteResult as may need Location pointer for POST so we can provide the path of where the upload occured

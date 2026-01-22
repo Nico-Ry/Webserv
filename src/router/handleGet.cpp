@@ -41,27 +41,27 @@ RouteResult Router::handleGet(const std::string& urlPath)
 	if (rules->hasRedirect)
 		return (RouteResult(rules->redirectCode, "Redirect"));
 
-	std::string fsPath = mapUrlToFs(urlPath, *rules);
-	std::cout << YELLOW<<"[DEBUG] "<<BOLD_BLUE<<"Mapped URL path '" << urlPath << "' to filesystem path '" << fsPath << "'\n";
+	std::string resolvedPath = mapUrlToFileSystem(urlPath, *rules);
+	std::cout << YELLOW<<"[DEBUG] "<<BOLD_BLUE<<"Mapped URL path '" << urlPath << "' to filesystem path '" << resolvedPath << "'\n";
 
 	// 1) not found
-	if (!exists(fsPath))
+	if (!exists(resolvedPath))
 	{
 		return RouteResult(404, "Not Found");
 	}
 
 	// 2) regular file -> serve it
-	if (isFile(fsPath))
+	if (isFile(resolvedPath))
 	{
-		return RouteResult(200, "OK", fsPath);
+		return RouteResult(200, "OK", resolvedPath);
 	}
 
 	// 3) directory -> try index files
-	if (isDir(fsPath))
+	if (isDir(resolvedPath))
 	{
 		for (size_t i = 0; i < rules->index.size(); ++i)
 		{
-			std::string candidate = joinPath(fsPath, rules->index[i]);
+			std::string candidate = joinPath(resolvedPath, rules->index[i]);
 
 			if (isFile(candidate))
 			{

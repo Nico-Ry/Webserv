@@ -90,7 +90,7 @@ std::string	joinPath(const std::string& a, const std::string& b)
 	This function centralizes URL → filesystem mapping logic
 	and is reused by GET, DELETE, and POST handlers.
 */
-std::string	mapUrlToFs(const std::string& urlPath, const LocationBlock& rules)
+std::string	mapUrlToFileSystem(const std::string& urlPath, const LocationBlock& rules)
 {
 	std::string suffix = stripLocationPrefixIter(urlPath, rules.uri);
 	return joinPath(rules.root, suffix);

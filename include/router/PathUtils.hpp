@@ -23,6 +23,6 @@ std::string	joinPath(const std::string& a, const std::string& b);
 	Map a URL path to a filesystem path using location rules:
 		fs = rules.root + (urlPath without rules.uri prefix)
 */
-std::string	mapUrlToFs(const std::string& urlPath, const LocationBlock& rules);
+std::string	mapUrlToFileSystem(const std::string& urlPath, const LocationBlock& rules);
 
 #endif
