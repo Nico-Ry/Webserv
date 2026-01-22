@@ -25,6 +25,7 @@ enum ParserState
 	PS_ERROR         // Parsing failed, _errorStatus tells which HTTP error (e.g. 400)
 };
 
+bool	sanitizeUrlPath(std::string& path);
 /*
 	HttpRequestParser turns raw bytes into a HttpRequest object.
 
@@ -98,7 +99,7 @@ private:
 	bool	finalizeHeaders();
 	bool	handleHeaderLine(const std::string &line);
 	bool	parseContentLengthValue(size_t &outValue, const std::string &value);
-	
+
 	bool	parseChunkSizeLine();
 	bool	consumeFinalChunkCRLF();
 	bool	consumeChunkDataAndCRLF();

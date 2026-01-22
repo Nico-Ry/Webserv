@@ -1,6 +1,8 @@
 #include "http/RequestParser.hpp"
 #include <cctype>
 #include <sstream>
+#include <iostream>
+#include "colours.hpp"
 
 /*
 	setError(statusCode)
@@ -105,9 +107,17 @@ bool	HttpRequestParser::parseStartLine()
 		_req.query = target.substr(q + 1);
 	}
 
-	// Basic sanity check: path must start with '/'
-	if (_req.path.empty() || _req.path[0] != '/')
+	// Validate + normalize path (security + stable routing)
+	if (!sanitizeUrlPath(_req.path))
+	{
+		std::cout << YELLOW<< "[DEBUG sanitizeURL] RequestParser.StartLine3 rawTarget='" << _req.rawTarget
+		  << "' path='" << _req.path
+		  << "' query='" << _req.query << "'" << std::endl;
 		return (setError(400));
+	}
+	std::cout << YELLOW<< "[DEBUG] RequestParser.StartLine3 rawTarget='" << _req.rawTarget
+		  << "' path='" << _req.path
+		  << "' query='" << _req.query << "'" << std::endl;
 
 	_req.httpVersion = version;
 

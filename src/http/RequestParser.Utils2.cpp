@@ -76,3 +76,122 @@ std::string HttpRequestParser::toLower(const std::string &s)
 	}
 	return (out);
 }
+
+/*
+	Return true if c is an ASCII control character (0-31) or DEL (127).
+	Control characters must never appear in the request target path.
+*/
+static bool	isAsciiControl(unsigned char c)
+{
+	if (c <= 31)
+	{
+		return true;
+	}
+	if (c == 127)
+	{
+		return true;
+	}
+	return false;
+}
+
+/*
+	Collapse repeated slashes:
+		"/a//b///c" -> "/a/b/c"
+
+	This avoids ambiguous routing behavior and makes location matching stable.
+*/
+static void	collapseDoubleSlashes(std::string& path)
+{
+	std::string out;
+	out.reserve(path.size());
+
+	for (size_t i = 0; i < path.size(); ++i)
+	{
+		if (path[i] == '/' && !out.empty() && out[out.size() - 1] == '/')
+		{
+			continue;
+		}
+		out.push_back(path[i]);
+	}
+	path = out;
+}
+
+/*
+	Reject unsafe path segments such as "." or "..".
+	This prevents directory traversal and avoids ambiguous canonicalization.
+*/
+static bool	hasUnsafeSegments(const std::string& path)
+{
+	size_t i = 0;
+
+	while (i < path.size())
+	{
+		// skip leading slashes
+		while (i < path.size() && path[i] == '/')
+		{
+			++i;
+		}
+
+		// find end of segment
+		size_t j = i;
+		while (j < path.size() && path[j] != '/')
+		{
+			++j;
+		}
+
+		// extract segment
+		if (j > i)
+		{
+			std::string seg = path.substr(i, j - i);
+
+			if (seg == "." || seg == "..")
+			{
+				return true;
+			}
+		}
+
+		i = j;
+	}
+
+	return false;
+}
+
+/*
+	Validate and normalize a parsed URL path.
+	- must start with '/'
+	- no ASCII control chars
+	- collapse '//' to '/'
+	- reject '.' and '..' segments
+*/
+bool	sanitizeUrlPath(std::string& path)
+{
+	if (path.empty())
+	{
+		return false;
+	}
+
+	if (path[0] != '/')
+	{
+		return false;
+	}
+
+	// Reject ASCII control characters anywhere in the path
+	for (size_t i = 0; i < path.size(); ++i)
+	{
+		if (isAsciiControl(static_cast<unsigned char>(path[i])))
+		{
+			return false;
+		}
+	}
+
+	// Normalize repeated slashes
+	collapseDoubleSlashes(path);
+
+	// Reject traversal-like segments
+	if (hasUnsafeSegments(path))
+	{
+		return false;
+	}
+
+	return true;
+}
