@@ -93,4 +93,8 @@ class Router {
 		// RouteResult	handlePost(const HttpRequest& req);
 };
 
+
+std::string	getResolvedPath(const std::string& requestURI, const LocationBlock& rules);
+
+
 #endif

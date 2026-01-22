@@ -138,17 +138,12 @@ RouteResult	Router::routing(const HttpRequest& req) {
 		return RouteResult(413, "Payload Too Large");
 
 // Build path using root of context + request target
-	// std::string fullUri = rules->root + req.rawTarget;//CHANGEME
-	const std::string& urlPath = req.path;
-
-	std::cout << "TARGET PATH:\n" << BOLD_RED << req.path << RES << std::endl;
-
 
 
 // Split logic to handle GET, DELETE and POST separately
 	if (req.method == METHOD_GET)
 	//use urlPath cause location prefix stripping breaks(e.g. /kapouet case)
-		return handleGet(urlPath);
+		return handleGet(req.path);
 		// handleGet(fullUri);
 
 	// else if (req.method == METHOD_DELETE)

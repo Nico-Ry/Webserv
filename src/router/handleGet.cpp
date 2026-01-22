@@ -31,7 +31,7 @@ static bool isFile(const std::string& p)
 }
 
 // ---------- GET ----------
-RouteResult Router::handleGet(const std::string& urlPath)
+RouteResult Router::handleGet(const std::string& requestedPath)
 {
 	// rules must already be set by routing() via getLocation()
 	if (!rules)
@@ -41,14 +41,12 @@ RouteResult Router::handleGet(const std::string& urlPath)
 	if (rules->hasRedirect)
 		return (RouteResult(rules->redirectCode, "Redirect"));
 
-	std::string resolvedPath = mapUrlToFileSystem(urlPath, *rules);
-	std::cout << YELLOW<<"[DEBUG] "<<BOLD_BLUE<<"Mapped URL path '" << urlPath << "' to filesystem path '" << resolvedPath << "'\n";
+	std::string resolvedPath = getResolvedPath(requestedPath, *rules);
+	std::cout << YELLOW<<"[DEBUG] " << BOLD_BLUE <<"ResolvedPath" << requestedPath << "' to filesystem path '" << resolvedPath << "'\n";
 
 	// 1) not found
 	if (!exists(resolvedPath))
-	{
 		return RouteResult(404, "Not Found");
-	}
 
 	// 2) regular file -> serve it
 	if (isFile(resolvedPath))
