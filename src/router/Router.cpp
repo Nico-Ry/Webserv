@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <sstream>
 #include <stdlib.h>
+#include "router/PathUtils.hpp"
 
 Router::Router(const Config& cfg, const ServerBlock* serverBlock)
 	: cfg(cfg), server(serverBlock), rules(NULL) {}
@@ -126,24 +127,29 @@ bool	Router::exceedsMaxSize(const size_t& len) {
  */
 RouteResult	Router::routing(const HttpRequest& req) {
 
-	std::string	uri = req.rawTarget;
+	// std::string	uri = req.rawTarget;
 	// if (!getServer())
 	// 	return RouteResult(512, "No Server configured for this port");
-	getLocation(uri);
+	getLocation(req.path);
+
 	if (!methodAllowed(req.method))
 		return RouteResult(405, "Method Not Allowed");
 	if (exceedsMaxSize(req.contentLength))
 		return RouteResult(413, "Payload Too Large");
 
 // Build path using root of context + request target
-	std::string fullUri = rules->root + req.rawTarget;
-	std::cout << "TARGET PATH:\n" << BOLD_RED << fullUri << RES << std::endl;
+	// std::string fullUri = rules->root + req.rawTarget;//CHANGEME
+	const std::string& urlPath = req.path;
+	
+	std::cout << "TARGET PATH:\n" << BOLD_RED << req.path << RES << std::endl;
 
 
 
 // Split logic to handle GET, DELETE and POST separately
 	if (req.method == METHOD_GET)
-		handleGet(fullUri);
+	//use urlPath cause location prefix stripping breaks(e.g. /kapouet case)
+		return handleGet(urlPath);
+		// handleGet(fullUri);
 
 	// else if (req.method == METHOD_DELETE)
 		//handleDelete(path);
@@ -151,13 +157,13 @@ RouteResult	Router::routing(const HttpRequest& req) {
 	// else if (req.method == METHOD_POST)
 		//handlePost(path);
 
-	else
+	//else//NICO changes this
 		return RouteResult(501, "Not Implemented");
 
 	// std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
 	// printRouterUri(req);
-	RouteResult	success(200, "OK");
-	return success;
+	//RouteResult	success(200, "OK");//NICO CHANGES THIS
+	//return success;
 }
 
 

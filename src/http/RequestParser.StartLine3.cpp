@@ -86,8 +86,29 @@ bool	HttpRequestParser::parseStartLine()
 		Store target and version.
 		target example: "/index.html" or "/path?x=1"
 		version example: "HTTP/1.1"
+		req.rawTarget = "/path?x=1"
+		req.path = "/path"
+		req.query = "x=1"
 	*/
 	_req.rawTarget = target;
+
+	// Split target into path + query
+	size_t q = target.find('?');
+	if (q == std::string::npos)
+	{
+		_req.path = target;
+		_req.query.clear();
+	}
+	else
+	{
+		_req.path = target.substr(0, q);
+		_req.query = target.substr(q + 1);
+	}
+
+	// Basic sanity check: path must start with '/'
+	if (_req.path.empty() || _req.path[0] != '/')
+		return (setError(400));
+
 	_req.httpVersion = version;
 
 	/*

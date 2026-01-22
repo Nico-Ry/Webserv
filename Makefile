@@ -51,6 +51,7 @@ ROUTER_DIR			= src/router/
 SRC_ROUTER			= $(addprefix $(ROUTER_DIR), \
 						Router.cpp \
 						handleGet.cpp \
+						PathUtils.cpp \
 						)
 
 DEBUG_DIR			= src/debug/

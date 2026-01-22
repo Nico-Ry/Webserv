@@ -28,14 +28,14 @@ typedef std::set<std::string, std::greater<std::string> > DescendingStrSet;
  * resulting from the routing logic. Has easy to use constructors too.
  */
 struct RouteResult {
-    int statusCode;
-    std::string errorMsg;
-    LocationBlock* location;
+	int				statusCode;
+	std::string		errorMsg;
+	LocationBlock*	location;
 
-    RouteResult(int code) : statusCode(code), errorMsg(""), location(NULL) {}
-    RouteResult(int code, const std::string& msg) : statusCode(code), errorMsg(msg), location(NULL) {}
+	RouteResult(int code) : statusCode(code), errorMsg(""), location(NULL) {}
+	RouteResult(int code, const std::string& msg) : statusCode(code), errorMsg(msg), location(NULL) {}
 
-    bool isSuccess() const { return statusCode >= 200 && statusCode < 300; }
+	bool isSuccess() const { return statusCode >= 200 && statusCode < 300; }
 };
 
 
@@ -72,9 +72,17 @@ class Router {
 	bool				methodAllowed(const HttpMethod& method);
 	bool				exceedsMaxSize(const size_t& len);
 
-//						METHOD HANDLING
+//---------------------------- METHOD HANDLERS --------------------------------//
 
-	RouteResult			handleGet(const std::string& uri);
+		/*
+			Handle HTTP GET request.
+			Input is the parsed URL path (req.path), without query string.
+		*/
+		RouteResult		handleGet(const std::string& urlPath);
+
+		// Future:
+		// RouteResult	handleDelete(const std::string& urlPath);
+		// RouteResult	handlePost(const HttpRequest& req);
 };
 
 #endif
