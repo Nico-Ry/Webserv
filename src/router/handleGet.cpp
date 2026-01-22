@@ -34,8 +34,7 @@ static bool isFile(const std::string& p)
 RouteResult Router::handleGet(const std::string& requestedPath)
 {
 	// rules must already be set by routing() via getLocation()
-	if (!rules)
-		return (RouteResult(500, "Internal Server Error"));
+
 
 	// Redirect handling (if you want GET to respect redirects)
 	if (rules->hasRedirect)

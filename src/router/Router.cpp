@@ -127,38 +127,31 @@ bool	Router::exceedsMaxSize(const size_t& len) {
  */
 RouteResult	Router::routing(const HttpRequest& req) {
 
-	// std::string	uri = req.rawTarget;
-	// if (!getServer())
-	// 	return RouteResult(512, "No Server configured for this port");
+// Find correct context for requestURI
 	getLocation(req.path);
+
+// Basic Validation Before handling requested method
+
+	if (!rules)// should never happen, defensive coding
+		return (RouteResult(500, "Internal Server Error"));
 
 	if (!methodAllowed(req.method))
 		return RouteResult(405, "Method Not Allowed");
+
 	if (exceedsMaxSize(req.contentLength))
 		return RouteResult(413, "Payload Too Large");
 
-// Build path using root of context + request target
-
-
 // Split logic to handle GET, DELETE and POST separately
 	if (req.method == METHOD_GET)
-	//use urlPath cause location prefix stripping breaks(e.g. /kapouet case)
 		return handleGet(req.path);
-		// handleGet(fullUri);
 
 	// else if (req.method == METHOD_DELETE)
-		//handleDelete(path);
+		//return handleDelete(path);
 
 	// else if (req.method == METHOD_POST)
-		//handlePost(path);
+		//return handlePost(path);
 
-	//else//NICO changes this
 	return RouteResult(501, "Not Implemented");
-
-	// std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
-	// printRouterUri(req);
-	//RouteResult	success(200, "OK");//NICO CHANGES THIS
-	//return success;
 }
 
 
