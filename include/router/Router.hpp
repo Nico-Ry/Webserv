@@ -26,24 +26,32 @@ typedef std::set<std::string, std::greater<std::string> > DescendingStrSet;
 /**
  * @brief Keeps track of status code and potential error message
  * resulting from the routing logic. Has easy to use constructors too.
+ * @attention Obsolete! use HttpResponse directly
+ * @param isRedirect used as flag, as special HTTP Response behaviour
+ * applies for redirections.
+ * @param statusCode HTTP status code.
+ * @param errorMsg HTTP message that matches `statusCode`
+ * @param location the location matching the HTTP Request
+ * @param resolvedPath
  */
-struct RouteResult {
-	int				statusCode;
-	std::string		errorMsg;
-	LocationBlock*	location;
-	std::string		resolvedPath; // filesystem path of file to serve (GET)
+// struct RouteResult {
+// 	bool			isRedirect; //used to determine if redirect, as special behaviour applies
+// 	int				statusCode;
+// 	std::string		errorMsg;
+// 	LocationBlock*	location;
+// 	std::string		resolvedPath; // filesystem path of file to serve (GET)
 
-	RouteResult(int code)
-		: statusCode(code), errorMsg(""), location(NULL), resolvedPath("") {}
+// 	RouteResult(int code)
+// 		: statusCode(code), errorMsg(""), location(NULL), resolvedPath("") {}
 
-	RouteResult(int code, const std::string& msg)
-		: statusCode(code), errorMsg(msg), location(NULL), resolvedPath("") {}
+// 	RouteResult(int code, const std::string& msg)
+// 		: statusCode(code), errorMsg(msg), location(NULL), resolvedPath("") {}
 
-	RouteResult(int code, const std::string& msg, const std::string& path)
-		: statusCode(code), errorMsg(msg), location(NULL), resolvedPath(path) {}
+// 	RouteResult(int code, const std::string& msg, const std::string& path)
+// 		: statusCode(code), errorMsg(msg), location(NULL), resolvedPath(path) {}
 
-	bool isSuccess() const { return statusCode >= 200 && statusCode < 300; }
-};
+// 	bool isSuccess() const { return statusCode >= 200 && statusCode < 300; }
+// };
 
 
 
@@ -69,7 +77,7 @@ class Router {
 //						ROUTING
 
 	HttpResponse		buildResponse(const HttpRequest& req);
-	RouteResult			routing(const HttpRequest& req);
+	HttpResponse		routing(const HttpRequest& req);
 
 
 //					 	REQUEST VALIDATION
@@ -86,11 +94,15 @@ class Router {
 			Handle HTTP GET request.
 			Input is the parsed URL path (req.path), without query string.
 		*/
-		RouteResult		handleGet(const std::string& urlPath);
+		HttpResponse	handleGet(const std::string& urlPath);
 
 		// Future:
 		// RouteResult	handleDelete(const std::string& urlPath);
 		// RouteResult	handlePost(const HttpRequest& req);
 };
+
+
+std::string	getResolvedPath(const std::string& requestURI, const LocationBlock& rules);
+
 
 #endif

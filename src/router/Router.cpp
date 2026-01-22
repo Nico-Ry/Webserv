@@ -125,45 +125,40 @@ bool	Router::exceedsMaxSize(const size_t& len) {
  * @brief Validates all Routing is correct for a given HTTP request
  * @note checks: Port, URI, Max Size.
  */
-RouteResult	Router::routing(const HttpRequest& req) {
+HttpResponse	Router::routing(const HttpRequest& req) {
 
-	// std::string	uri = req.rawTarget;
-	// if (!getServer())
-	// 	return RouteResult(512, "No Server configured for this port");
+// Find correct context for requestURI
 	getLocation(req.path);
+	if (!rules)// should never happen, defensive coding
+		return (HttpResponse(500, "Internal Server Error"));
+
+// TODO: a function that matches redirection code with
+//       the appropriate redirection message and stores
+//       the locationBlock pointer of the request so we
+//		 can find rules->redirectTarget when build HttpResponse
+//	if (rules->hasRedirect)
+//		return buildRedirectRoute(rules->redirectCode);
+
+// Basic Validation Before handling requested method
+
 
 	if (!methodAllowed(req.method))
-		return RouteResult(405, "Method Not Allowed");
+		return HttpResponse(405, "Method Not Allowed");
+
 	if (exceedsMaxSize(req.contentLength))
-		return RouteResult(413, "Payload Too Large");
-
-// Build path using root of context + request target
-	// std::string fullUri = rules->root + req.rawTarget;//CHANGEME
-	const std::string& urlPath = req.path;
-
-	std::cout << "TARGET PATH:\n" << BOLD_RED << req.path << RES << std::endl;
-
-
+		return HttpResponse(413, "Payload Too Large");
 
 // Split logic to handle GET, DELETE and POST separately
 	if (req.method == METHOD_GET)
-	//use urlPath cause location prefix stripping breaks(e.g. /kapouet case)
-		return handleGet(urlPath);
-		// handleGet(fullUri);
+		return handleGet(req.path);
 
 	// else if (req.method == METHOD_DELETE)
-		//handleDelete(path);
+		//return handleDelete(path);
 
 	// else if (req.method == METHOD_POST)
-		//handlePost(path);
+		//return handlePost(path);
 
-	//else//NICO changes this
-	return RouteResult(501, "Not Implemented");
-
-	// std::cout << BOLD_YELLOW << "~ routing ~" << RES << std::endl;
-	// printRouterUri(req);
-	//RouteResult	success(200, "OK");//NICO CHANGES THIS
-	//return success;
+	return HttpResponse(501, "Not Implemented");
 }
 
 
@@ -185,22 +180,31 @@ RouteResult	Router::routing(const HttpRequest& req) {
 // }
 
 HttpResponse Router::buildResponse(const HttpRequest& req) {
-	//Kept RouteResult as may need Location pointer for POST so we can provide the path of where the upload occured
+	//Kept HttpResponse as may need Location pointer for POST so we can provide the path of where the upload occured
 
-	HttpResponse	resp;
-	RouteResult		result = routing(req);
-
+	HttpResponse		result = routing(req);
 
 	if (result.isSuccess()) {
-		std::cout << BOLD_GREEN << result.statusCode << " " << RES << result.errorMsg << std::endl;
-		// Build valid response here!
+	std::cout << BOLD_GREEN << result.statusCode
+		<< RES << " " << result.reason << std::endl;
 	}
 	else {
-		std::cout << BOLD_RED << result.statusCode << " "
-			<< RES << result.errorMsg << std::endl;
-		// Build error response here!
+	std::cout << BOLD_RED << result.statusCode
+		<< RES << " " << result.reason << std::endl;
 	}
 
+	return result;
 
-	return resp;
+	// if (result.isSuccess()) {
+	// 	std::cout << BOLD_GREEN << result.statusCode << " " << RES << result.errorMsg << std::endl;
+	// 	// Build valid response here!
+	// }
+	// else {
+	// 	std::cout << BOLD_RED << result.statusCode << " "
+	// 		<< RES << result.errorMsg << std::endl;
+	// 	// Build error response here!
+	// }
+
+
+	// return resp;
 }
