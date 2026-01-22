@@ -33,15 +33,8 @@ static bool isFile(const std::string& p)
 // ---------- GET ----------
 RouteResult Router::handleGet(const std::string& requestedPath)
 {
-	// rules must already be set by routing() via getLocation()
-
-
-	// Redirect handling (if you want GET to respect redirects)
-	if (rules->hasRedirect)
-		return (RouteResult(rules->redirectCode, "Redirect"));
-
 	std::string resolvedPath = getResolvedPath(requestedPath, *rules);
-	std::cout << YELLOW<<"[DEBUG] " << BOLD_BLUE <<"ResolvedPath" << requestedPath << "' to filesystem path '" << resolvedPath << "'\n";
+	std::cout << YELLOW<<"[DEBUG] " << BOLD_BLUE <<"ResolvedPath" << resolvedPath << RES << std::endl;
 
 	// 1) not found
 	if (!exists(resolvedPath))

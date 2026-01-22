@@ -26,8 +26,15 @@ typedef std::set<std::string, std::greater<std::string> > DescendingStrSet;
 /**
  * @brief Keeps track of status code and potential error message
  * resulting from the routing logic. Has easy to use constructors too.
+ * @param isRedirect used as flag, as special HTTP Response behaviour
+ * applies for redirections.
+ * @param statusCode HTTP status code.
+ * @param errorMsg HTTP message that matches `statusCode`
+ * @param location the location matching the HTTP Request
+ * @param resolvedPath 
  */
 struct RouteResult {
+	bool			isRedirect; //used to determine if redirect, as special behaviour applies
 	int				statusCode;
 	std::string		errorMsg;
 	LocationBlock*	location;

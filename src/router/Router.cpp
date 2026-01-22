@@ -129,11 +129,18 @@ RouteResult	Router::routing(const HttpRequest& req) {
 
 // Find correct context for requestURI
 	getLocation(req.path);
+	if (!rules)// should never happen, defensive coding
+		return (RouteResult(500, "Internal Server Error"));
+
+// TODO: a function that matches redirection code with
+//       the appropriate redirection message and stores
+//       the locationBlock pointer of the request so we
+//		 can find rules->redirectTarget when build HttpResponse
+//	if (rules->hasRedirect)
+//		return buildRedirectRoute(rules->redirectCode);
 
 // Basic Validation Before handling requested method
 
-	if (!rules)// should never happen, defensive coding
-		return (RouteResult(500, "Internal Server Error"));
 
 	if (!methodAllowed(req.method))
 		return RouteResult(405, "Method Not Allowed");
