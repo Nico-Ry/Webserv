@@ -3,7 +3,8 @@
 #include <sstream>
 #include <stdlib.h>
 
-Router::Router(const Config& cfg) : cfg(cfg) {}
+Router::Router(const Config& cfg, const ServerBlock* serverBlock)
+	: cfg(cfg), server(serverBlock), rules(NULL) {}
 
 Router::~Router() {}
 

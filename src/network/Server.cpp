@@ -29,23 +29,33 @@ Server::Server(const Config& cfg, int backlog)
     }
 
     // Creer un socket pour chaque ServerBlock dans la config
-    for (size_t i = 0; i < cfg.servers.size(); i++) {
-        int port = cfg.servers[i].port;
+    try {
+        for (size_t i = 0; i < cfg.servers.size(); i++) {
+            int port = cfg.servers[i].port;
 
-        std::cout << BOLD_CYAN << "Setting up server on port " << port << "..." << RES << std::endl;
+            std::cout << BOLD_CYAN << "Setting up server on port " << port << "..." << RES << std::endl;
 
-        // Creer le socket serveur
-        int fd = socket_manager.create_server(port, backlog);
+            // Creer le socket serveur
+            int fd = socket_manager.create_server(port, backlog);
 
-        // Stocker le fd et sa config associée
-        server_fds.push_back(fd);
-        fd_to_server[fd] = &cfg.servers[i];
+            // Stocker le fd et sa config associée
+            server_fds.push_back(fd);
+            fd_to_server[fd] = &cfg.servers[i];
 
-        // Ajouter au multiplexer pour surveiller les nouvelles connexions
-        multiplexer.add_fd(fd, POLLIN);
+            // Ajouter au multiplexer pour surveiller les nouvelles connexions
+            multiplexer.add_fd(fd, POLLIN);
 
-        std::cout << GREEN << "✓ " << RES << "Server socket created: "
-                  << "fd=" << fd << " (port " << port << ")" << std::endl;
+            std::cout << GREEN << "✓ " << RES << "Server socket created: "
+                      << "fd=" << fd << " (port " << port << ")" << std::endl;
+        }
+    } catch (...) {
+        // Nettoyer les sockets deja crees en cas d'echec
+        for (size_t i = 0; i < server_fds.size(); i++) {
+            SocketManager::close_socket(server_fds[i]);
+        }
+        server_fds.clear();
+        fd_to_server.clear();
+        throw;
     }
 
     std::cout << GREEN << "✓ " << RES << "All servers ready to accept connections ("
@@ -150,11 +160,12 @@ void Server::acceptNewClient(int server_fd) {
         Connection* conn = new Connection(client_fd);
         clients[client_fd] = conn;
 
+        // Stocker quel ServerBlock a accepté ce client
+        const ServerBlock* sb = fd_to_server.find(server_fd)->second;
+        client_to_server[client_fd] = sb;
+
         // Surveiller le client pour les donnees entrantes
         multiplexer.add_fd(client_fd, POLLIN);
-
-        // Afficher le port du serveur qui a accepté cette connexion
-        const ServerBlock* sb = fd_to_server.find(server_fd)->second;
         std::cout << GREEN << "✓ " << RES << "New client connected on port " << sb->port << ": "
                   << "fd=" << client_fd << " -> (total clients: " << clients.size() << ")"
                   << std::endl;
@@ -240,6 +251,9 @@ void Server::removeClient(int fd) {
             parsers.erase(parser_it);
         }
 
+        // Supprimer le mapping client -> server
+        client_to_server.erase(fd);
+
         std::cout << BOLD_YELLOW << "[DEBUG] "
 			<< RES << "live clients: " << clients.size() << std::endl;
         // std::cout << "  (remaining clients: " << clients.size() << ")" << std::endl;
@@ -284,15 +298,11 @@ void Server::processRequest(Connection* conn, int fd) {
 		// Traiter la requete HTTP valide
 		const HttpRequest& req = parser->getRequest();
 
-		// std::cout << "  [fd=" << fd << "] HTTP Request: "
-		//          << (req.method == METHOD_GET ? "GET" :
-		//              req.method == METHOD_POST ? "POST" :
-		//              req.method == METHOD_DELETE ? "DELETE" : "UNKNOWN")
-		//          << " " << req.rawTarget << " " << req.httpVersion << std::endl;
-		printHttpRequest(req);
+		// printHttpRequest() is already called in RequestParser.Core1.cpp feed()
 
-		// Generer la reponse HTTP
-		Router	requestHandler(*config);
+		// Generer la reponse HTTP avec le bon ServerBlock
+		const ServerBlock* serverBlock = client_to_server[fd];
+		Router	requestHandler(*config, serverBlock);
 		HttpResponse resp = requestHandler.buildResponse(req);
 		// HttpResponse resp = this->handleHttpRequest(req); // Lancement depuis HTML Server.cpp
 

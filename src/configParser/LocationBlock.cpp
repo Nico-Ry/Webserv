@@ -26,6 +26,7 @@ LocationBlock::LocationBlock() {}
  * @note Sets `hasRediect` to false and `redirectCode` to 0
  */
 LocationBlock::LocationBlock(const ServerBlock& s) :
+	methods(s.defaultMethods),
 	root(s.root),
 	index(s.index),
 	autoIndex(s.autoIndex),

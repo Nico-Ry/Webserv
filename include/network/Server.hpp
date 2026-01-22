@@ -57,6 +57,7 @@ private:
     IOMultiplexer multiplexer;
     std::map<int, Connection*> clients;
     std::map<int, HttpRequestParser*> parsers;  // Un parser par client (keep-alive)
+    std::map<int, const ServerBlock*> client_to_server; // client_fd → ServerBlock
 
     // Multi-port support
     std::vector<int> server_fds;                    // Tous les server sockets

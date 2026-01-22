@@ -42,7 +42,7 @@ struct RouteResult {
 class Router {
 
 	public:
-		Router(const Config& cfg);
+		Router(const Config& cfg, const ServerBlock* serverBlock);
 		~Router();
 
 //---------------------------------------------------------------------------//
