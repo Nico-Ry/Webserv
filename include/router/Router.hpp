@@ -105,4 +105,9 @@ class Router {
 std::string	getResolvedPath(const std::string& requestURI, const LocationBlock& rules);
 
 
+// fsDirPath: filesystem directory path (real path on disk)
+//            used to read directory entries and file metadata
+// urlPath:   requested URL path (used to generate HTML links)
+HttpResponse buildAutoIndexResponse( const std::string& fsDirPath, const std::string& urlPath);
+
 #endif

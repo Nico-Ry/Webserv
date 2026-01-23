@@ -184,5 +184,5 @@ void	ConfigParser::parseRoot(ServerBlock& s) {
 	s.hasRoot = true;
 }
 
-#pragma endregion PARSE SERVER DIRECTIVES
+// #pragma endregion PARSE SERVER DIRECTIVES
 

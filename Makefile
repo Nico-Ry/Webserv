@@ -49,6 +49,7 @@ SRC_CONFIG_PARSER	= $(addprefix $(CP_DIR), \
 
 ROUTER_DIR			= src/router/
 SRC_ROUTER			= $(addprefix $(ROUTER_DIR), \
+						AutoIndex.cpp \
 						Router.cpp \
 						handleGet.cpp \
 						PathUtils.cpp \

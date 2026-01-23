@@ -60,8 +60,10 @@ HttpResponse	Router::handleGet(const std::string& requestedPath)
 				return HttpResponse(200, "OK");
 			}
 		}
+		// No index file found
+		if (rules->autoIndex == true)
+			return buildAutoIndexResponse(resolvedPath, requestedPath);
 
-		// No autoindex yet, so directory without index is forbidden
 		return HttpResponse(403, "Forbidden");
 	}
 

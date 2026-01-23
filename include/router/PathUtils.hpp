@@ -25,4 +25,5 @@ std::string	joinPath(const std::string& a, const std::string& b);
 */
 std::string	getResolvedPath(const std::string& urlPath, const LocationBlock& rules);
 
+
 #endif
