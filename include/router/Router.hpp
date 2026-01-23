@@ -95,6 +95,7 @@ class Router {
 			Input is the parsed URL path (req.path), without query string.
 		*/
 		HttpResponse	handleGet(const std::string& urlPath);
+		bool			readFileToString(const std::string& path, std::string& responseBody);
 
 		// Future:
 		// RouteResult	handleDelete(const std::string& urlPath);
