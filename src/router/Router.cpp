@@ -163,21 +163,24 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 
 
 
-//helper function to read file into string
-// static bool readFileToString(const std::string& path, std::string& out)
-// {
-// 	std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
+// helper function to read file into string
+bool	Router::readFileToString(const std::string& path, std::string& responseBody)
+{
+	// std::ios::in		= flag for open in read mode
+	// std::ios::binary	= flag for read raw bytes as they are -> do not auto-modify "\r\n" to "\n"
+	std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
 
-// 	if (!ifs.is_open())
-// 	{
-// 		return false;
-// 	}
 
-// 	std::ostringstream oss;
-// 	oss << ifs.rdbuf();
-// 	out = oss.str();
-// 	return true;
-// }
+// checks file exists, has read permission and path is valid
+	if (!ifs.is_open())
+		return false;
+
+// read and copy over
+	std::ostringstream oss;
+	oss << ifs.rdbuf();
+	responseBody = oss.str();
+	return true;
+}
 
 HttpResponse Router::buildResponse(const HttpRequest& req) {
 	//Kept HttpResponse as may need Location pointer for POST so we can provide the path of where the upload occured

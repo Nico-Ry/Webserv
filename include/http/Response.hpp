@@ -19,6 +19,8 @@ struct HttpResponse
 	// 	: statusCode(code), reason(msg) {}
 	HttpResponse(int code, const std::string& msg)
 		: statusCode(code), reason(msg) {}
+	HttpResponse(int code, const std::string& msg, const std::string& body)
+		: statusCode(code), reason(msg), body(body) {}
 	bool isSuccess() const { return statusCode >= 200 && statusCode < 300; }
 };
 

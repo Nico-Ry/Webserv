@@ -34,30 +34,48 @@ static bool isFile(const std::string& p)
 HttpResponse	Router::handleGet(const std::string& requestedPath)
 {
 	std::string resolvedPath = getResolvedPath(requestedPath, *rules);
-	std::cout << YELLOW<<"[DEBUG] " << BOLD_BLUE <<"ResolvedPath " << resolvedPath << RES << std::endl;
+	std::string	body;
+	std::cout << YELLOW<<"[DEBUG] " << BOLD_BLUE <<"ResolvedPath: " << resolvedPath << RES << std::endl;
 
 	// 1) not found
 	if (!exists(resolvedPath)){
-		std::cout << ORANGE << "DOES NOT EXIST! " << RES << resolvedPath << std::endl;
+		std::cout
+			<< YELLOW << "[DEBUG] "
+			<< ORANGE << "DOES NOT EXIST! "
+			<< RES << resolvedPath << std::endl;
 		return HttpResponse(404, "Not Found");
 	}
 
 	// 2) regular file -> serve it
 	if (isFile(resolvedPath))
 	{
-		return HttpResponse(200, "OK");
+		std::cout
+			<< YELLOW << "[DEBUG] "
+			<< GREEN << "Path links to file"
+			<< RES << std::endl;
+		if (!readFileToString(resolvedPath, body))
+			return HttpResponse(403, "Forbidden");
+		return HttpResponse(200, "OK", body);
 	}
 
 	// 3) directory -> try index files
 	if (isDir(resolvedPath))
 	{
+		std::cout
+			<< YELLOW << "[DEBUG] "
+			<< CYAN << "Path links to directory"
+			<< RES << std::endl;
+
 		for (size_t i = 0; i < rules->index.size(); ++i)
 		{
+			std::cout << YELLOW << "[DEBUG] " << RES << "Trying: " << PURPLE << joinPath(resolvedPath, rules->index[i]) << RES << std::endl;
 			std::string candidate = joinPath(resolvedPath, rules->index[i]);
 
 			if (isFile(candidate))
 			{
-				return HttpResponse(200, "OK");
+				if (!readFileToString(candidate, body))
+					return HttpResponse(403, "Forbidden");
+				return HttpResponse(200, "OK", body);
 			}
 		}
 		// No index file found
