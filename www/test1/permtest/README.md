@@ -212,6 +212,10 @@ echo "[+] Done."
 ```
 
 Notes:
+- Restore permissions locally (optional but recommended) so you can keep working comfortably:
+```
+chmod -R u+rwx www/test1/permtest
+```
 - These tests assume the server is running as the directory owner.
 - Directory listing (autoindex) requires both read (R) and execute (X) permissions.
 - curl is preferred over browsers because it shows
