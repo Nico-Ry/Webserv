@@ -93,7 +93,11 @@ int main(int argc, char** argv) {
 
 		g_server = NULL;
 
-    } catch (const Server::ServerException& e) {
+    } catch (const ParseException& e) {
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
+	catch (const Server::ServerException& e) {
         std::cerr << "✗ Server Error: " << e.what() << std::endl;
         return 1;
     } catch (const SocketManager::SocketException& e) {
