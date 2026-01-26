@@ -21,6 +21,8 @@ struct HttpResponse
 		: statusCode(code), reason(msg) {}
 	HttpResponse(int code, const std::string& msg, const std::string& body)
 		: statusCode(code), reason(msg), body(body) {}
+	HttpResponse(const std::string& redirection, int code, const std::string& msg)
+		: statusCode(code), reason(msg), isRedirect(true), redirectTarget(redirection) {}
 	bool isSuccess() const { return statusCode >= 200 && statusCode < 300; }
 };
 
