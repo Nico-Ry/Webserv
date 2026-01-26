@@ -1,7 +1,12 @@
 #ifndef PATHUTILS_HPP
 #define PATHUTILS_HPP
 
-#include <string>
+#include <string.h>		// strerror
+#include <unistd.h>     // access()
+#include <errno.h>      // errno
+#include "colours.hpp"
+#include <iostream>
+
 #include "../configParser/LocationBlock.hpp"
 
 /*
@@ -29,5 +34,10 @@ std::string	getResolvedPath(const std::string& urlPath, const LocationBlock& rul
 bool	exists(const std::string& p);
 bool	isDir(const std::string& p);
 bool	isFile(const std::string& p);
+
+bool canReadFile(const std::string& p);
+bool canTraverseDir(const std::string& p);
+bool canListDir(const std::string& p);
+void debugAccessError(const std::string& what, const std::string& path);
 
 #endif

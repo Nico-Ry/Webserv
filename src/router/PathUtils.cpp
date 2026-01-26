@@ -29,6 +29,34 @@ bool isFile(const std::string& p)
 	return (S_ISREG(st.st_mode));
 }
 
+bool canReadFile(const std::string& p)
+{
+	return access(p.c_str(), R_OK) == 0;
+}
+
+// For directories, X_OK is required to "enter"/traverse.
+// Without X_OK, you can't access contents or files inside.
+bool canTraverseDir(const std::string& p)
+{
+	return access(p.c_str(), X_OK) == 0;
+}
+
+// For autoindex, you also need to be able to read the directory entries.
+// Usually you need BOTH: R_OK (list) and X_OK (traverse).
+bool canListDir(const std::string& p)
+{
+	return access(p.c_str(), R_OK) == 0 && access(p.c_str(), X_OK) == 0;
+}
+
+void debugAccessError(const std::string& what, const std::string& path)
+{
+	std::cout << YELLOW << "[DEBUG] " << ORANGE
+			  << what << " denied: " << path
+			  << " (" << strerror(errno) << ")"
+			  << RES << std::endl;
+}
+
+
 
 /*
 	Join two filesystem path components safely.
