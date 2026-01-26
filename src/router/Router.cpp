@@ -9,23 +9,10 @@ Router::Router(const Config& cfg, const ServerBlock* serverBlock)
 
 Router::~Router() {}
 
-// /**
-//  * @brief Finds the `ServerBlock` that matches the client connection port.
-//  * If found, makes a copy of it in `this->server`
-//  */
-// bool	Router::getServer() {
-// 	for (size_t i=0; i < cfg.servers.size(); ++i) {
-// 		if (cfg.servers[i].port == this->clientPort) {
-// 			this->server = &cfg.servers[i];
-// 			return true;
-// 		}
-// 	}
-// 	return false;
-// }
 
 
 /**
- * @brief Genrates a set filled with all parent paths in descending order (longest to shortest).
+ * @brief Generates a set filled with all parent paths in descending order (longest to shortest).
  * @note Such that: `/www/images/data` would produce: `/www/images/data`, `/www/images`, `/www` and `/`
  */
 DescendingStrSet	Router::genParentPaths(const std::string& uri) {
@@ -121,6 +108,45 @@ bool	Router::exceedsMaxSize(const size_t& len) {
 }
 
 
+
+// helper function to read file into string
+bool	Router::readFileToString(const std::string& path, std::string& responseBody)
+{
+	// std::ios::in		= flag for open in read mode
+	// std::ios::binary	= flag for read raw bytes as they are -> do not auto-modify "\r\n" to "\n"
+	std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
+
+
+// checks file exists, has read permission and path is valid
+	if (!ifs.is_open())
+		return false;
+
+// read and copy over
+	std::ostringstream oss;
+	oss << ifs.rdbuf();
+	responseBody = oss.str();
+	return true;
+}
+
+
+
+HttpResponse	Router::buildRedirectResponse(const int& code, const std::string& target) {
+	std::string	statusMsg;
+
+	if (code == 301)
+		statusMsg = "Moved Permanently";
+	else if (code == 302)
+		statusMsg = "Found";
+	else if (code == 303)
+		statusMsg = "See Other";
+	else//	if no code matches return internal server error
+		return (HttpResponse(500, "Internal Server Error"));
+
+	return (HttpResponse(target, code, statusMsg));
+}
+
+
+
 /**
  * @brief Validates all Routing is correct for a given HTTP request
  * @note checks: Port, URI, Max Size.
@@ -136,8 +162,8 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 //       the appropriate redirection message and stores
 //       the locationBlock pointer of the request so we
 //		 can find rules->redirectTarget when build HttpResponse
-//	if (rules->hasRedirect)
-//		return buildRedirectRoute(rules->redirectCode);
+	if (rules->hasRedirect)
+		return buildRedirectResponse(rules->redirectCode, rules->redirectTarget);
 
 // Basic Validation Before handling requested method
 
@@ -161,26 +187,6 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 	return HttpResponse(501, "Not Implemented");
 }
 
-
-
-// helper function to read file into string
-bool	Router::readFileToString(const std::string& path, std::string& responseBody)
-{
-	// std::ios::in		= flag for open in read mode
-	// std::ios::binary	= flag for read raw bytes as they are -> do not auto-modify "\r\n" to "\n"
-	std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary);
-
-
-// checks file exists, has read permission and path is valid
-	if (!ifs.is_open())
-		return false;
-
-// read and copy over
-	std::ostringstream oss;
-	oss << ifs.rdbuf();
-	responseBody = oss.str();
-	return true;
-}
 
 HttpResponse Router::buildResponse(const HttpRequest& req) {
 	//Kept HttpResponse as may need Location pointer for POST so we can provide the path of where the upload occured

@@ -74,7 +74,6 @@ std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnectio
 {
 	std::string											out;
 	std::map<std::string, std::string>::const_iterator	it;
-	bool												hasContentLength;
 
 	// TODO: adapt behaviour based on status code
 	/*
@@ -104,43 +103,19 @@ std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnectio
 		out += "keep-alive\r\n";
 
 	/*
-		4) Content-Length header
-		We ensure it exists even if user did not set it.
+		4) Add Content length header
 	*/
-	hasContentLength = false;
-	it = resp.headers.find("Content-Length");
-	if (it != resp.headers.end())
-		hasContentLength = true;
-
-	if (hasContentLength == false)
-	{
-		out += "Content-Length: ";
-		out += toStringSize(resp.body.size());
-		out += "\r\n";
-	}
+	out += "Content-Length: ";
+	out += toStringSize(resp.body.size());
+	out += "\r\n";
 
 	/*
-		5) Add all user-provided headers from resp.headers
-		We do not try to normalize case; Module 3 can choose.
+		5) AHandle Redirect header
 	*/
-	it = resp.headers.begin();
-	while (it != resp.headers.end())
-	{
-		/*
-			Do not duplicate Content-Length if we already added it above.
-			If the user provided it, we keep their version.
-		*/
-		if (it->first == "Content-Length" && hasContentLength == false)
-		{
-			++it;
-			continue ;
-		}
-
-		out += it->first;
-		out += ": ";
-		out += it->second;
+	if (resp.isRedirect) {
+		out += "Location: ";
+		out += resp.redirectTarget;
 		out += "\r\n";
-		++it;
 	}
 
 	/*
@@ -154,4 +129,47 @@ std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnectio
 	out += resp.body;
 
 	return (out);
+
+
+	/*
+		4) Content-Length header
+		We ensure it exists even if user did not set it.
+	*/
+	// hasContentLength = false;
+	// it = resp.headers.find("Content-Length");
+	// if (it != resp.headers.end())
+		// hasContentLength = true;
+
+	// if (hasContentLength == false)
+	// {
+	// out += "Content-Length: ";
+	// out += toStringSize(resp.body.size());
+	// out += "\r\n";
+	// }
+
+	/*
+		5) Add all user-provided headers from resp.headers
+		We do not try to normalize case; Module 3 can choose.
+	*/
+	// it = resp.headers.begin();
+	// while (it != resp.headers.end())
+	// {
+	// 	/*
+	// 		Do not duplicate Content-Length if we already added it above.
+	// 		If the user provided it, we keep their version.
+	// 	*/
+	// 	if (it->first == "Content-Length" && hasContentLength == false)
+	// 	{
+	// 		++it;
+	// 		continue ;
+	// 	}
+
+	// 	out += it->first;
+	// 	out += ": ";
+	// 	out += it->second;
+	// 	out += "\r\n";
+	// 	++it;
+	// }
+
+
 }
