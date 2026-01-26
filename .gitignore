@@ -8,6 +8,5 @@ obj/
 webserv
 
 
-/www/
 cgi/*
 cgi-bin/
