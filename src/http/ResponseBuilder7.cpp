@@ -97,11 +97,12 @@ std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnectio
 	StringMap	h = resp.headers;
 	for (StringMap::const_iterator it = h.begin(); it != h.end(); ++it)
 		ss << it->first << it->second << CRLF;
-	ss << "\r\n"; // mark end of headers
+	ss << CRLF; // mark end of headers
 
 	/*
 		4) insert body
 	*/
 	ss << resp.body;
+	std::cout << resp.body << std::endl;
 	return (ss.str());
 }

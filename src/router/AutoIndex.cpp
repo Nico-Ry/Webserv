@@ -66,7 +66,7 @@ static std::string buildAutoIndexHeaderHtml(const std::string& baseUrl)
 {
 	std::ostringstream html;
 
-	html << "<!doctype html>\n"
+	html << "<!DOCTYPE html>\n"
 		 << "<html>\n"
 		 << "<head>\n"
 		 << "  <meta charset=\"utf-8\">\n"
@@ -203,9 +203,10 @@ HttpResponse buildAutoIndexResponse(const std::string& fsDirPath, const std::str
 	if (!generateAutoIndexHtml(fsDirPath, urlPath, body))
 		return (HttpResponse(403, "Forbidden"));
 
-	HttpResponse resp(200, "OK");
-	resp.headers["Content-Type"] = "text/html; charset=utf-8";
+	HttpResponse resp(200, "OK", body);
+	resp.headers["Content-Type: "] = "text/html; charset=utf-8";
 	resp.body = body;
+	std::cout << CYAN << resp.body << RES << std::endl;
 	return (resp);
 }
-
+// Content-Type: text/html; charset=UTF-8
