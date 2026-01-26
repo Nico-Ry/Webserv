@@ -205,8 +205,6 @@ HttpResponse buildAutoIndexResponse(const std::string& fsDirPath, const std::str
 
 	HttpResponse resp(200, "OK", body);
 	resp.headers["Content-Type: "] = "text/html; charset=utf-8";
-	resp.body = body;
-	std::cout << CYAN << resp.body << RES << std::endl;
 	return (resp);
 }
 // Content-Type: text/html; charset=UTF-8

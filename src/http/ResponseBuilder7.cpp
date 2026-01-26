@@ -103,6 +103,5 @@ std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnectio
 		4) insert body
 	*/
 	ss << resp.body;
-	std::cout << resp.body << std::endl;
 	return (ss.str());
 }
