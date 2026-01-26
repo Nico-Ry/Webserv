@@ -64,11 +64,8 @@ HttpResponse	Router::handleGet(const std::string& requestedPath)
 		// If the requested URL does not end with '/', relative links in autoindex break.
 		// Redirect /autoin -> /autoin/
 		if (!requestedPath.empty() && requestedPath[requestedPath.size() - 1] != '/')
-		{
-			HttpResponse resp(301, "Moved Permanently");
-			resp.headers["Location"] = requestedPath + "/";
-			return (resp);
-		}
+			return HttpResponse(requestedPath + "/", 301, "Moved Permanently");
+
 		std::cout
 			<< YELLOW << "[DEBUG] "
 			<< CYAN << "Path links to directory"
