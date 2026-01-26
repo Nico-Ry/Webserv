@@ -6,6 +6,7 @@
 #include "LocationBlock.hpp"
 #include "Tokeniser.hpp"
 #include "Config.hpp"
+#include "colours.hpp"
 
 struct Token;
 class Config;
@@ -77,7 +78,7 @@ class ConfigParser {
 		void		parseErrorPages(ServerBlock& s);
 		void		parseAutoIndex(ServerBlock& s);
 		void		parseMaxSize(ServerBlock& s);
-		void		getSizeAndUnit(const std::string& sizeToken, long& num, std::string& unit);
+		void		getSizeAndUnit(const Token& sizeToken, long& num, std::string& unit);
 		void		updateUnit(std::string& unit, const std::string& currentToken);
 
 
@@ -100,6 +101,73 @@ class ConfigParser {
 		ConfigParser(const std::vector<Token>& toks);
 		~ConfigParser();
 		void	parse(Config& data); // May throw ParseException
+};
+
+
+class ParseException : public std::exception {
+private:
+    std::string message;
+    int line;
+    int column;
+    std::string tokenValue;
+    std::string fullMessage;  // Cached formatted message
+
+    void buildMessage() {
+        std::stringstream ss;
+
+        // Format: "9 | Error: Root must be absolute: www/"
+        ss	<< CYAN << "line" << std::setw(4) << line
+			<< RES << "| "
+    		<< BOLD_RED << "Config file Error:"
+			<< RES << " " << message;
+
+        // Add token value if provided
+        if (!tokenValue.empty()) {
+            ss << " " << BOLD_RED << "'" << tokenValue << "'" << RES;
+        }
+
+        // Add column info if provided
+        if (column >= 0) {
+            ss << " " << YELLOW << "(column " << column << ")" << RES;
+        }
+
+        fullMessage = ss.str();
+    }
+
+public:
+    // Constructor with just message
+    ParseException(const std::string& msg)
+        : message(msg), line(-1), column(-1), tokenValue("") {
+        buildMessage();
+    }
+
+    // Constructor with line number
+    ParseException(const std::string& msg, int ln)
+        : message(msg), line(ln), column(-1), tokenValue("") {
+        buildMessage();
+    }
+
+    // Constructor with line, column, and token
+    ParseException(const std::string& msg, int ln, int col, const std::string& token = "")
+        : message(msg), line(ln), column(col), tokenValue(token) {
+        buildMessage();
+    }
+
+    // Constructor from Token (most convenient!)
+    ParseException(const std::string& msg, const Token& token)
+        : message(msg), line(token.line), column(token.column), tokenValue(token.value) {
+        buildMessage();
+    }
+
+    virtual ~ParseException() throw() {}
+
+    virtual const char* what() const throw() {
+        return fullMessage.c_str();
+    }
+
+    int getLine() const { return line; }
+    int getColumn() const { return column; }
+    std::string getTokenValue() const { return tokenValue; }
 };
 
 

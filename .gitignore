@@ -7,7 +7,8 @@ obj/
 
 webserv
 
+config/permissions.conf
+wwwPermissionTests
 
-/www/
 cgi/*
 cgi-bin/

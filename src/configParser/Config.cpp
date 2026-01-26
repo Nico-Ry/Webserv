@@ -53,9 +53,8 @@ void	Config::detectDuplicatePorts(const std::vector<ServerBlock>& servs) {
 
 		if (!usedPorts.insert(port).second) {
 			std::stringstream	ss;
-			ss << "Duplicate port: " << RED << port
-				<< RES << " found in multiple servers";
-			throw std::runtime_error(ss.str());
+			ss << "Duplicate port: " << BOLD_RED << port;
+			throw ParseException(ss.str(), 0);
 		}
 	}
 }

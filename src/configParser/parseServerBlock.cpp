@@ -16,7 +16,7 @@ ServerBlock	ConfigParser::parseServerBlock() {
 	ServerBlock	s;
 
 	if (!matchWord("server"))// Expect word "server"
-		throw std::runtime_error("Unkown directive: " + peek().value);
+		throw ParseException("Unkown directive: ", peek());
 
 	expect(TOKEN_LBRACE, "Expected '{'");
 	while (!check(TOKEN_RBRACE)) {
@@ -28,7 +28,7 @@ ServerBlock	ConfigParser::parseServerBlock() {
 
 	// If directive not found in map, throw error
 		if (it == serverDirectives.end())
-			throw std::runtime_error("Unkown directive: " + directive.value);
+			throw ParseException("Unkown directive: ", directive);
 
 	// Else call function pointer to parse directive
 		(this->*(it->second))(s);
@@ -51,9 +51,9 @@ ServerBlock	ConfigParser::parseServerBlock() {
 void	ConfigParser::parseMaxSize(ServerBlock& s) {
 	long		num;
 	std::string	unit;
-	Token		sizeToken = expect(TOKEN_WORD, "Expected size specifier: ");
+	Token		sizeToken = expect(TOKEN_WORD, "Expected size specifier");
 
-	getSizeAndUnit(sizeToken.value, num, unit);
+	getSizeAndUnit(sizeToken, num, unit);
 	expect(TOKEN_SEMICOLON, "Expected ';'");
 
 	size_t		maxSize = 0;
@@ -65,7 +65,7 @@ void	ConfigParser::parseMaxSize(ServerBlock& s) {
 		maxSize = static_cast<size_t>(num) * 1024UL * 1024UL * 1024UL;
 
 	if (maxSize > 104857600) // max size 100M
-		throw std::runtime_error("max_size: too large (max 100M): " + sizeToken.value);
+		throw ParseException("size too large (max 100M):", sizeToken);
 	s.clientMaxBodySize = maxSize;
 }
 
@@ -81,7 +81,7 @@ void	ConfigParser::parseAutoIndex(ServerBlock& s) {
 	else if (peek().value == "off")
 		s.autoIndex = false;
 	else
-		throw std::runtime_error("Unknown boolean: " + peek().value);
+		throw ParseException("Unknown boolean:", peek());
 
 	consume(); //consume on/off
 	expect(TOKEN_SEMICOLON, "Expected ';'");
@@ -97,14 +97,12 @@ void	ConfigParser::parseErrorPages(ServerBlock& s) {
 	long				err_code;
 	StringVec			err_pages;
 
-	if (!(ss >> err_code)) {
-		std::cerr << peek().line << " |"; //[DEBUG]
-		throw std::runtime_error("error_page: not an error code or out of range: " + peek().value);
-	}
+	if (!(ss >> err_code))
+		throw ParseException("not an error code or out of range:", peek());
 	if (!ss.eof())
-		throw std::runtime_error("error_page: invalid error code input: " + peek().value);
+		throw ParseException("invalid error code input:", peek());
 	if (err_code < 400 || err_code > 599)
-		throw std::runtime_error("error_page: inadequate error code: " + peek().value);
+		throw ParseException("inadequate error code:", peek());
 
 	consume(); // consume error code
 	if (!check(TOKEN_WORD)) // expect at least one error file/path
@@ -158,11 +156,11 @@ void	ConfigParser::parseListen(ServerBlock& s) {
 	long	port;
 
 	if (!(ss >> port))
-		throw std::runtime_error("listen: not a number or out of range: " + peek().value);
+		throw ParseException("not a number or out of range:", peek());
 	if (!ss.eof())
-		throw std::runtime_error("listen: invalid characters: " + peek().value);
+		throw ParseException("invalid port:", peek());
 	if (port < 1 || port > 65535)
-		throw std::runtime_error("listen: port out of range: " + peek().value);
+		throw ParseException("port out of range:", peek());
 
 // consume port number
 	consume();
@@ -177,12 +175,24 @@ void	ConfigParser::parseListen(ServerBlock& s) {
 //---------------------------------------------------------------------------//
 
 void	ConfigParser::parseRoot(ServerBlock& s) {
-	Token	rootPath = expect(TOKEN_WORD, "expected path for root:");
+	Token	rootToken = expect(TOKEN_WORD, "expected path for root:");
+	std::string	root = rootToken.value;
 
-	s.root = rootPath.value;
+	if (root.empty())
+		throw ParseException("root cannot be empty", rootToken.line);
+
+	if (root[0] == '/') {
+		std::stringstream	ss;
+		ss	<< CYAN << "line" << std::setw(4) << rootToken.line
+			<< RES << "| "
+			<< BOLD_ORANGE << "Warning:"
+			<< RES << " root may be misconfigured: "
+			<< ORANGE << root << RES << std::endl;
+		std::cerr << ss.str();
+	}
+
+	s.root = root;
 	expect(TOKEN_SEMICOLON, "Expected ';'");
 	s.hasRoot = true;
 }
-
-// #pragma endregion PARSE SERVER DIRECTIVES
 

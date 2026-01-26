@@ -78,15 +78,15 @@ void	ConfigParser::updateUnit(std::string& unit, const std::string& currentToken
  * the current Token points to the token following `sizeToken`
  * @return throws error on invalid value and/or unit specifier
  */
-void	ConfigParser::getSizeAndUnit(const std::string& sizeToken, long& num, std::string& unit) {
-	std::stringstream	ss(sizeToken);
+void	ConfigParser::getSizeAndUnit(const Token& sizeToken, long& num, std::string& unit) {
+	std::stringstream	ss(sizeToken.value);
 	std::string			unit_err = "max_size: invalid unit specifier, expected K, M or G: ";
 
 	if (!(ss >> num))
-		throw std::runtime_error("max_size: invalid input: " + sizeToken);
+		throw ParseException("max_size invalid input:", sizeToken);
 
 	if (num < 0)
-		throw std::runtime_error("max_size: negative number: " + sizeToken);
+		throw ParseException("max_size negative number:", sizeToken);
 
 	//store remainder of ss in unit
 	ss >> unit;
@@ -101,9 +101,9 @@ void	ConfigParser::getSizeAndUnit(const std::string& sizeToken, long& num, std::
 
 	// check for invalid unit specifier
 	if (unit.size() > 1)
-		throw std::runtime_error(unit_err + sizeToken);
+		throw ParseException("max_size invalid unit", sizeToken.line);
 	if (unit != "K" && unit != "M" && unit != "G")
-		throw std::runtime_error(unit_err + sizeToken);
+		throw ParseException("max_size invalid unit", sizeToken.line);
 }
 
 
@@ -156,7 +156,7 @@ Token	ConfigParser::peekNext() const {
  */
 Token	ConfigParser::consume() {
 	if (isAtEnd())
-		throw(std::runtime_error("Can't consume past end of tokens!"));
+		throw(ParseException("Can't consume past end of tokens!", peek().line));
 	Token	current = peek();
 	++currentIndex;
 	return current;
@@ -174,14 +174,8 @@ Token	ConfigParser::consume() {
  */
 Token	ConfigParser::expect(TokenType type, const std::string& msg) {
 	// Token	current = peek();
-	if (!check(type)) {
-		std::stringstream	ss;
-		ss << "Parse Error at line " << peek().line
-			<< ", column " << peek().column
-			<< ": " << msg
-			<< " (got '" << peek().value << "' instead)";
-		throw std::runtime_error(ss.str());
-	}
+	if (!check(type))
+		throw ParseException(msg, peek().line);
 	return consume();
 }
 
