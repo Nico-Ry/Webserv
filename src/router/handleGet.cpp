@@ -2,34 +2,6 @@
 #include "router/PathUtils.hpp"
 #include <sys/stat.h>
 
-// ---------- helpers ----------
-static bool exists(const std::string& p)
-{
-	struct stat st;
-
-	if (stat(p.c_str(), &st) != 0)
-		return (false);
-	return (true);
-}
-
-static bool isDir(const std::string& p)
-{
-	struct stat st;
-
-	if (stat(p.c_str(), &st) != 0)
-		return (false);
-	return (S_ISDIR(st.st_mode));
-}
-
-static bool isFile(const std::string& p)
-{
-	struct stat st;
-
-	if (stat(p.c_str(), &st) != 0)
-		return (false);
-	return (S_ISREG(st.st_mode));
-}
-
 // ---------- GET ----------
 HttpResponse	Router::handleGet(const std::string& requestedPath)
 {

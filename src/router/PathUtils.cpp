@@ -1,53 +1,33 @@
 #include "router/PathUtils.hpp"
+#include <sys/stat.h>
 
-/*
-	Strip the matched location URI prefix from a URL path.
+// ---------- helpers ----------
+bool exists(const std::string& p)
+{
+	struct stat st;
 
-	Example:
-		requestURI = "/kapouet/pouic/toto"
-		locUri  = "/kapouet"
-		result  = "/pouic/toto"
+	if (stat(p.c_str(), &st) != 0)
+		return (false);
+	return (true);
+}
 
-	If the URL exactly matches the location:
-		requestURI = "/kapouet"
-		result  = "/"
+bool isDir(const std::string& p)
+{
+	struct stat st;
 
-	This function assumes that the location matching phase
-	already guaranteed that requestURI starts with locUri.
-	The iterator-based approach avoids relying on substring
-	length assumptions and makes the prefix stripping explicit.
-*/
-// std::string	stripLocationPrefixIter(const std::string& requestURI,
-// 											const std::string& locUri)
-// {
-// 	// If location is "/", do not strip anything.
-// 	if (locUri.empty() || locUri == "/")
-// 		return requestURI;
+	if (stat(p.c_str(), &st) != 0)
+		return (false);
+	return (S_ISDIR(st.st_mode));
+}
 
-// 	std::string::const_iterator itPath = requestURI.begin();
-// 	std::string::const_iterator itLoc  = locUri.begin();
+bool isFile(const std::string& p)
+{
+	struct stat st;
 
-// 	// Advance both iterators while characters match
-// 	while (itPath != requestURI.end()
-// 		&& itLoc  != locUri.end()
-// 		&& *itPath == *itLoc)
-// 	{
-// 		++itPath;
-// 		++itLoc;
-// 	}
-
-// 	// If we didn't consume all of locUri, locUri is not a true prefix.
-// 	// This should not happen if getLocation() was correct, but keep it safe.
-// 	if (itLoc != locUri.end())
-// 		return requestURI;
-
-// 	// If URL equals the location exactly, map to "/" inside the root.
-// 	if (itPath == requestURI.end())
-// 		return "/";
-
-// 	// Return remaining suffix of the URL path
-// 	return std::string(itPath, requestURI.end());
-// }
+	if (stat(p.c_str(), &st) != 0)
+		return (false);
+	return (S_ISREG(st.st_mode));
+}
 
 
 /*

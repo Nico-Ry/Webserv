@@ -26,4 +26,8 @@ std::string	joinPath(const std::string& a, const std::string& b);
 std::string	getResolvedPath(const std::string& urlPath, const LocationBlock& rules);
 
 
+bool	exists(const std::string& p);
+bool	isDir(const std::string& p);
+bool	isFile(const std::string& p);
+
 #endif
