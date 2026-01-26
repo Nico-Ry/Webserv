@@ -68,108 +68,40 @@ std::string	ResponseBuilder::buildDateValue()
 	- Headers
 	- Blank line
 	- Body
-	@attention Need to make this have different behaviour based on error code
+	@attention Recurring Headers such as Date, content-length, etc.
+	are built in HttpResponse constructors
  */
 std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnection)
 {
-	std::string											out;
-	std::map<std::string, std::string>::const_iterator	it;
+	std::stringstream	ss;
 
-	// TODO: adapt behaviour based on status code
 	/*
 		1) Status line
 		We always respond using HTTP/1.1 for simplicity.
 	*/
-	out = "HTTP/1.1 ";
-	out += toStringSize(resp.statusCode);
-	out += " ";
-	out += resp.reason;
-	out += "\r\n";
+	ss	<< "HTTP/1.1 "
+		<< toStringSize(resp.statusCode) << " "
+		<< resp.reason << CRLF;
 
 	/*
-		2) Standard headers (Date + Server)
+		2) handle unique Connection Header
 	*/
-	out += "Date: ";
-	out += buildDateValue();
-	out += "\r\n";
-	out += "Server: webserv\r\n";
-	/*
-		3) Connection header (based on closeConnection parameter)
-	*/
-	out += "Connection: ";
-	if (closeConnection == true)
-		out += "close\r\n";
+	if (closeConnection)
+		ss << "Connection: close" << CRLF;
 	else
-		out += "keep-alive\r\n";
+		ss << "Connection: keep-alive" << CRLF;
 
 	/*
-		4) Add Content length header
+		3) insert other headers defined during routing
 	*/
-	out += "Content-Length: ";
-	out += toStringSize(resp.body.size());
-	out += "\r\n";
+	StringMap	h = resp.headers;
+	for (StringMap::const_iterator it = h.begin(); it != h.end(); ++it)
+		ss << it->first << it->second << CRLF;
+	ss << "\r\n"; // mark end of headers
 
 	/*
-		5) AHandle Redirect header
+		4) insert body
 	*/
-	if (resp.isRedirect) {
-		out += "Location: ";
-		out += resp.redirectTarget;
-		out += "\r\n";
-	}
-
-	/*
-		6) End headers
-	*/
-	out += "\r\n";
-
-	/*
-		7) Append body
-	*/
-	out += resp.body;
-
-	return (out);
-
-
-	/*
-		4) Content-Length header
-		We ensure it exists even if user did not set it.
-	*/
-	// hasContentLength = false;
-	// it = resp.headers.find("Content-Length");
-	// if (it != resp.headers.end())
-		// hasContentLength = true;
-
-	// if (hasContentLength == false)
-	// {
-	// out += "Content-Length: ";
-	// out += toStringSize(resp.body.size());
-	// out += "\r\n";
-	// }
-
-	/*
-		5) Add all user-provided headers from resp.headers
-		We do not try to normalize case; Module 3 can choose.
-	*/
-	// it = resp.headers.begin();
-	// while (it != resp.headers.end())
-	// {
-	// 	/*
-	// 		Do not duplicate Content-Length if we already added it above.
-	// 		If the user provided it, we keep their version.
-	// 	*/
-	// 	if (it->first == "Content-Length" && hasContentLength == false)
-	// 	{
-	// 		++it;
-	// 		continue ;
-	// 	}
-
-	// 	out += it->first;
-	// 	out += ": ";
-	// 	out += it->second;
-	// 	out += "\r\n";
-	// 	++it;
-	// }
-
-
+	ss << resp.body;
+	return (ss.str());
 }

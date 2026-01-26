@@ -6,7 +6,7 @@
 #include "IOMultiplexer.hpp"
 #include "../http/RequestParser.hpp"
 #include "../http/ResponseBuilder.hpp"
-#include "../http/Response.hpp"
+#include "../http/HttpResponse.hpp"
 #include "../router/Router.hpp"
 #include "../configParser/Config.hpp"
 #include <map>

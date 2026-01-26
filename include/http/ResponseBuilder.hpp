@@ -2,7 +2,12 @@
 #define RESPONSE_BUILDER_HPP
 
 #include <string>
-#include "Response.hpp"
+#include "HttpResponse.hpp"
+#include <iostream>
+#include "colours.hpp"
+
+
+#define CRLF "\r\n"
 
 /*
 	ResponseBuilder builds a raw HTTP response string from a HttpResponse struct.

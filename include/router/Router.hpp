@@ -1,12 +1,12 @@
 #ifndef ROUTER_HPP
 #define ROUTER_HPP
 
-#include "../http/Request.hpp"
-#include "../http/Response.hpp"
+#include "http/Request.hpp"
+#include "http/HttpResponse.hpp"
 #include "http/RequestParser.hpp"
-#include "../configParser/Config.hpp"
-#include "../configParser/LocationBlock.hpp"
-#include "../configParser/ServerBlock.hpp"
+#include "configParser/Config.hpp"
+#include "configParser/LocationBlock.hpp"
+#include "configParser/ServerBlock.hpp"
 #include <set>
 #include <vector>
 #include <iostream>

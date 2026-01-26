@@ -34,6 +34,7 @@ SRC_HTTP 			= src/http/RequestParser.Core1.cpp \
         			  src/http/RequestParser.Utils2.cpp \
         			  src/http/RequestParser.Connection6.cpp \
         			  src/http/ResponseBuilder7.cpp \
+					  src/http/HttpResponse.cpp \
         			  src/http/Mime8.cpp
 
 
