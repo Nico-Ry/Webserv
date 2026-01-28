@@ -28,7 +28,7 @@ static HttpResponse	getNotFound(const std::string& resolvedPath)
 	return (HttpResponse(404, "Not Found"));
 }
 
-static HttpResponse getServeFile(Router& self, const std::string& resolvedPath)
+HttpResponse Router::getServeFile( const std::string& resolvedPath)
 {
 	std::string body;
 
@@ -45,12 +45,12 @@ static HttpResponse getServeFile(Router& self, const std::string& resolvedPath)
 	}
 
 	// Actual read (even if access() said OK, open() can still fail)
-	if (!self.readFileToString(resolvedPath, body))
+	if (readFileToString(resolvedPath, body))
 	{
 		std::cout << YELLOW << "[DEBUG] " << ORANGE
 				  << "Failed reading file despite R_OK: " << RES
 				  << resolvedPath << std::endl;
-		return (HttpResponse(403, "Forbidden"));
+		return (HttpResponse(500, "Internal Server Error"));
 	}
 
 	return (HttpResponse(200, "OK", body));
@@ -69,10 +69,8 @@ static bool	needsDirRedirect(const std::string& requestedPath)
 // 	return (HttpResponse(requestedPath + "/", 301, "Moved Permanently"));
 // }
 
-static HttpResponse	getTryIndexFiles( Router& self,
-	const std::string& resolvedPath,
-	const std::vector<std::string>& indexList
-)
+HttpResponse Router::getTryIndexFiles(const std::string& resolvedPath,
+	const std::vector<std::string>& indexList)
 {
 	std::string body;
 
@@ -91,7 +89,7 @@ static HttpResponse	getTryIndexFiles( Router& self,
 				debugAccessError("READ index file", candidate);
 				return (HttpResponse(403, "Forbidden"));
 			}
-			if (!self.readFileToString(candidate, body))
+			if (!readFileToString(candidate, body))
 				return (HttpResponse(403, "Forbidden"));
 			return (HttpResponse(200, "OK", body));
 		}
@@ -114,11 +112,9 @@ static bool	isNoIndexSentinel(const HttpResponse& resp)
 	return (resp.statusCode == 0);
 }
 
-static HttpResponse	getHandleDirectory(Router& self,
-	const std::string& resolvedPath,
+HttpResponse	Router::getHandleDirectory(const std::string& resolvedPath,
 	const std::string& requestedPath,
-	const LocationBlock& rules
-)
+	const LocationBlock& rules)
 {
 	std::cout << YELLOW << "[DEBUG] " << CYAN
 			  << "Path links to directory" << RES << std::endl;
@@ -136,7 +132,7 @@ static HttpResponse	getHandleDirectory(Router& self,
 		return (HttpResponse(requestedPath + "/", 301, "Moved Permanently"));
 
 	// Try index files first.
-	HttpResponse indexResp = getTryIndexFiles(self, resolvedPath, rules.index);
+	HttpResponse indexResp = getTryIndexFiles(resolvedPath, rules.index);
 	if (!isNoIndexSentinel(indexResp))
 		return (indexResp);
 
@@ -176,11 +172,11 @@ HttpResponse Router::handleGet(const std::string& requestedPath)
 
 	// 2) Regular file -> serve it
 	if (isFile(resolvedPath))
-		return (getServeFile(*this, resolvedPath));
+		return (getServeFile( resolvedPath));
 
 	// 3) Directory -> normalize URL, try index files, else autoindex/403
 	if (isDir(resolvedPath))
-		return (getHandleDirectory(*this, resolvedPath, requestedPath, *rules));
+		return (getHandleDirectory(resolvedPath, requestedPath, *rules));
 
 	// Unknown file type (fifo, socket, device, etc.)
 	std::cout << YELLOW << "[DEBUG] " << ORANGE

@@ -97,7 +97,11 @@ class Router {
 		*/
 		HttpResponse	handleGet(const std::string& urlPath);
 		bool			readFileToString(const std::string& path, std::string& responseBody);
-
+		HttpResponse	getServeFile(const std::string& resolvedPath);
+		HttpResponse	getTryIndexFiles(const std::string& resolvedPath,
+							const std::vector<std::string>& indexList);
+		HttpResponse	getHandleDirectory(const std::string& resolvedPath,const std::string& requestedPath,
+							const LocationBlock& rules);
 		// Future:
 		// RouteResult	handleDelete(const std::string& urlPath);
 		// RouteResult	handlePost(const HttpRequest& req);
