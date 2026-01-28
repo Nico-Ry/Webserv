@@ -19,7 +19,7 @@
  * isolated and reusable.
  */
 
- 
+
 static HttpResponse	getNotFound(const std::string& resolvedPath)
 {
 	std::cout << YELLOW << "[DEBUG] " << ORANGE
@@ -56,17 +56,18 @@ static HttpResponse getServeFile(Router& self, const std::string& resolvedPath)
 	return (HttpResponse(200, "OK", body));
 }
 
+
 static bool	needsDirRedirect(const std::string& requestedPath)
 {
 	return (!requestedPath.empty() && requestedPath[requestedPath.size() - 1] != '/');
 }
 
-static HttpResponse	getDirRedirect(const std::string& requestedPath)
-{
-	// Redirect /dir -> /dir/ so relative links work correctly.
-	// Your constructor: HttpResponse(location, code, reason)
-	return (HttpResponse(requestedPath + "/", 301, "Moved Permanently"));
-}
+// static HttpResponse	getDirRedirect(const std::string& requestedPath)
+// {
+// 	// Redirect /dir -> /dir/ so relative links work correctly.
+// 	// Your constructor: HttpResponse(location, code, reason)
+// 	return (HttpResponse(requestedPath + "/", 301, "Moved Permanently"));
+// }
 
 static HttpResponse	getTryIndexFiles( Router& self,
 	const std::string& resolvedPath,
@@ -101,6 +102,13 @@ static HttpResponse	getTryIndexFiles( Router& self,
 	return (HttpResponse(0, ""));
 }
 
+/*
+ * Sentinel check used internally by GET directory handling.
+ *
+ * A status code of 0 is not a valid HTTP response and is used here to signal
+ * "no index file found, continue directory logic" rather than a real response
+ * to return to the client.
+ */
 static bool	isNoIndexSentinel(const HttpResponse& resp)
 {
 	return (resp.statusCode == 0);
@@ -125,7 +133,7 @@ static HttpResponse	getHandleDirectory(Router& self,
 
 	// Normalize directory URL for correct relative-link behavior.
 	if (needsDirRedirect(requestedPath))
-		return (getDirRedirect(requestedPath));
+		return (HttpResponse(requestedPath + "/", 301, "Moved Permanently"));
 
 	// Try index files first.
 	HttpResponse indexResp = getTryIndexFiles(self, resolvedPath, rules.index);
