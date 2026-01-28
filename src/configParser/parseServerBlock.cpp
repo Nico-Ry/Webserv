@@ -24,7 +24,7 @@ ServerBlock	ConfigParser::parseServerBlock() {
 
 	// Find pointer to parsing function that matches directive.value
 		std::map<std::string, ServerFn>::iterator	it =
-			serverDirectives.find(directive.value);
+			serverDirectives.find(Mime::toLower(directive.value));
 
 	// If directive not found in map, throw error
 		if (it == serverDirectives.end())
@@ -36,6 +36,33 @@ ServerBlock	ConfigParser::parseServerBlock() {
 	expect(TOKEN_RBRACE, "Expected '}'");
 	return s;
 }
+
+
+//---------------------------------------------------------------------------//
+//									 UPLOAD
+//---------------------------------------------------------------------------//
+
+void	ConfigParser::parseUpload(ServerBlock& s) {
+	Token	uploadToken = expect(TOKEN_WORD, "expected path for upload directory:");
+	std::string	path = uploadToken.value;
+
+	if (path.empty())
+		throw ParseException("Upload Directory cannot be empty", uploadToken.line);
+
+	if (path[0] == '/') {
+		std::stringstream	ss;
+		ss	<< CYAN << "line" << std::setw(4) << uploadToken.line
+			<< RES << "| "
+			<< BOLD_ORANGE << "Warning:"
+			<< RES << " upload directory may be misconfigured: "
+			<< ORANGE << path << RES << std::endl;
+		std::cerr << ss.str();
+	}
+
+	s.uploadDir = path;
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
+
 
 //---------------------------------------------------------------------------//
 //									MAX SIZE

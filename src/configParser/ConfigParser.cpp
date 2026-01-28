@@ -17,6 +17,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	serverDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
 	serverDirectives["max_size"] = &ConfigParser::parseMaxSize;
 	serverDirectives["location"] = &ConfigParser::parseLocationBlock;
+	serverDirectives["upload"] = &ConfigParser::parseUpload;
 
 //build map for Location directives(KEY) to function pointers(VALUE)
 	locationDirectives["root"] = &ConfigParser::parseRoot;
@@ -25,6 +26,7 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	locationDirectives["autoindex"] = &ConfigParser::parseAutoIndex;
 	locationDirectives["max_size"] = &ConfigParser::parseMaxSize;
 	locationDirectives["methods"] = &ConfigParser::parseMethods;
+	locationDirectives["upload"] = &ConfigParser::parseUpload;
 	locationDirectives["return"] = &ConfigParser::parseReturn;
 }
 
@@ -48,7 +50,6 @@ void	ConfigParser::parse(Config& data) {
 	while (!isAtEnd()) {
 		data.servers.push_back(parseServerBlock());
 	}
-
 	//[DEBUG] output to see all parsed/stored values
 	// printAllOutput(data);
 }

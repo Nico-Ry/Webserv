@@ -28,6 +28,10 @@ void	printAllOutput(const Config& data) {
 	printServerMaxSize(data);
 	std::cout << "-------------------------\n" << std::endl;
 
+	std::cout << CYAN << "UPLOAD DIRECTORY" << RES << std::endl;
+	printServerUpload(data);
+	std::cout << "-------------------------\n" << std::endl;
+
 	std::cout << BOLD_GOLD << "~~~~~ LOCATION BLOCKS ~~~~~" << RES << std::endl;
 	for (size_t i=0; i < data.servers.size(); ++i) {
 		ServerBlock	current = data.servers[i];
@@ -55,6 +59,10 @@ void	printAllOutput(const Config& data) {
 
 		std::cout << CYAN << "METHODS" << RES << std::endl;
 		printLocationMethods(current);
+		std::cout << std::endl;
+
+		std::cout << CYAN << "UPLOAD DIRECTORY" << RES << std::endl;
+		printLocationUpload(current);
 		std::cout << std::endl;
 
 		std::cout << CYAN << "REDIRECT" << RES << std::endl;
@@ -89,6 +97,20 @@ void	printServerRoot(const Config& data) {
 		else{
 			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: "
 				<< RES << "-> " << RED << "No root!" << RES << std::endl;
+		}
+
+	}
+}
+
+void	printServerUpload(const Config& data) {
+	for (size_t i=0; i < data.servers.size(); ++i) {
+		if (!data.servers[i].uploadDir.empty()) {
+			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: " << RES
+			<< "-> " << GREEN << data.servers[i].uploadDir << RES << std::endl;
+		}
+		else{
+			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: "
+				<< RES << "-> " << RED << "No Upload Directory!" << RES << std::endl;
 		}
 
 	}
@@ -179,6 +201,20 @@ void	printLocationRoot(const ServerBlock& s) {
 	}
 }
 
+void	printLocationUpload(const ServerBlock& s) {
+	for (size_t i=0; i < s.locations.size(); ++i) {
+		const LocationBlock&	current = s.locations[i];
+		if (!current.uploadDir.empty()) {
+			std::cout << BOLD << "[Location] " << RES << YELLOW << current.uri << RES
+			<< " -> " << GREEN << current.uploadDir << RES << std::endl;
+		}
+		else {
+			std::cout << BOLD << "[Location] "<< RES << YELLOW << current.uri
+				<< RES << " -> " << RED << "NO Upload Directory!" << RES << std::endl;
+		}
+	}
+}
+
 void	printLocationIndex(const ServerBlock& s) {
 	for (size_t i=0; i < s.locations.size(); ++i) {
 		const LocationBlock&	current = s.locations[i];
@@ -211,8 +247,9 @@ void	printLocationErrorPages(const ServerBlock& data) {
 		std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri << RES << " -> ";
 
 		std::map<int, StringVec>::const_iterator it = l.errorPages.begin();
+		while (it != l.errorPages.end()) {
 
-		if (it == l.errorPages.begin())
+			if (it == l.errorPages.begin())
 				std::cout << PURPLE << it->first << RES << " > ";
 			else
 				std::cout << std::setw(33) << PURPLE << it->first << RES << " > ";
@@ -221,6 +258,8 @@ void	printLocationErrorPages(const ServerBlock& data) {
 			}
 			std::cout << RES << std::endl;
 			++it;
+		}
+		std::cout << std::endl;
 	}
 }
 

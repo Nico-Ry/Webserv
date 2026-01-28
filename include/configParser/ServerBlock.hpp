@@ -44,6 +44,7 @@ class ServerBlock {
 		std::map<int, StringVec>	errorPages;
 		size_t						clientMaxBodySize; // defaults to 512Mb
 
+		std::string					uploadDir;
 	};
 
 #endif

@@ -26,6 +26,7 @@ void	printServerIndex(const Config& data);
 void	printServerErrorPages(const Config& data);
 void	printServerAutoIndex(const Config& data);
 void	printServerMaxSize(const Config& data);
+void	printServerUpload(const Config& data);
 
 
 //---------------------------------------------------------------------------//
@@ -39,6 +40,7 @@ void	printLocationAutoIndex(const ServerBlock& s);
 void	printLocationMaxSize(const ServerBlock& s);
 void	printLocationMethods(const ServerBlock& data);
 void	printLocationRedirect(const ServerBlock& data);
+void	printLocationUpload(const ServerBlock& data);
 
 
 //---------------------------------------------------------------------------//

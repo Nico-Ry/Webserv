@@ -30,9 +30,11 @@ LocationBlock::LocationBlock(const ServerBlock& s) :
 	root(s.root),
 	index(s.index),
 	autoIndex(s.autoIndex),
+	errorPages(s.errorPages),
 	clientMaxBodySize(s.clientMaxBodySize),
 	hasRedirect(false),
-	redirectCode(0)//	Set to Zero by default
+	redirectCode(0),//	Set to Zero by default
+	uploadDir(s.uploadDir)
 	{}
 
 LocationBlock::~LocationBlock() {}

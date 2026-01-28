@@ -9,6 +9,9 @@ webserv
 
 config/permissions.conf
 wwwPermissionTests
+.gitignore
+
+www/test1/permtest/
 
 cgi/*
 cgi-bin/

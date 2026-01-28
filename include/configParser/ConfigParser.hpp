@@ -6,6 +6,7 @@
 #include "LocationBlock.hpp"
 #include "Tokeniser.hpp"
 #include "Config.hpp"
+#include "http/Mime.hpp"
 #include "colours.hpp"
 
 struct Token;
@@ -78,6 +79,7 @@ class ConfigParser {
 		void		parseErrorPages(ServerBlock& s);
 		void		parseAutoIndex(ServerBlock& s);
 		void		parseMaxSize(ServerBlock& s);
+		void		parseUpload(ServerBlock& s);
 		void		getSizeAndUnit(const Token& sizeToken, long& num, std::string& unit);
 		void		updateUnit(std::string& unit, const std::string& currentToken);
 
@@ -93,6 +95,7 @@ class ConfigParser {
 		void		parseMaxSize(LocationBlock& l);
 		void		parseMethods(LocationBlock& l);
 		bool		isMethod(const std::string& value);
+		void		parseUpload(LocationBlock& l);
 		void		parseReturn(LocationBlock& l);
 		bool		isValidRedirectCode(const int& code);
 

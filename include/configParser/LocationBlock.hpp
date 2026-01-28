@@ -48,6 +48,8 @@ class LocationBlock {
 		bool						hasRedirect;
 		int							redirectCode;
 		std::string					redirectTarget;
+
+		std::string					uploadDir;
 };
 
 #endif

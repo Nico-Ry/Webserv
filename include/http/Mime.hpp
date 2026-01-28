@@ -18,8 +18,8 @@ class Mime
 public:
 	static std::string	fromPath(const std::string &path);
 
-private:
 	static std::string	toLower(const std::string &s);
+private:
 	static std::string	getExtension(const std::string &path);
 };
 
