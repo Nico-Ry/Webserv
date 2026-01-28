@@ -104,7 +104,7 @@ class Router {
 							const LocationBlock& rules);
 		// Future:
 		// RouteResult	handleDelete(const std::string& urlPath);
-		// RouteResult	handlePost(const HttpRequest& req);
+		HttpResponse	handlePost(const std::string& urlPath);
 };
 
 

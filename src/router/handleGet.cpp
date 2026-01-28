@@ -45,7 +45,7 @@ HttpResponse Router::getServeFile( const std::string& resolvedPath)
 	}
 
 	// Actual read (even if access() said OK, open() can still fail)
-	if (readFileToString(resolvedPath, body))
+	if (!readFileToString(resolvedPath, body))
 	{
 		std::cout << YELLOW << "[DEBUG] " << ORANGE
 				  << "Failed reading file despite R_OK: " << RES

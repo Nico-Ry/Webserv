@@ -286,6 +286,9 @@ void Server::processRequest(Connection* conn, int fd) {
 		resp.body = "<html><body><h1>Error " + intToString(errorCode)
 					+ "</h1><p>" + reasonPhrase(errorCode) + "</p></body></html>";
 
+
+		// resp.headers["Content-Length: "] = toStringSize(resp.body.size());//NICO DID THIS CHANGE
+
 		// std::cout << "  [fd=" << fd << "] HTTP Error: " << errorCode << std::endl;
 		std::cerr << RED << resp.statusCode << RES << " " << resp.reason << std::endl;
 		// Toujours fermer connexion sur erreur

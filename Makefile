@@ -53,6 +53,7 @@ SRC_ROUTER			= $(addprefix $(ROUTER_DIR), \
 						AutoIndex.cpp \
 						Router.cpp \
 						handleGet.cpp \
+						handlePost.cpp \
 						PathUtils.cpp \
 						)
 
