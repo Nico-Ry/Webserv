@@ -22,7 +22,7 @@
 
 static HttpResponse	getNotFound(const std::string& resolvedPath)
 {
-	std::cout << YELLOW << "[DEBUG] " << ORANGE
+	std::cout << YELLOW << "[DEBUG - GET] " << ORANGE
 			  << "DOES NOT EXIST! " << RES << resolvedPath
 			  << std::endl;
 	return (HttpResponse(404, "Not Found"));
@@ -32,7 +32,7 @@ HttpResponse Router::getServeFile( const std::string& resolvedPath)
 {
 	std::string body;
 
-	std::cout << YELLOW << "[DEBUG] " << GREEN
+	std::cout << YELLOW << "[DEBUG - GET] " << GREEN
 			  << "Path links to file" << RES << std::endl;
 
 	// Permission check (chmod impacts this)
@@ -45,9 +45,9 @@ HttpResponse Router::getServeFile( const std::string& resolvedPath)
 	}
 
 	// Actual read (even if access() said OK, open() can still fail)
-	if (readFileToString(resolvedPath, body))
+	if (!readFileToString(resolvedPath, body))
 	{
-		std::cout << YELLOW << "[DEBUG] " << ORANGE
+		std::cout << YELLOW << "[DEBUG - GET] " << ORANGE
 				  << "Failed reading file despite R_OK: " << RES
 				  << resolvedPath << std::endl;
 		return (HttpResponse(500, "Internal Server Error"));
@@ -79,7 +79,7 @@ HttpResponse Router::getTryIndexFiles(const std::string& resolvedPath,
 	{
 		std::string candidate = joinPath(resolvedPath, indexList[i]);
 
-		std::cout << YELLOW << "[DEBUG] " << RES
+		std::cout << YELLOW << "[DEBUG - GET] " << RES
 				  << "Trying: " << PURPLE << candidate << RES << std::endl;
 
 		if (isFile(candidate))
@@ -116,7 +116,7 @@ HttpResponse	Router::getHandleDirectory(const std::string& resolvedPath,
 	const std::string& requestedPath,
 	const LocationBlock& rules)
 {
-	std::cout << YELLOW << "[DEBUG] " << CYAN
+	std::cout << YELLOW << "[DEBUG - GET] " << CYAN
 			  << "Path links to directory" << RES << std::endl;
 
 	// Need X permission to traverse. If missing -> 403.
@@ -139,7 +139,7 @@ HttpResponse	Router::getHandleDirectory(const std::string& resolvedPath,
 	// No index file found -> autoindex or forbidden
 	if (rules.autoIndex == true)
 	{
-		std::cout << YELLOW << "[DEBUG] " << RES
+		std::cout << YELLOW << "[DEBUG - GET] " << RES
 				  << "canListDir(" << resolvedPath << ") = "
 				  << (canListDir(resolvedPath) ? "true" : "false")
 				  << std::endl;
@@ -162,7 +162,7 @@ HttpResponse Router::handleGet(const std::string& requestedPath)
 {
 	std::string resolvedPath = getResolvedPath(requestedPath, *rules);
 
-	std::cout << YELLOW << "[DEBUG] " << BOLD_BLUE
+	std::cout << YELLOW << "[DEBUG - GET] " << BOLD_BLUE
 			  << "ResolvedPath: " << resolvedPath
 			  << RES << std::endl;
 
@@ -179,7 +179,7 @@ HttpResponse Router::handleGet(const std::string& requestedPath)
 		return (getHandleDirectory(resolvedPath, requestedPath, *rules));
 
 	// Unknown file type (fifo, socket, device, etc.)
-	std::cout << YELLOW << "[DEBUG] " << ORANGE
+	std::cout << YELLOW << "[DEBUG - GET] " << ORANGE
 			  << "Unknown file type: " << RES << resolvedPath << std::endl;
 	return (HttpResponse(404, "Not Found"));
 }

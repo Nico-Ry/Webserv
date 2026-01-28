@@ -7,6 +7,7 @@
 #include "configParser/Config.hpp"
 #include "configParser/LocationBlock.hpp"
 #include "configParser/ServerBlock.hpp"
+#include "router/PathUtils.hpp"
 #include <set>
 #include <vector>
 #include <iostream>
@@ -89,22 +90,34 @@ class Router {
 	bool				methodAllowed(const HttpMethod& method);
 	bool				exceedsMaxSize(const size_t& len);
 
+//---------------------------------------------------------------------------//
 //---------------------------- METHOD HANDLERS --------------------------------//
+//---------------------------------------------------------------------------//
 
 		/*
 			Handle HTTP GET request.
 			Input is the parsed URL path (req.path), without query string.
 		*/
-		HttpResponse	handleGet(const std::string& urlPath);
-		bool			readFileToString(const std::string& path, std::string& responseBody);
-		HttpResponse	getServeFile(const std::string& resolvedPath);
-		HttpResponse	getTryIndexFiles(const std::string& resolvedPath,
-							const std::vector<std::string>& indexList);
-		HttpResponse	getHandleDirectory(const std::string& resolvedPath,const std::string& requestedPath,
-							const LocationBlock& rules);
-		// Future:
-		// RouteResult	handleDelete(const std::string& urlPath);
-		// RouteResult	handlePost(const HttpRequest& req);
+	HttpResponse	handleGet(const std::string& urlPath);
+	bool			readFileToString(const std::string& path, std::string& responseBody);
+	HttpResponse	getServeFile(const std::string& resolvedPath);
+	HttpResponse	getTryIndexFiles(const std::string& resolvedPath,
+						const std::vector<std::string>& indexList);
+	HttpResponse	getHandleDirectory(const std::string& resolvedPath,const std::string& requestedPath,
+						const LocationBlock& rules);
+
+
+
+//								DELETE
+
+	HttpResponse	handleDelete(const std::string& urlPath);
+
+
+
+
+//								POST
+
+		// HttpResponse	handlePost(const HttpRequest& req);
 };
 
 

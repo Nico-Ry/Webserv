@@ -178,11 +178,11 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 	if (req.method == METHOD_GET)
 		return handleGet(req.path);
 
-	// else if (req.method == METHOD_DELETE)
-		//return handleDelete(path);
+	else if (req.method == METHOD_DELETE)
+		return handleDelete(req.path);
 
 	// else if (req.method == METHOD_POST)
-		//return handlePost(path);
+		//return handlePost(req.path);
 
 	return HttpResponse(501, "Not Implemented");
 }
