@@ -10,269 +10,285 @@
 
 // Helper function pour convertir int en string (C++98)
 static std::string intToString(int n) {
-    std::ostringstream oss;
-    oss << n;
-    return oss.str();
+	std::ostringstream oss;
+	oss << n;
+	return oss.str();
 }
 
 Server::ServerException::ServerException(const std::string& message)
-    : std::runtime_error(message) {
+	: std::runtime_error(message) {
 }
 
 Server::Server(const Config& cfg, int backlog)
-    : socket_manager(), multiplexer(), clients(), config(&cfg), running(false) {
+	: socket_manager(), multiplexer(), clients(), config(&cfg), running(false) {
 
-    std::cout << BOLD_CYAN << "=== Initializing Multi-Port Server ===" << RES << std::endl;
+	std::cout << BOLD_CYAN << "=== Initializing Multi-Port Server ===" << RES << std::endl;
 
-    if (cfg.servers.empty()) {
-        throw ServerException("No server blocks found in configuration");
-    }
+	if (cfg.servers.empty()) {
+		throw ServerException("No server blocks found in configuration");
+	}
 
-    // Creer un socket pour chaque ServerBlock dans la config
-    try {
-        for (size_t i = 0; i < cfg.servers.size(); i++) {
-            int port = cfg.servers[i].port;
+	// Creer un socket pour chaque ServerBlock dans la config
+	try {
+		for (size_t i = 0; i < cfg.servers.size(); i++) {
+			int port = cfg.servers[i].port;
 
-            std::cout << BOLD_CYAN << "Setting up server on port " << port << "..." << RES << std::endl;
+			std::cout << BOLD_CYAN << "Setting up server on port " << port << "..." << RES << std::endl;
 
-            // Creer le socket serveur
-            int fd = socket_manager.create_server(port, backlog);
+			// Creer le socket serveur
+			int fd = socket_manager.create_server(port, backlog);
 
-            // Stocker le fd et sa config associée
-            server_fds.push_back(fd);
-            fd_to_server[fd] = &cfg.servers[i];
+			// Stocker le fd et sa config associée
+			server_fds.push_back(fd);
+			fd_to_server[fd] = &cfg.servers[i];
 
-            // Ajouter au multiplexer pour surveiller les nouvelles connexions
-            multiplexer.add_fd(fd, POLLIN);
+			// Ajouter au multiplexer pour surveiller les nouvelles connexions
+			multiplexer.add_fd(fd, POLLIN);
 
-            std::cout << GREEN << "✓ " << RES << "Server socket created: "
-                      << "fd=" << fd << " (port " << port << ")" << std::endl;
-        }
-    } catch (...) {
-        // Nettoyer les sockets deja crees en cas d'echec
-        for (size_t i = 0; i < server_fds.size(); i++) {
-            SocketManager::close_socket(server_fds[i]);
-        }
-        server_fds.clear();
-        fd_to_server.clear();
-        throw;
-    }
+			std::cout << GREEN << "✓ " << RES << "Server socket created: "
+					  << "fd=" << fd << " (port " << port << ")" << std::endl;
+		}
+	} catch (...) {
+		// Nettoyer les sockets deja crees en cas d'echec
+		for (size_t i = 0; i < server_fds.size(); i++) {
+			SocketManager::close_socket(server_fds[i]);
+		}
+		server_fds.clear();
+		fd_to_server.clear();
+		throw;
+	}
 
-    std::cout << GREEN << "✓ " << RES << "All servers ready to accept connections ("
-              << server_fds.size() << " port" << (server_fds.size() > 1 ? "s" : "") << ")" << std::endl;
+	std::cout << GREEN << "✓ " << RES << "All servers ready to accept connections ("
+			  << server_fds.size() << " port" << (server_fds.size() > 1 ? "s" : "") << ")" << std::endl;
 }
 
 Server::~Server() {
-    std::cout << BOLD_ORANGE << "=== Shutting down server ===" << RES << std::endl;
+	std::cout << BOLD_ORANGE << "=== Shutting down server ===" << RES << std::endl;
 
-    // Fermer toutes les connexions clients
-    for (std::map<int, Connection*>::iterator it = clients.begin();
-         it != clients.end(); ++it) {
-        delete it->second;
-    }
-    clients.clear();
+	// Fermer toutes les connexions clients
+	for (std::map<int, Connection*>::iterator it = clients.begin();
+		 it != clients.end(); ++it) {
+		delete it->second;
+	}
+	clients.clear();
 
-    // Liberer tous les parsers HTTP
-    for (std::map<int, HttpRequestParser*>::iterator it = parsers.begin();
-         it != parsers.end(); ++it) {
-        delete it->second;
-    }
-    parsers.clear();
+	// Liberer tous les parsers HTTP
+	for (std::map<int, HttpRequestParser*>::iterator it = parsers.begin();
+		 it != parsers.end(); ++it) {
+		delete it->second;
+	}
+	parsers.clear();
 
-    // Fermer tous les sockets serveurs
-    for (size_t i = 0; i < server_fds.size(); i++) {
-        if (server_fds[i] >= 0) {
-            SocketManager::close_socket(server_fds[i]);
-        }
-    }
-    server_fds.clear();
-    fd_to_server.clear();
+	// Fermer tous les sockets serveurs
+	for (size_t i = 0; i < server_fds.size(); i++) {
+		if (server_fds[i] >= 0) {
+			SocketManager::close_socket(server_fds[i]);
+		}
+	}
+	server_fds.clear();
+	fd_to_server.clear();
 
-    std::cout << GREEN << "✓ " << RES << "Server stopped" << std::endl;
+	std::cout << GREEN << "✓ " << RES << "Server stopped" << std::endl;
 }
 
 void Server::run() {
-    running = true;
+	running = true;
 
-    std::cout << std::endl << "Multi-client server running on ports: ";
-    for (size_t i = 0; i < server_fds.size(); i++) {
-        const ServerBlock* sb = fd_to_server[server_fds[i]];
-        std::cout << GREEN << sb->port << RES;
-        if (i < server_fds.size() - 1) std::cout << ", ";
-    }
-    std::cout << std::endl << "(Ctrl+C to stop)\n" << std::endl;
+	std::cout << std::endl << "Multi-client server running on ports: ";
+	for (size_t i = 0; i < server_fds.size(); i++) {
+		const ServerBlock* sb = fd_to_server[server_fds[i]];
+		std::cout << GREEN << sb->port << RES;
+		if (i < server_fds.size() - 1) std::cout << ", ";
+	}
+	std::cout << std::endl << "(Ctrl+C to stop)\n" << std::endl;
 
-    while (running) {
-        // Attendre des evenements sur les fds surveilles
-        std::vector<int> ready_fds = multiplexer.wait(-1);
+	while (running) {
+		// Attendre des evenements sur les fds surveilles
+		std::vector<int> ready_fds = multiplexer.wait(-1);
 
-        if (ready_fds.empty()) {
-            continue;
-        }
+		if (ready_fds.empty()) {
+			continue;
+		}
 
-        // std::cout << "poll() returned " << ready_fds.size() << " ready fd(s)" << std::endl;
+		// std::cout << "poll() returned " << ready_fds.size() << " ready fd(s)" << std::endl;
 
-        // Traiter chaque fd pret
-        for (size_t i = 0; i < ready_fds.size(); i++) {
-            int fd = ready_fds[i];
+		// Traiter chaque fd pret
+		for (size_t i = 0; i < ready_fds.size(); i++) {
+			int fd = ready_fds[i];
 
-            // Verifier si c'est un server socket (nouvelle connexion)
-            if (isServerSocket(fd)) {
-                // Nouvelle connexion entrante sur ce server socket
-                acceptNewClient(fd);
-            }
-            else {
-                // Evenement sur un client existant
-                short revents = multiplexer.get_revents(fd);
-                bool client_disconnected = false;
+			// Verifier si c'est un server socket (nouvelle connexion)
+			if (isServerSocket(fd)) {
+				// Nouvelle connexion entrante sur ce server socket
+				acceptNewClient(fd);
+			}
+			else {
+				// Evenement sur un client existant
+				short revents = multiplexer.get_revents(fd);
+				bool client_disconnected = false;
 
-                if (revents & POLLIN) {
-                    handleClientRead(fd);
+				if (revents & POLLIN) {
+					handleClientRead(fd);
 
-                    // Verifier si le client a ete supprime pendant la lecture
-                    if (clients.find(fd) == clients.end()) {
-                        client_disconnected = true;
-                    }
-                }
+					// Verifier si le client a ete supprime pendant la lecture
+					if (clients.find(fd) == clients.end()) {
+						client_disconnected = true;
+					}
+				}
 
-                // IMPORTANT: ne traiter POLLOUT que si le client n'a pas ete deconnecte
-                if (!client_disconnected && (revents & POLLOUT)) {
-                    handleClientWrite(fd);
-                }
-            }
-        }
+				// IMPORTANT: ne traiter POLLOUT que si le client n'a pas ete deconnecte
+				if (!client_disconnected && (revents & POLLOUT)) {
+					handleClientWrite(fd);
+				}
+			}
+		}
 
-        std::cout << std::endl;
-    }
+		std::cout << std::endl;
+	}
 }
 
 void Server::stop() {
-    running = false;
+	running = false;
 }
 
 bool Server::isServerSocket(int fd) const {
-    return fd_to_server.find(fd) != fd_to_server.end();
+	return fd_to_server.find(fd) != fd_to_server.end();
 }
 
 void Server::acceptNewClient(int server_fd) {
-    try {
-        int client_fd = socket_manager.accept_connection(server_fd);
-        Connection* conn = new Connection(client_fd);
-        clients[client_fd] = conn;
+	try {
+		int client_fd = socket_manager.accept_connection(server_fd);
+		Connection* conn = new Connection(client_fd);
+		clients[client_fd] = conn;
 
-        // Stocker quel ServerBlock a accepté ce client
-        const ServerBlock* sb = fd_to_server.find(server_fd)->second;
-        client_to_server[client_fd] = sb;
+		// Stocker quel ServerBlock a accepté ce client
+		const ServerBlock* sb = fd_to_server.find(server_fd)->second;
+		client_to_server[client_fd] = sb;
 
-        // Surveiller le client pour les donnees entrantes
-        multiplexer.add_fd(client_fd, POLLIN);
-        std::cout << GREEN << "✓ " << RES << "New client connected on port " << sb->port << ": "
-                  << "fd=" << client_fd << " -> (total clients: " << clients.size() << ")"
-                  << std::endl;
-    }
-    catch (const SocketManager::SocketException& e) {
-        std::cerr << "✗ Error accepting client: " << e.what() << std::endl;
-    }
-    catch (const Connection::ConnectionException& e) {
-        std::cerr << "✗ Error creating connection: " << e.what() << std::endl;
-    }
+		// Surveiller le client pour les donnees entrantes
+		multiplexer.add_fd(client_fd, POLLIN);
+		std::cout << GREEN << "✓ " << RES << "New client connected on port " << sb->port << ": "
+				  << "fd=" << client_fd << " -> (total clients: " << clients.size() << ")"
+				  << std::endl;
+	}
+	catch (const SocketManager::SocketException& e) {
+		std::cerr << "✗ Error accepting client: " << e.what() << std::endl;
+	}
+	catch (const Connection::ConnectionException& e) {
+		std::cerr << "✗ Error creating connection: " << e.what() << std::endl;
+	}
 }
 
 void Server::handleClientRead(int fd) {
-    Connection* conn = clients[fd];
-    ssize_t n = conn->read_available();
+	Connection* conn = clients[fd];
+	ssize_t n = conn->read_available();
 
-    if (n > 0) {
-        // std::cout << "  [fd=" << fd << "] Received " << n << " bytes" << std::endl;
-        std::cout << BOLD_YELLOW << "[DEBUG] "
+	if (n > 0) {
+		// std::cout << "  [fd=" << fd << "] Received " << n << " bytes" << std::endl;
+		std::cout << BOLD_YELLOW << "[DEBUG] "
 			<< RES << "Received " << n << " bytes" << std::endl;
 
-        // Traiter la requete HTTP avec le parser
-        processRequest(conn, fd);
+		// Traiter la requete HTTP avec le parser
+		processRequest(conn, fd);
 
-        // Activer POLLOUT si une reponse est prete
-        if (!conn->send_buffer.empty()) {
-            multiplexer.modify_fd(fd, POLLIN | POLLOUT);
-        }
-    }
-    else if (n == 0) {
-        // Client a ferme la connexion
-        // std::cout << "  [fd=" << fd << "] Client disconnected" << std::endl;
-        std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Client disconnected" << std::endl;
-        removeClient(fd);
-    }
-    else {
-        // Erreur de lecture
-        std::cout << "  [fd=" << fd << "] Error reading" << std::endl;
-        removeClient(fd);
-    }
+		// Activer POLLOUT si une reponse est prete
+		if (!conn->send_buffer.empty()) {
+			multiplexer.modify_fd(fd, POLLIN | POLLOUT);
+		}
+	}
+	else if (n == 0) {
+		// Client a ferme la connexion
+		// std::cout << "  [fd=" << fd << "] Client disconnected" << std::endl;
+		std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Client disconnected" << std::endl;
+		removeClient(fd);
+	}
+	else {
+		// Erreur de lecture
+		std::cout << "  [fd=" << fd << "] Error reading" << std::endl;
+		removeClient(fd);
+	}
 }
 
 void Server::handleClientWrite(int fd) {
-    Connection* conn = clients[fd];
+	Connection* conn = clients[fd];
 
-    if (conn->has_pending_data()) {
-        ssize_t sent = conn->write_pending();
+	if (conn->has_pending_data()) {
+		ssize_t sent = conn->write_pending();
 
-        if (sent > 0) {
-            // std::cout << "  [fd=" << fd << "] Sent " << sent << " bytes" << std::endl;
-            std::cout << BOLD_YELLOW << "[DEBUG] "
+		if (sent > 0) {
+			// std::cout << "  [fd=" << fd << "] Sent " << sent << " bytes" << std::endl;
+			std::cout << BOLD_YELLOW << "[DEBUG] "
 				<< RES << "Sent " << sent << " bytes" << std::endl;
-        }
-        else if (sent < 0) {
-            std::cout << "  [fd=" << fd << "] Error writing" << std::endl;
-            removeClient(fd);
-            return;
-        }
+		}
+		else if (sent < 0) {
+			std::cout << "  [fd=" << fd << "] Error writing" << std::endl;
+			removeClient(fd);
+			return;
+		}
 
-        // Si tout a ete envoye, desactiver POLLOUT
-        if (!conn->has_pending_data()) {
-            multiplexer.modify_fd(fd, POLLIN);
-        }
-    }
-    else {
-        // Plus rien a envoyer, desactiver POLLOUT
-        multiplexer.modify_fd(fd, POLLIN);
-    }
+		// Si tout a ete envoye, desactiver POLLOUT
+		if (!conn->has_pending_data()) {
+			multiplexer.modify_fd(fd, POLLIN);
+		}
+	}
+	else {
+		// Plus rien a envoyer, desactiver POLLOUT
+		multiplexer.modify_fd(fd, POLLIN);
+	}
 }
 
 void Server::removeClient(int fd) {
-    std::map<int, Connection*>::iterator it = clients.find(fd);
+	std::map<int, Connection*>::iterator it = clients.find(fd);
 
-    if (it != clients.end()) {
-        multiplexer.remove_fd(fd);
-        delete it->second;
-        clients.erase(it);
+	if (it != clients.end()) {
+		multiplexer.remove_fd(fd);
+		delete it->second;
+		clients.erase(it);
 
-        // Supprimer aussi le parser HTTP associe
-        std::map<int, HttpRequestParser*>::iterator parser_it = parsers.find(fd);
-        if (parser_it != parsers.end()) {
-            delete parser_it->second;
-            parsers.erase(parser_it);
-        }
+		// Supprimer aussi le parser HTTP associe
+		std::map<int, HttpRequestParser*>::iterator parser_it = parsers.find(fd);
+		if (parser_it != parsers.end()) {
+			delete parser_it->second;
+			parsers.erase(parser_it);
+		}
 
-        // Supprimer le mapping client -> server
-        client_to_server.erase(fd);
+		// Supprimer le mapping client -> server
+		client_to_server.erase(fd);
 
-        std::cout << BOLD_YELLOW << "[DEBUG] "
+		std::cout << BOLD_YELLOW << "[DEBUG] "
 			<< RES << "live clients: " << clients.size() << std::endl;
-        // std::cout << "  (remaining clients: " << clients.size() << ")" << std::endl;
-    }
+		// std::cout << "  (remaining clients: " << clients.size() << ")" << std::endl;
+	}
 }
 
 void Server::processRequest(Connection* conn, int fd) {
-    // Creer un parser pour ce client si necessaire
-    if (parsers.find(fd) == parsers.end()) {
-        parsers[fd] = new HttpRequestParser();
-        // std::cout << "  [fd=" << fd << "] Created HTTP parser" << std::endl;
-    }
+	// Creer un parser pour ce client si necessaire
+	if (parsers.find(fd) == parsers.end()) {
+		parsers[fd] = new HttpRequestParser();
+		// std::cout << "  [fd=" << fd << "] Created HTTP parser" << std::endl;
+	}
 
-    HttpRequestParser* parser = parsers[fd];
+	HttpRequestParser* parser = parsers[fd];
 
-    // Envoyer les donnees au parser
+	// Envoyer les donnees au parser
 	// std::cout << BOLD_GOLD << conn->recv_buffer << RES << std::endl;
-    parser->feed(conn->recv_buffer);
-    conn->recv_buffer.clear();
+	parser->feed(conn->recv_buffer);
+	conn->recv_buffer.clear();
+
+	//NICO OOOO
+	// // If headers are parsed and we are about to parse the body,
+	// // configure the parser with the max body size for this location.
+	// if (parser->needsMaxBodySize())
+	// {
+	// 	const HttpRequest& partialReq = parser->getRequest(); // valid enough: headers+path exist now
+
+	// 	const ServerBlock* serverBlock = client_to_server[fd];
+	// 	Router requestHandler(*config, serverBlock);
+
+	// 	// We must pick the location to know rules->maxBodySize.
+	// 	requestHandler.getLocation(partialReq.path); // you may need to make this public or expose a method
+	// 	// Then set parser limit:
+	// 	parser->setMaxBodySize(requestHandler.getRulesMaxBodySize()); // or whatever accessor you implement
+	// }
 
 
 	if (parser->hasError()) {
@@ -295,8 +311,8 @@ void Server::processRequest(Connection* conn, int fd) {
 		conn->send_buffer = ResponseBuilder::build(resp, true);
 	}
 
-    // Verifier si la requete est complete
-    else if (parser->isDone()) {
+	// Verifier si la requete est complete
+	else if (parser->isDone()) {
 
 		// Traiter la requete HTTP valide
 		const HttpRequest& req = parser->getRequest();
@@ -319,9 +335,9 @@ void Server::processRequest(Connection* conn, int fd) {
 					<< " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
 
 
-        // Reset parser pour la prochaine requete (keep-alive)
-        parser->reset();
-    }
+		// Reset parser pour la prochaine requete (keep-alive)
+		parser->reset();
+	}
 }
 
 // ============================================================================

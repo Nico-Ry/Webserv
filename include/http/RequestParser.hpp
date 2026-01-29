@@ -68,6 +68,12 @@ public:
 	// Returns the parsed request.
 	const HttpRequest &getRequest() const;
 
+	// void	setMaxBodySize(size_t n) { _hasMaxBodySize = true; _maxBodySize = n; }
+	// void	clearMaxBodySize() { _hasMaxBodySize = false; _maxBodySize = 0; }
+	// bool	needsMaxBodySize() const {return (_state == PS_BODY && _hasMaxBodySize == false);}
+
+
+
 private:
 	// Current state of the parsing process (start line, headers, body, etc.)
 	ParserState  _state;
@@ -78,13 +84,17 @@ private:
 		- We remove bytes from here as we successfully parse lines/body.
 		- This allows incremental parsing when data arrives in pieces.
 	*/
-	std::string  _buffer;
+	std::string	_buffer;
 
 	// The request we are building while parsing
-	HttpRequest  _req;
+	HttpRequest	_req;
 
 	// If state is PS_ERROR, this holds the HTTP error status code (e.g. 400)
-	int          _errorStatus;
+	int			_errorStatus;
+
+
+	// bool		_hasMaxBodySize;
+	// size_t		_maxBodySize;
 
 	/*
 		Parsing helpers:
@@ -123,7 +133,8 @@ private:
 		- sets _errorStatus = statusCode
 		- returns true (so caller can treat it as "progress happened")
 	*/
-	bool setError(int statusCode);
+	bool	setError(int statusCode);
+
 };
 
 #endif

@@ -178,8 +178,15 @@ bool	HttpRequestParser::consumeChunkDataAndCRLF()
 	//STEP B: We know the chunk size. We must read exactly that many bytes from _buffer.
 
 	//Not enough data yet to read the full chunk.
+
 	if (_buffer.size() < _req.chunkSize)
 		return (false);
+
+	// if (_hasMaxBodySize == true)
+	// {
+	// 	if (_req.body.size() + _req.chunkSize > _maxBodySize)
+	// 		return (setError(413));
+	// }
 
 	//	Append chunk data to the decoded body.
 	_req.body.append(_buffer, 0, _req.chunkSize);

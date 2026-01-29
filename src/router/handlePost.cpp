@@ -7,6 +7,12 @@ HttpResponse Router::handlePost(const HttpRequest& req)
 {
 	std::string resolved = getResolvedPath(req.path, *rules);
 
+	if (!exists(rules->uploadDir) || !isDir(rules->uploadDir))
+		return HttpResponse(500, "Internal Server Error");
+
+	if (!canTraverseDir(rules->uploadDir) || access(rules->uploadDir.c_str(), W_OK) != 0)
+		return HttpResponse(403, "Forbidden");
+
 	// TODO(CGI): If this location/path should execute CGI, delegate here.
 	// Example:
 	// if (isCgiTarget(resolved, *rules))
@@ -14,11 +20,6 @@ HttpResponse Router::handlePost(const HttpRequest& req)
 
 	// if (!rules->uploadDir.empty())
 	// 	return handleUploadPost(req);
-	if (!exists(rules->uploadDir) || !isDir(rules->uploadDir))
-    return HttpResponse(500, "Internal Server Error");
-
-if (!canTraverseDir(rules->uploadDir) || access(rules->uploadDir.c_str(), W_OK) != 0)
-    return HttpResponse(403, "Forbidden");
 
 	return HttpResponse(403, "Forbidden");
 }

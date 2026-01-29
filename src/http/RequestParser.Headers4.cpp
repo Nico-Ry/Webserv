@@ -142,6 +142,7 @@ bool	HttpRequestParser::finalizeHeaders()
 		_req.contentLength = value;
 	}
 
+
 	/*
 		RULE 5: Conflict rule
 		If Transfer-Encoding is chunked, Content-Length must not be present.
@@ -149,6 +150,13 @@ bool	HttpRequestParser::finalizeHeaders()
 	*/
 	if (_req.chunked == true && _req.hasContentLength == true)
 		return (setError(400));
+
+	// Size rule: if Content-Length exists, we can reject immediately
+	// if (_req.hasContentLength == true && _hasMaxBodySize == true)
+	// {
+	// 	if (_req.contentLength > _maxBodySize)
+	// 		return (setError(413));
+	// }
 
 	/*
 		Decide next state:
