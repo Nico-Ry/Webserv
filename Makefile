@@ -52,6 +52,7 @@ ROUTER_DIR			= src/router/
 SRC_ROUTER			= $(addprefix $(ROUTER_DIR), \
 						AutoIndex.cpp \
 						Router.cpp \
+						handleDelete.cpp \
 						handleGet.cpp \
 						handlePost.cpp \
 						PathUtils.cpp \
