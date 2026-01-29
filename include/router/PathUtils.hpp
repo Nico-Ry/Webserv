@@ -38,6 +38,7 @@ bool	isFile(const std::string& p);
 bool canReadFile(const std::string& p);
 bool canTraverseDir(const std::string& p);
 bool canListDir(const std::string& p);
+bool canWriteInDir(const std::string& p);
 void debugAccessError(const std::string& what, const std::string& path);
 
 #endif

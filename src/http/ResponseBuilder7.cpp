@@ -95,6 +95,10 @@ std::string	ResponseBuilder::build(const HttpResponse &resp, bool closeConnectio
 		3) insert other headers defined during routing
 	*/
 	StringMap	h = resp.headers;
+	// Always compute recurring headers here so they match the final body
+	h["Date: "] = buildDateValue();
+	h["Server: "] = "webserv";
+	h["Content-Length: "] = toStringSize(resp.body.size());
 	for (StringMap::const_iterator it = h.begin(); it != h.end(); ++it)
 		ss << it->first << it->second << CRLF;
 	ss << CRLF; // mark end of headers

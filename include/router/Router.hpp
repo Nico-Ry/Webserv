@@ -117,7 +117,7 @@ class Router {
 
 //								POST
 
-	HttpResponse	handlePost(const std::string& urlPath);
+	HttpResponse handlePost(const HttpRequest& req);;
 };
 
 

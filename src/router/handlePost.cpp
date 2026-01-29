@@ -1,3 +1,31 @@
+#include "router/Router.hpp"
+#include <fstream>
+#include <unistd.h>     // access()
+#include <sys/stat.h>   // stat()
+
+HttpResponse Router::handlePost(const HttpRequest& req)
+{
+	std::string resolved = getResolvedPath(req.path, *rules);
+
+	// TODO(CGI): If this location/path should execute CGI, delegate here.
+	// Example:
+	// if (isCgiTarget(resolved, *rules))
+	//     return executeCgi(req, resolved, *rules);
+
+	// if (!rules->uploadDir.empty())
+	// 	return handleUploadPost(req);
+	if (!exists(rules->uploadDir) || !isDir(rules->uploadDir))
+    return HttpResponse(500, "Internal Server Error");
+
+if (!canTraverseDir(rules->uploadDir) || access(rules->uploadDir.c_str(), W_OK) != 0)
+    return HttpResponse(403, "Forbidden");
+
+	return HttpResponse(403, "Forbidden");
+}
+
+
+
+
 /*
 ---Status Codes
 201 Created → resource created (uploads)

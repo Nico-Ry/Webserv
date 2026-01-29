@@ -48,6 +48,11 @@ bool canListDir(const std::string& p)
 	return access(p.c_str(), R_OK) == 0 && access(p.c_str(), X_OK) == 0;
 }
 
+bool canWriteInDir(const std::string& p)
+{
+	return access(p.c_str(), W_OK) == 0 && access(p.c_str(), X_OK) == 0;
+}
+
 void debugAccessError(const std::string& what, const std::string& path)
 {
 	std::cout << YELLOW << "[DEBUG] " << ORANGE

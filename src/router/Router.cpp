@@ -188,7 +188,7 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 		return handleDelete(req.path);
 
 	else if (req.method == METHOD_POST)
-		return handlePost(req.path);
+		return handlePost(req);
 
 	return HttpResponse(501, "Not Implemented");
 }
