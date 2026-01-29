@@ -167,17 +167,10 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 
 // Basic Validation Before handling requested method
 
-	size_t	bodySize;
-
-	if (req.chunked)
-		bodySize = req.body.size();        // decoded chunked body
-	else
-		bodySize = req.contentLength;      // from Content-Length header
-
 	if (!methodAllowed(req.method))
 		return HttpResponse(405, "Method Not Allowed");
 
-	if (exceedsMaxSize(bodySize))//changed to bodySize to handle chunked requests
+	if (exceedsMaxSize(req.body.size()))//changed to bodySize to handle chunked requests
 		return HttpResponse(413, "Payload Too Large");
 
 // Split logic to handle GET, DELETE and POST separately
