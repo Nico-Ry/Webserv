@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Webserv - Upload</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="/css/common.css">
+
+	<style>
+		.upload-container {
+			max-width: 600px;
+			margin: var(--spacing-xl) auto;
+		}
+
+		.upload-zone {
+			border: 2px dashed var(--color-border);
+			border-radius: 12px;
+			padding: var(--spacing-xl);
+			text-align: center;
+			background: var(--color-gray);
+			margin: var(--spacing-lg) 0;
+			cursor: pointer;
+			transition: 0.15s ease;
+			user-select: none;
+		}
+
+		.upload-zone:hover {
+			border-color: var(--color-primary);
+			background: #f0f4ff;
+		}
+
+		/* Drag-over visual state */
+		.upload-zone.dragover {
+			border-color: var(--color-primary);
+			background: #e7efff;
+			transform: scale(1.01);
+		}
+
+		input[type="file"] {
+			display: none;
+		}
+
+		.file-info {
+			margin-top: var(--spacing-md);
+			padding: var(--spacing-md);
+			border: 1px solid var(--color-border);
+			border-radius: 10px;
+			background: white;
+			display: none;
+		}
+
+		.actions {
+			display: flex;
+			gap: var(--spacing-sm);
+			margin-top: var(--spacing-md);
+		}
+
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 10px 14px;
+			border-radius: 8px;
+			border: 1px solid var(--color-border);
+			background: rgb(130, 31, 31);
+			cursor: pointer;
+			font-weight: 600;
+			width: 100%;
+		}
+
+		.btn-primary {
+			background: var(--color-primary);
+			border-color: var(--color-primary);
+			color: white;
+		}
+
+		.btn:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+		}
+
+		/* Status box (replaces your "not implemented" warning) */
+		.info-box {
+			border-radius: 8px;
+			padding: var(--spacing-md);
+			margin-top: var(--spacing-lg);
+			border: 1px solid var(--color-border);
+			background: #f8fafc;
+			color: #111;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+
+		.info-box.warn {
+			background: #fff3cd;
+			border-color: #ffc107;
+		}
+
+		.info-box.ok {
+			background: #d1fae5;
+			border-color: #10b981;
+		}
+
+		.info-box.err {
+			background: #fee2e2;
+			border-color: #ef4444;
+		}
+
+		.small {
+			color: #666;
+			font-size: 0.9rem;
+		}
+	</style>
+</head>
+<body>
+
+<nav class="navbar">
+	<div class="navbar-content">
+		<a href="/" class="navbar-brand">Webserv</a>
+		<ul class="navbar-links">
+			<li><a href="/">Home</a></li>
+			<li><a href="/test">Test</a></li>
+			<li><a href="/upload">Upload</a></li>
+		</ul>
+	</div>
+</nav>
+
+<div class="container">
+	<div class="upload-container">
+		<h1 style="font-size: 48px; margin-bottom: var(--spacing-md);">Upload Files</h1>
+		<p class="small" style="margin-bottom: var(--spacing-lg);">
+			Uploads using a raw POST body (compatible with your current handlePost).
+		</p>
+
+		<div class="upload-zone" id="upload-zone">
+			<div style="font-size: 48px; margin-bottom: var(--spacing-sm);">📁</div>
+			<h3 id="zone-title">Click to select file</h3>
+			<p class="small" style="margin-top: var(--spacing-sm);">or drag and drop</p>
+			<input type="file" id="file-input">
+		</div>
+
+		<div class="file-info" id="file-info">
+			<div><strong>Selected:</strong> <span id="file-name"></span></div>
+			<div class="small"><strong>Size:</strong> <span id="file-size"></span></div>
+
+			<div class="actions">
+				<button class="btn" id="clear-btn" type="button">Clear</button>
+				<button class="btn btn-primary" id="upload-btn" type="button">Upload</button>
+			</div>
+		</div>
+
+		<div class="info-box warn" id="status-box">
+			<strong>ℹ️ Status</strong><br>
+			Select a file to upload to <code>/upload/&lt;filename&gt;</code>.
+		</div>
+	</div>
+</div>
+
+<script>
+	(function () {
+		const zone = document.getElementById("upload-zone");
+		const input = document.getElementById("file-input");
+
+		const fileInfo = document.getElementById("file-info");
+		const fileName = document.getElementById("file-name");
+		const fileSize = document.getElementById("file-size");
+
+		const uploadBtn = document.getElementById("upload-btn");
+		const clearBtn = document.getElementById("clear-btn");
+		const statusBox = document.getElementById("status-box");
+		const zoneTitle = document.getElementById("zone-title");
+
+		let selectedFile = null;
+
+		function formatBytes(bytes) {
+			if (bytes < 1024) return bytes + " B";
+			if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+			return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+		}
+
+		function setStatus(type, text) {
+			statusBox.classList.remove("warn", "ok", "err");
+			statusBox.classList.add(type);
+			statusBox.textContent = text;
+		}
+
+		function setSelectedFile(file) {
+			selectedFile = file;
+			if (!selectedFile) {
+				fileInfo.style.display = "none";
+				uploadBtn.disabled = true;
+				zoneTitle.textContent = "Click to select file";
+				setStatus("warn", "ℹ️ Select a file to upload to www/upload/<filename>.");
+				return;
+			}
+
+			fileInfo.style.display = "block";
+			fileName.textContent = selectedFile.name;
+			fileSize.textContent = formatBytes(selectedFile.size);
+			uploadBtn.disabled = false;
+			zoneTitle.textContent = "File selected";
+			setStatus("warn", "Ready to upload: " + selectedFile.name);
+		}
+
+		async function uploadSelectedFile() {
+			if (!selectedFile) {
+				setStatus("err", "No file selected.");
+				return;
+			}
+
+			uploadBtn.disabled = true;
+			clearBtn.disabled = true;
+
+			setStatus("warn", "Uploading " + selectedFile.name + "…");
+
+			// Your server chooses filename from URL: /upload/<filename>
+			const url = "/upload/" + encodeURIComponent(selectedFile.name);
+
+			try {
+				const resp = await fetch(url, {
+					method: "POST",
+					body: selectedFile, // raw bytes (NOT multipart)
+					headers: {
+						"Content-Type": selectedFile.type || "application/octet-stream"
+					}
+				});
+
+				const text = await resp.text();
+
+				if (resp.ok) {
+					setStatus("ok",
+						"✅ Upload successful\n" +
+						"HTTP: " + resp.status + "\n" +
+						"Saved as: " + selectedFile.name + "\n\n" +
+						"Server response:\n" + text
+					);
+				} else {
+					setStatus("err",
+						"❌ Upload failed\n" +
+						"HTTP: " + resp.status + "\n\n" +
+						"Server response:\n" + text
+					);
+				}
+			} catch (e) {
+				setStatus("err", "❌ Upload error: " + e);
+			}
+
+			uploadBtn.disabled = false;
+			clearBtn.disabled = false;
+		}
+
+		// Click to open file picker
+		zone.addEventListener("click", () => input.click());
+
+		// File input change
+		input.addEventListener("change", () => {
+			if (input.files && input.files.length > 0)
+				setSelectedFile(input.files[0]);
+		});
+
+		// Drag & drop
+		zone.addEventListener("dragover", (e) => {
+			e.preventDefault();
+			zone.classList.add("dragover");
+		});
+
+		zone.addEventListener("dragleave", () => {
+			zone.classList.remove("dragover");
+		});
+
+		zone.addEventListener("drop", (e) => {
+			e.preventDefault();
+			zone.classList.remove("dragover");
+
+			if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+				setSelectedFile(e.dataTransfer.files[0]);
+			}
+		});
+
+		uploadBtn.addEventListener("click", uploadSelectedFile);
+		clearBtn.addEventListener("click", () => setSelectedFile(null));
+
+		// Init
+		setSelectedFile(null);
+	})();
+</script>
+
+</body>
+</html>

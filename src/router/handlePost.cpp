@@ -1,28 +1,333 @@
 #include "router/Router.hpp"
+#include "router/PathUtils.hpp"
 #include <fstream>
-#include <unistd.h>     // access()
-#include <sys/stat.h>   // stat()
+#include <ctime>
 
+// ---- small helpers  ----
+
+static bool isSafeFilename(const std::string& name)
+{
+	if (name.empty())
+		return (false);
+
+	// Reject path separators and traversal patterns
+	if (name.find('/') != std::string::npos)
+		return (false);
+	if (name.find('\\') != std::string::npos)
+		return (false);
+	if (name.find("..") != std::string::npos)
+		return (false);
+
+	// Optional: reject weird empty-dot names
+	if (name == "." || name == "..")
+		return (false);
+
+	return (true);
+}
+
+static std::string lastPathSegmentOrEmpty(const std::string& urlPath)
+{
+	// urlPath is already req.path (no query)
+	// Examples:
+	//   "/upload/file.txt" -> "file.txt"
+	//   "/upload/"         -> ""
+	//   "/upload"          -> "upload" (not what we want if location is "/upload")
+	//
+	// We only treat it as “filename in URL” if there is something after the last '/'
+	// AND the path does not end with '/'
+
+	if (urlPath.empty())
+		return ("");
+
+	if (urlPath[urlPath.size() - 1] == '/')
+		return ("");
+
+	size_t pos = urlPath.rfind('/');
+	if (pos == std::string::npos)
+		return ("");
+
+	return (urlPath.substr(pos + 1));
+}
+
+static std::string generateUploadName()
+{
+	static unsigned long counter = 0;
+	++counter;
+
+	std::time_t t = std::time(NULL);
+	std::ostringstream oss;
+	oss << "upload_file_" << (unsigned long)t << "_" << counter << ".bin";
+	return (oss.str());
+}
+
+static std::string ensureTrailingSlash(const std::string& s)
+{
+	if (s.empty() || s[s.size() - 1] == '/')
+		return (s);
+	return (s + "/");
+}
+
+static HttpResponse	validateUploadDirOrFail(const LocationBlock* rules)
+{
+	// 3) Upload must be configured (for non-CGI POST)
+	if (rules->uploadDir.empty())
+		return (HttpResponse(403, "Forbidden"));
+
+	// 4) Validate upload directory exists and is a directory
+	if (!exists(rules->uploadDir) || !isDir(rules->uploadDir))
+		return (HttpResponse(500, "Internal Server Error"));
+
+	// 5) Need X to traverse + W to create files inside
+	if (!canTraverseDir(rules->uploadDir) || access(rules->uploadDir.c_str(), W_OK) != 0)
+		return (HttpResponse(403, "Forbidden"));
+
+	return (HttpResponse(0, "")); // sentinel OK
+}
+
+
+static HttpResponse	writeBodyToFileOrFail(const std::string& fullPath,
+											const HttpRequest& req)
+{
+	// 9) Write bytes (binary safe)
+	//
+	//	std::ios::binary => no byte transformations (raw bytes)
+	//	std::ios::trunc  => overwrite existing file (truncate to 0 then write)
+	std::ofstream ofs(fullPath.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!ofs.is_open())
+		return (HttpResponse(500, "Internal Server Error"));
+
+	// Write EXACTLY req.body.size() bytes (works even with '\0' bytes)
+	ofs.write(req.body.data(), req.body.size());
+
+	// good() becomes false if write failed
+	if (!ofs.good())
+		return (HttpResponse(500, "Internal Server Error"));
+
+	ofs.close();
+
+	/* Alternative: POSIX open/write (binary-safe by nature)
+	//
+	// int fd = open(fullPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	//  - O_WRONLY: write-only
+	//  - O_CREAT : create if missing
+	//  - O_TRUNC : overwrite if exists
+	//  - 0644    : permissions if created (rw-r--r--)
+	//
+	// if (fd < 0) -> open failed (permissions, missing dirs, etc.)
+	//
+	// ssize_t written = write(fd, req.body.data(), req.body.size());
+	//  - returns number of bytes written, or -1 on error
+	//  - can be a partial write (robust code would loop)
+	//
+	// close(fd) always to avoid fd leaks
+	*/
+
+	return (HttpResponse(0, "")); // sentinel OK
+}
+
+
+/*@note It will upload anything (PNG/JPG/PDF/ZIP…), as long as the client
+ sends the body as raw bytes (like  with --data-binary )
+ printf 'hello\n' | curl -v -X POST --data-binary @- http://127.0.0.1:8080/upload/hello.txt),
+because its writen in binary mode*/
 HttpResponse Router::handlePost(const HttpRequest& req)
 {
+	// 1) Resolve path (useful for CGI decision & safety checks)
 	std::string resolved = getResolvedPath(req.path, *rules);
 
-	if (!exists(rules->uploadDir) || !isDir(rules->uploadDir))
-		return HttpResponse(500, "Internal Server Error");
+	// Until CGI exists, avoid -Werror unused warning
+	(void)resolved;
 
-	if (!canTraverseDir(rules->uploadDir) || access(rules->uploadDir.c_str(), W_OK) != 0)
-		return HttpResponse(403, "Forbidden");
-
-	// TODO(CGI): If this location/path should execute CGI, delegate here.
-	// Example:
+	// 2) CGI hook (Dibran will implement)
+	// TODO(CGI): if this target should be executed as CGI, delegate here.
 	// if (isCgiTarget(resolved, *rules))
-	//     return executeCgi(req, resolved, *rules);
+	//     return (executeCgi(req, resolved, *rules));
 
-	// if (!rules->uploadDir.empty())
-	// 	return handleUploadPost(req);
+	// 3-5) Validate upload dir
+	// {} limits the lifetime (scope) of err
+	{
+		HttpResponse err = validateUploadDirOrFail(rules);
+		if (err.statusCode != 0)
+			return (err);
+	}
 
-	return HttpResponse(403, "Forbidden");
+	// 6) Decide filename:
+	std::string filename = lastPathSegmentOrEmpty(req.path);
+
+	// Edge case: POST to exactly the location URI
+	if (req.path == rules->uri)
+		filename = "";
+
+	if (filename.empty())
+		filename = generateUploadName();
+
+	// 7) Safety check against traversal / injection
+	if (!isSafeFilename(filename))
+		return (HttpResponse(400, "Bad Request"));
+
+	// 8) Full filesystem path
+	std::string fullPath = joinPath(rules->uploadDir, filename);
+
+	// Track whether it existed (optional; choose a response policy)
+	bool existedBefore = exists(fullPath);
+
+	// 9) Write bytes
+	{
+		HttpResponse err = writeBodyToFileOrFail(fullPath, req);
+		if (err.statusCode != 0)
+			return (err);
+	}
+
+	// 10) Build response
+	/*
+	Choose ONE policy ::
+	Overwrite allowed → return 200 if existed, 201 if new (doing that right now)
+	Overwrite forbidden → would return 409 Conflict or 403
+	*/
+	int	code;
+	if (existedBefore)
+		code = 200;
+	else
+		code = 201;
+
+	std::string	msg;
+	if (existedBefore)
+		msg = "OK";
+	else
+		msg = "Created";
+
+	// Avoid recomputing lastPathSegmentOrEmpty(req.path) twice
+	bool urlHadFilename = (!lastPathSegmentOrEmpty(req.path).empty() && req.path != rules->uri);
+
+	// “Location” header: where the uploaded resource can be accessed (URL-side)
+	// If URL already had filename, it is req.path.
+	// If generated, return rules->uri + "/" + filename.
+	std::string locationUrl;
+	if (!urlHadFilename)
+		locationUrl = ensureTrailingSlash(rules->uri) + filename;
+	else
+		locationUrl = req.path;
+
+	HttpResponse resp(code, msg, "uploaded\n");
+	resp.headers["Content-Type: "] = "text/plain";
+	resp.headers["Location: "] = locationUrl;
+	return (resp);
 }
+
+
+
+/*tests:
+printf 'hello\n' | curl -v -X POST --data-binary @- http://127.0.0.1:8080/upload/hello.txt
+
+201 first time, 200 next time
+
+
+printf 'abc123\n' | curl -v -X POST --data-binary @- http://127.0.0.1:8080/upload/
+
+201
+
+*/
+
+
+
+
+
+
+
+// ---- your method ----
+
+// HttpResponse Router::handlePost(const HttpRequest& req)
+// {
+// 	// 1) Resolve path (useful for CGI decision & safety checks)
+// 	std::string resolved = getResolvedPath(req.path, *rules);
+
+// 	// 2) CGI hook (teammate will implement)
+// 	// TODO(CGI): if this target should be executed as CGI, delegate here.
+// 	// if (isCgiTarget(resolved, *rules))
+// 	//     return executeCgi(req, resolved, *rules);
+
+// 	// 3)  Upload must be configured (for non-CGI POST)
+// 	if (rules->uploadDir.empty())
+// 		return (HttpResponse(403, "Forbidden")); // or 500 (policy choice)
+
+// 	// 4) Validate upload directory exists and is a directory
+// 	if (!exists(rules->uploadDir) || !isDir(rules->uploadDir))
+// 		return (HttpResponse(500, "Internal Server Error"));
+
+// 	// 5)Need X to traverse + W to create files inside
+// 	if (!canTraverseDir(rules->uploadDir) || access(rules->uploadDir.c_str(), W_OK) != 0)
+// 		return (HttpResponse(403, "Forbidden"));
+
+// 	// 6) Decide filename:
+// 	// Policy: if URL contains a filename, use it; otherwise generate one.
+// 	std::string filename = lastPathSegmentOrEmpty(req.path);
+
+// 	// Important edge case:
+// 	// If your location is "/upload" and the user POSTs to "/upload",
+// 	// lastPathSegmentOrEmpty() would return "upload" (not desired).
+// 	// So, if req.path equals the location URI exactly, treat as “no filename”.
+// 	if (req.path == rules->uri)
+// 		filename = "";
+
+// 	if (filename.empty())
+// 		filename = generateUploadName();
+
+// 	// 7) Safety check against traversal / injection
+// 	if (!isSafeFilename(filename))
+// 		return (HttpResponse(400, "Bad Request"));
+
+// 	// 8) Full filesystem path
+// 	std::string fullPath = joinPath(rules->uploadDir, filename);
+
+// 	// Track whether it existed (optional; choose a response policy)
+// 	bool existedBefore = exists(fullPath);
+
+// 	// 9) Write bytes (binary safe)
+// 	std::ofstream ofs(fullPath.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+// 	if (!ofs.is_open())
+// 		return (HttpResponse(500, "Internal Server Error"));
+
+// 	ofs.write(req.body.data(), req.body.size());
+// 	if (!ofs.good())
+// 		return (HttpResponse(500, "Internal Server Error"));
+
+// 	ofs.close();
+// 	/* Alternative: POSIX open/write
+// 	int fd = open(fullPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+// 	if (fd < 0)
+// 		return HttpResponse(500, "Internal Server Error");
+
+// 	ssize_t written = write(fd, req.body.data(), req.body.size());
+// 	if (written < 0 || static_cast<size_t>(written) != req.body.size())
+// 	{
+// 		close(fd);
+// 		return HttpResponse(500, "Internal Server Error");
+// 	}
+
+// 	close(fd);
+// 	*/
+
+// 	// 10) Build response
+// 	// Pick ONE policy and keep it consistent:
+// 	// - If you always overwrite: you can always return 201 (simple) OR 200/204 when existed.
+// 	int code = existedBefore ? 200 : 201;
+// 	std::string msg = existedBefore ? "OK" : "Created";
+
+// 	// “Location” header: where the uploaded resource can be accessed (URL-side)
+// 	// If URL already had filename, it is req.path.
+// 	// If generated, return rules->uri + "/" + filename.
+// 	std::string locationUrl;
+// 	if (lastPathSegmentOrEmpty(req.path).empty() || req.path == rules->uri)
+// 		locationUrl = ensureTrailingSlash(rules->uri) + filename;
+// 	else
+// 		locationUrl = req.path;
+
+// 	HttpResponse resp(code, msg, "uploaded\n");
+// 	resp.headers["Content-Type: "] = "text/plain";
+// 	resp.headers["Location: "] = locationUrl;
+// 	return (resp);
+// }
+
 
 
 
