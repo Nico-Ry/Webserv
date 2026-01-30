@@ -186,6 +186,9 @@ HttpResponse	Router::routing(const HttpRequest& req)
 		return (CgiHandler::execute(req, scriptPath));
 	}
 
+	std::cout << "[DEBUG ROUTER] method=" << req.method
+          << " path='" << req.path << "'" << std::endl;
+
 // TODO: a function that matches redirection code with
 //       the appropriate redirection message and stores
 //       the locationBlock pointer of the request so we

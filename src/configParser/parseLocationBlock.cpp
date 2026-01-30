@@ -11,13 +11,15 @@
  * @attention Anything that is a path is not validated during parsing!
  * This must be done during execution.
  */
-void		ConfigParser::parseLocationBlock(ServerBlock& s) {
+void		ConfigParser::parseLocationBlock(ServerBlock& s)
+{
 	Token	uri = expect(TOKEN_WORD, "Expected <URI>");
 	LocationBlock	newBlock(s);
 	newBlock.uri = uri.value;
 
 	expect(TOKEN_LBRACE, "Expected '{'");
-	while (!check(TOKEN_RBRACE)) {
+	while (!check(TOKEN_RBRACE))
+	{
 		Token	directive = expect(TOKEN_WORD, "Expected directive");
 
 	// Find pointer to parsing function that matches directive.value
@@ -40,14 +42,16 @@ void		ConfigParser::parseLocationBlock(ServerBlock& s) {
 //								RETURN
 //---------------------------------------------------------------------------//
 
-bool	ConfigParser::isValidRedirectCode(const int& code) {
+bool	ConfigParser::isValidRedirectCode(const int& code)
+{
 	if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308)
-		return true;
-	return false;
+		return (true);
+	return (false);
 }
 
 
-void	ConfigParser::parseReturn(LocationBlock& l) {
+void	ConfigParser::parseReturn(LocationBlock& l)
+{
 	// Make sure current token is NOT a special character
 	if (!check(TOKEN_WORD))
 		expect(TOKEN_WORD, "Expected HTTP status code");
@@ -75,18 +79,21 @@ void	ConfigParser::parseReturn(LocationBlock& l) {
 //							HTTP METHODS
 //---------------------------------------------------------------------------//
 
-bool	ConfigParser::isMethod(const std::string& value) {
+bool	ConfigParser::isMethod(const std::string& value)
+{
 	if (value == "GET" || value == "POST" || value == "DELETE")
-		return true;
-	return false;
+		return (true);
+	return (false);
 }
 
 
-void	ConfigParser::parseMethods(LocationBlock& l) {
+void	ConfigParser::parseMethods(LocationBlock& l)
+{
 	if (!check(TOKEN_WORD)) // only consume via expect if type != word
 		expect(TOKEN_WORD, "Expected method identifier");
 
-	while (true) {
+	while (true)
+	{
 		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
 			break;
 		if (check(TOKEN_WORD)) {
@@ -113,7 +120,8 @@ void	ConfigParser::parseUpload(LocationBlock& l) {
 	if (path.empty())
 		throw ParseException("Upload Directory cannot be empty", uploadToken.line);
 
-	if (path[0] == '/') {
+	if (path[0] == '/')
+	{
 		std::stringstream	ss;
 		ss	<< CYAN << "line" << std::setw(4) << uploadToken.line
 			<< RES << "| "
@@ -139,7 +147,8 @@ void	ConfigParser::parseUpload(LocationBlock& l) {
  * @note See `PARSING HELPERS - TOKEN HANDLING HELPERS` section in ConfigParser.cpp
  * for the definitions of `getSizeAndUnit()`
  */
-void	ConfigParser::parseMaxSize(LocationBlock& l) {
+void	ConfigParser::parseMaxSize(LocationBlock& l)
+{
 	long		num;
 	std::string	unit;
 	Token		sizeToken = expect(TOKEN_WORD, "Expected size specifier");
@@ -165,7 +174,8 @@ void	ConfigParser::parseMaxSize(LocationBlock& l) {
 //								AUTO INDEX
 //---------------------------------------------------------------------------//
 
-void	ConfigParser::parseAutoIndex(LocationBlock& l) {
+void	ConfigParser::parseAutoIndex(LocationBlock& l)
+{
 	if (peek().value == "on")
 		l.autoIndex = true;
 	else if (peek().value == "off")
@@ -182,7 +192,8 @@ void	ConfigParser::parseAutoIndex(LocationBlock& l) {
 //							 ERROR PAGES
 //---------------------------------------------------------------------------//
 
-void	ConfigParser::parseErrorPages(LocationBlock& l) {
+void	ConfigParser::parseErrorPages(LocationBlock& l)
+{
 	std::stringstream	ss(peek().value);
 	long				err_code;
 	StringVec			err_pages;
@@ -198,10 +209,12 @@ void	ConfigParser::parseErrorPages(LocationBlock& l) {
 	if (!check(TOKEN_WORD)) // only consume via expect if type != word
 		expect(TOKEN_WORD, "Expected error file");
 
-	while (true) {
+	while (true)
+	{
 		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
 			break;
-		if (check(TOKEN_WORD)) {
+		if (check(TOKEN_WORD))
+		{
 			if (isDirective(peek().value))
 				expect(TOKEN_SEMICOLON, "Expected ';'"); // missing semicolon
 
@@ -218,15 +231,18 @@ void	ConfigParser::parseErrorPages(LocationBlock& l) {
 //								 INDEX
 //---------------------------------------------------------------------------//
 
-void	ConfigParser::parseIndex(LocationBlock& l) {
+void	ConfigParser::parseIndex(LocationBlock& l)
+{
 
 	if (!check(TOKEN_WORD)) // only consume via expect if type != word
 		expect(TOKEN_WORD, "Expected index file");
 
-	while (true) {
+	while (true)
+	{
 		if (check(TOKEN_SEMICOLON) || check(TOKEN_RBRACE))
 			break;
-		if (check(TOKEN_WORD)) {
+		if (check(TOKEN_WORD))
+		{
 			if (isDirective(peek().value))
 				expect(TOKEN_SEMICOLON, "Expected ';'");
 			l.index.push_back(consume().value);
@@ -240,14 +256,16 @@ void	ConfigParser::parseIndex(LocationBlock& l) {
 //								  ROOT
 //---------------------------------------------------------------------------//
 
-void	ConfigParser::parseRoot(LocationBlock& l) {
+void	ConfigParser::parseRoot(LocationBlock& l)
+{
 	Token	rootToken = expect(TOKEN_WORD, "expected path for root:");
 	std::string	root = rootToken.value;
 
 	if (root.empty())
 		throw ParseException("root cannot be empty", rootToken.line);
 
-	if (root[0] == '/') {
+	if (root[0] == '/')
+	{
 		std::stringstream	ss;
 		ss	<< CYAN << "line" << std::setw(4) << rootToken.line
 			<< RES << "| "

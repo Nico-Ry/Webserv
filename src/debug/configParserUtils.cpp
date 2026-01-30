@@ -1,7 +1,8 @@
 #include "utils.hpp"
 #include "colours.hpp"
 
-void	printAllOutput(const Config& data) {
+void	printAllOutput(const Config& data)
+{
 	std::cout << BOLD_GOLD << "~~~~~ SERVER BLOCKS ~~~~~" << RES << std::endl;
 
 	std::cout << CYAN << "LISTEN" << RES << std::endl;
@@ -33,7 +34,8 @@ void	printAllOutput(const Config& data) {
 	std::cout << "-------------------------\n" << std::endl;
 
 	std::cout << BOLD_GOLD << "~~~~~ LOCATION BLOCKS ~~~~~" << RES << std::endl;
-	for (size_t i=0; i < data.servers.size(); ++i) {
+	for (size_t i=0; i < data.servers.size(); ++i)
+	{
 		ServerBlock	current = data.servers[i];
 		std::cout << GREEN << "~SERVER " << i+1 << "~" << RES << std::endl;
 
@@ -74,13 +76,17 @@ void	printAllOutput(const Config& data) {
 }
 
 
-void	printServerPorts(const Config& data) {
-	for (size_t i=0; i < data.servers.size(); ++i) {
-		if (data.servers[i].port) {
+void	printServerPorts(const Config& data)
+{
+	for (size_t i=0; i < data.servers.size(); ++i)
+	{
+		if (data.servers[i].port)
+		{
 			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: " << RES
 				<< "-> " << GREEN << data.servers[i].port << RES << std::endl;
 		}
-		else{
+		else
+		{
 			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: "
 				<< RES << "-> " << RED << "No port!" << RES << std::endl;
 		}
@@ -88,13 +94,16 @@ void	printServerPorts(const Config& data) {
 	}
 }
 
-void	printServerRoot(const Config& data) {
-	for (size_t i=0; i < data.servers.size(); ++i) {
+void	printServerRoot(const Config& data)
+{
+	for (size_t i=0; i < data.servers.size(); ++i)
+	{
 		if (!data.servers[i].root.empty()) {
 			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: " << RES
 			<< "-> " << GREEN << data.servers[i].root << RES << std::endl;
 		}
-		else{
+		else
+		{
 			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: "
 				<< RES << "-> " << RED << "No root!" << RES << std::endl;
 		}
@@ -102,13 +111,17 @@ void	printServerRoot(const Config& data) {
 	}
 }
 
-void	printServerUpload(const Config& data) {
-	for (size_t i=0; i < data.servers.size(); ++i) {
-		if (!data.servers[i].uploadDir.empty()) {
+void	printServerUpload(const Config& data)
+{
+	for (size_t i=0; i < data.servers.size(); ++i)
+	{
+		if (!data.servers[i].uploadDir.empty())
+		{
 			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: " << RES
 			<< "-> " << GREEN << data.servers[i].uploadDir << RES << std::endl;
 		}
-		else{
+		else
+		{
 			std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: "
 				<< RES << "-> " << RED << "No Upload Directory!" << RES << std::endl;
 		}
@@ -116,14 +129,17 @@ void	printServerUpload(const Config& data) {
 	}
 }
 
-void	printServerIndex(const Config& data) {
-	for (size_t i=0; i < data.servers.size(); ++i) {
+void	printServerIndex(const Config& data)
+{
+	for (size_t i=0; i < data.servers.size(); ++i)
+	{
 		const ServerBlock&	current = data.servers[i];
 		std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: " << RES << "-> ";
 
 		if (current.index.empty())
 			std::cout << RED << "No Index Files!" << RES << std::endl;
-		else {
+		else
+		{
 			for (size_t j=0; j < current.index.size(); ++j)
 				std::cout << GREEN << current.index[j] << " ";
 		}
@@ -131,9 +147,11 @@ void	printServerIndex(const Config& data) {
 	}
 }
 
-void	printServerErrorPages(const Config& data) {
+void	printServerErrorPages(const Config& data)
+{
 
-	for (size_t i=0; i < data.servers.size(); ++i) {
+	for (size_t i=0; i < data.servers.size(); ++i)
+	{
 		const ServerBlock&	s = data.servers[i];
 
 		if (s.errorPages.empty())
@@ -152,7 +170,8 @@ void	printServerErrorPages(const Config& data) {
 				std::cout << PURPLE << it->first << RES << " > ";
 			else
 				std::cout << std::setw(33) << PURPLE << it->first << RES << " > ";
-			for (size_t j=0; j < it->second.size(); ++j) {
+			for (size_t j=0; j < it->second.size(); ++j)
+			{
 				std::cout << GREEN << it->second[j] << " ";
 			}
 			std::cout << RES << std::endl;
@@ -161,8 +180,10 @@ void	printServerErrorPages(const Config& data) {
 	}
 }
 
-void	printServerAutoIndex(const Config& data) {
-	for (size_t i=0; i < data.servers.size(); ++i) {
+void	printServerAutoIndex(const Config& data)
+{
+	for (size_t i=0; i < data.servers.size(); ++i)
+	{
 		std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: " << RES << "-> ";
 		if (data.servers[i].autoIndex)
 			std::cout << GREEN << "on" << RES;
@@ -173,8 +194,10 @@ void	printServerAutoIndex(const Config& data) {
 }
 
 
-void	printServerMaxSize(const Config& data) {
-	for (size_t i=0; i < data.servers.size(); ++i) {
+void	printServerMaxSize(const Config& data)
+{
+	for (size_t i=0; i < data.servers.size(); ++i)
+	{
 		std::cout << "[DEBUG]" << YELLOW << " server[" << (i + 1) << "]: " << RES << "-> ";
 
 		size_t	bytes = data.servers[i].clientMaxBodySize;
@@ -187,42 +210,52 @@ void	printServerMaxSize(const Config& data) {
 
 
 
-void	printLocationRoot(const ServerBlock& s) {
-	for (size_t i=0; i < s.locations.size(); ++i) {
+void	printLocationRoot(const ServerBlock& s)
+{
+	for (size_t i=0; i < s.locations.size(); ++i)
+	{
 		const LocationBlock&	current = s.locations[i];
 		if (!current.root.empty()) {
 			std::cout << BOLD << "[Location] " << RES << YELLOW << current.uri << RES
 			<< " -> " << GREEN << current.root << RES << std::endl;
 		}
-		else {
+		else
+		{
 			std::cout << BOLD << "[Location] "<< RES << YELLOW << current.uri
 				<< RES << " -> " << RED << "NO root!" << RES << std::endl;
 		}
 	}
 }
 
-void	printLocationUpload(const ServerBlock& s) {
-	for (size_t i=0; i < s.locations.size(); ++i) {
+void	printLocationUpload(const ServerBlock& s)
+{
+	for (size_t i=0; i < s.locations.size(); ++i)
+	{
 		const LocationBlock&	current = s.locations[i];
-		if (!current.uploadDir.empty()) {
+		if (!current.uploadDir.empty())
+		{
 			std::cout << BOLD << "[Location] " << RES << YELLOW << current.uri << RES
 			<< " -> " << GREEN << current.uploadDir << RES << std::endl;
 		}
-		else {
+		else
+		{
 			std::cout << BOLD << "[Location] "<< RES << YELLOW << current.uri
 				<< RES << " -> " << RED << "NO Upload Directory!" << RES << std::endl;
 		}
 	}
 }
 
-void	printLocationIndex(const ServerBlock& s) {
-	for (size_t i=0; i < s.locations.size(); ++i) {
+void	printLocationIndex(const ServerBlock& s)
+{
+	for (size_t i=0; i < s.locations.size(); ++i)
+	{
 		const LocationBlock&	current = s.locations[i];
 		if (current.index.empty()) {
 			std::cout << BOLD << "[Location] "<< RES << YELLOW << current.uri << RES
 			<< " -> " << RED << "NO index!" << RES << std::endl;
 		}
-		else {
+		else
+		{
 			std::cout << BOLD << "[Location] "<< RES << YELLOW << current.uri << RES << " -> ";
 			for (size_t i=0; i < current.index.size(); ++i)
 				std::cout << GREEN << current.index[i] << " ";
@@ -232,9 +265,11 @@ void	printLocationIndex(const ServerBlock& s) {
 	}
 }
 
-void	printLocationErrorPages(const ServerBlock& data) {
+void	printLocationErrorPages(const ServerBlock& data)
+{
 
-	for (size_t i=0; i < data.locations.size(); ++i) {
+	for (size_t i=0; i < data.locations.size(); ++i)
+	{
 		const LocationBlock&	l = data.locations[i];
 
 		if (l.errorPages.empty())
@@ -247,13 +282,15 @@ void	printLocationErrorPages(const ServerBlock& data) {
 		std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri << RES << " -> ";
 
 		std::map<int, StringVec>::const_iterator it = l.errorPages.begin();
-		while (it != l.errorPages.end()) {
+		while (it != l.errorPages.end())
+		{
 
 			if (it == l.errorPages.begin())
 				std::cout << PURPLE << it->first << RES << " > ";
 			else
 				std::cout << std::setw(33) << PURPLE << it->first << RES << " > ";
-			for (size_t j=0; j < it->second.size(); ++j) {
+			for (size_t j=0; j < it->second.size(); ++j)
+			{
 				std::cout << GREEN << it->second[j] << " ";
 			}
 			std::cout << RES << std::endl;
@@ -263,8 +300,10 @@ void	printLocationErrorPages(const ServerBlock& data) {
 	}
 }
 
-void	printLocationAutoIndex(const ServerBlock& data) {
-	for (size_t i=0; i < data.locations.size(); ++i) {
+void	printLocationAutoIndex(const ServerBlock& data)
+{
+	for (size_t i=0; i < data.locations.size(); ++i)
+	{
 		const LocationBlock&	l = data.locations[i];
 		std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri << RES << " -> ";
 		if (data.locations[i].autoIndex)
@@ -275,8 +314,10 @@ void	printLocationAutoIndex(const ServerBlock& data) {
 	}
 }
 
-void	printLocationMaxSize(const ServerBlock& data) {
-	for (size_t i=0; i < data.locations.size(); ++i) {
+void	printLocationMaxSize(const ServerBlock& data)
+{
+	for (size_t i=0; i < data.locations.size(); ++i)
+	{
 		const LocationBlock& l = data.locations[i];
 		std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri << RES << " -> ";
 
@@ -289,9 +330,11 @@ void	printLocationMaxSize(const ServerBlock& data) {
 }
 
 
-void	printLocationMethods(const ServerBlock& data) {
+void	printLocationMethods(const ServerBlock& data)
+{
 
-	for (size_t i=0; i < data.locations.size(); ++i) {
+	for (size_t i=0; i < data.locations.size(); ++i)
+	{
 		const LocationBlock&	l = data.locations[i];
 
 		if (l.methods.empty())
@@ -308,16 +351,18 @@ void	printLocationMethods(const ServerBlock& data) {
 	}
 }
 
-void	printLocationRedirect(const ServerBlock& data) {
+void	printLocationRedirect(const ServerBlock& data)
+{
 
-	for (size_t i=0; i < data.locations.size(); ++i) {
+	for (size_t i=0; i < data.locations.size(); ++i)
+	{
 		const LocationBlock&	l = data.locations[i];
 
 		if (!l.hasRedirect)
 		{
-  	 		std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri
+			std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri
 				<< RES << " -> " << RED << "NO redirect\n" << RES;
-    		continue;
+			continue;
 		}
 
 		std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri << RES << " -> "

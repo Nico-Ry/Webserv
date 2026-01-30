@@ -45,9 +45,11 @@ ConfigParser::~ConfigParser() {}
  * @note `data` has a member `servers` which is a vector storing all the
  * ServerBlocks that were built during parsing
  */
-void	ConfigParser::parse(Config& data) {
+void	ConfigParser::parse(Config& data)
+{
 
-	while (!isAtEnd()) {
+	while (!isAtEnd())
+	{
 		data.servers.push_back(parseServerBlock());
 	}
 	//[DEBUG] output to see all parsed/stored values
@@ -67,7 +69,8 @@ void	ConfigParser::parse(Config& data) {
  * @brief updates `unit` and consumes the current token if peek().value
  * is an accepted unit specifier (K, M or G)
  */
-void	ConfigParser::updateUnit(std::string& unit, const std::string& currentToken) {
+void	ConfigParser::updateUnit(std::string& unit, const std::string& currentToken)
+{
 	if (currentToken == "K" || currentToken == "M" || currentToken == "G")
 		unit = consume().value;
 }
@@ -79,7 +82,8 @@ void	ConfigParser::updateUnit(std::string& unit, const std::string& currentToken
  * the current Token points to the token following `sizeToken`
  * @return throws error on invalid value and/or unit specifier
  */
-void	ConfigParser::getSizeAndUnit(const Token& sizeToken, long& num, std::string& unit) {
+void	ConfigParser::getSizeAndUnit(const Token& sizeToken, long& num, std::string& unit)
+{
 	std::stringstream	ss(sizeToken.value);
 	std::string			unit_err = "max_size: invalid unit specifier, expected K, M or G: ";
 
@@ -112,15 +116,16 @@ void	ConfigParser::getSizeAndUnit(const Token& sizeToken, long& num, std::string
 //							   IS DIRECTIVE
 //---------------------------------------------------------------------------//
 
-bool	ConfigParser::isDirective(const std::string& value) {
+bool	ConfigParser::isDirective(const std::string& value)
+{
 // look through map for matching directive
 	std::map<std::string, ServerFn>::iterator it;
 	it = serverDirectives.find(value);
 
 // If directive not found in map, return false
 	if (it == serverDirectives.end())
-		return false;
-	return true;
+		return (false);
+	return (true);
 }
 
 
@@ -129,10 +134,11 @@ bool	ConfigParser::isDirective(const std::string& value) {
 //---------------------------------------------------------------------------//
 
 //Looks at current Token without consuming it
-Token	ConfigParser::peek() const {
+Token	ConfigParser::peek() const
+{
 	if (currentIndex < tokens.size())
-		return tokens[currentIndex];
-	return tokens.back();
+		return (tokens[currentIndex]);
+	return (tokens.back());
 }
 
 
@@ -141,10 +147,11 @@ Token	ConfigParser::peek() const {
 //---------------------------------------------------------------------------//
 
 //Looks at next Token without consuming it
-Token	ConfigParser::peekNext() const {
+Token	ConfigParser::peekNext() const
+{
 	if (currentIndex + 1 < tokens.size())
-		return tokens[currentIndex + 1];
-	return tokens.back();
+		return (tokens[currentIndex + 1]);
+	return (tokens.back());
 }
 
 
@@ -155,12 +162,13 @@ Token	ConfigParser::peekNext() const {
 /**
  * @brief Consumes and returns current token
  */
-Token	ConfigParser::consume() {
+Token	ConfigParser::consume()
+{
 	if (isAtEnd())
 		throw(ParseException("Can't consume past end of tokens!", peek().line));
 	Token	current = peek();
 	++currentIndex;
-	return current;
+	return (current);
 }
 
 
@@ -173,11 +181,12 @@ Token	ConfigParser::consume() {
  * @attention Consumes token if types match
  * @return Current token if types match, throws error if no match
  */
-Token	ConfigParser::expect(TokenType type, const std::string& msg) {
+Token	ConfigParser::expect(TokenType type, const std::string& msg)
+{
 	// Token	current = peek();
 	if (!check(type))
 		throw ParseException(msg, peek().line);
-	return consume();
+	return (consume());
 }
 
 
@@ -185,10 +194,11 @@ Token	ConfigParser::expect(TokenType type, const std::string& msg) {
 //								IS AT END
 //---------------------------------------------------------------------------//
 
-bool	ConfigParser::isAtEnd() const {
+bool	ConfigParser::isAtEnd() const
+{
 	if (currentIndex >= tokens.size())
-		return true;
-	return false;
+		return (true);
+	return (false);
 }
 
 
@@ -200,10 +210,11 @@ bool	ConfigParser::isAtEnd() const {
  * @brief Checks if current token's type matches with `type`
  * @return `true` if types match, `false` otherwise
  */
-bool	ConfigParser::check(TokenType type) const {
+bool	ConfigParser::check(TokenType type) const
+{
 	if (peek().type == type)
-		return true;
-	return false;
+		return (true);
+	return (false);
 }
 
 
@@ -217,12 +228,14 @@ bool	ConfigParser::check(TokenType type) const {
  * @attention Consumes token on true
  * @return `true` if token type matches, `false` otherwise
  */
-bool	ConfigParser::match(TokenType type) {
-	if (check(type)) {
+bool	ConfigParser::match(TokenType type)
+{
+	if (check(type))
+	{
 		consume();
-		return true;
+		return (true);
 	}
-	return false;
+	return (false);
 }
 
 
@@ -235,9 +248,10 @@ bool	ConfigParser::match(TokenType type) {
  * value matches `value`
  * @return `true` if word and matches value, `false` otherwise
  */
-bool ConfigParser::checkWord(const std::string& value) const {
-    Token current = peek();
-    return current.type == TOKEN_WORD && current.value == value;
+bool ConfigParser::checkWord(const std::string& value) const
+{
+	Token current = peek();
+	return (current.type == TOKEN_WORD && current.value == value);
 }
 
 
@@ -251,10 +265,12 @@ bool ConfigParser::checkWord(const std::string& value) const {
  * @attention Consumes token on true
  * @return `true` if values match, `false` otherwise
  */
-bool ConfigParser::matchWord(const std::string& value) {
-    if (checkWord(value)) {
-        consume();
-        return true;
-    }
-    return false;
+bool ConfigParser::matchWord(const std::string& value)
+{
+	if (checkWord(value))
+	{
+		consume();
+		return (true);
+	}
+	return (false);
 }

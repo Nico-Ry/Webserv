@@ -1,6 +1,7 @@
 #include "configParser/Config.hpp"
 
-Config::Config(const std::string& configFile) {
+Config::Config(const std::string& configFile)
+{
 	std::ifstream file(configFile.c_str());
 	if (!file.is_open())
 		throw std::runtime_error("Cannot open config file: " + configFile);
@@ -21,7 +22,8 @@ Config::Config(const std::string& configFile) {
 	if (this->servers.empty())
 			throw std::runtime_error("No servers defined in config file: " + configFile);
 
-	for (size_t i=0; i < this->servers.size(); ++i) {
+	for (size_t i=0; i < this->servers.size(); ++i)
+	{
 		if (!servers[i].hasPort)
 			throw std::runtime_error("One or more Server Blocks are missing the `listen` directive");
 		if (!servers[i].hasRoot)
@@ -32,20 +34,24 @@ Config::Config(const std::string& configFile) {
 
 
 // Copy Assignment Constructor
-Config::Config(const Config& other) {
+Config::Config(const Config& other)
+{
 	this->servers = other.servers;
 }
 
 // Assignment Constructor
-Config&	Config::operator=(const Config& other) {
-if (this != &other) {
+Config&	Config::operator=(const Config& other)
+{
+if (this != &other)
+{
 	this->servers = other.servers;
 }
-return *this;
+return (*this);
 }
 
 
-void	Config::detectDuplicatePorts(const std::vector<ServerBlock>& servs) {
+void	Config::detectDuplicatePorts(const std::vector<ServerBlock>& servs)
+{
 	std::set<int>	usedPorts;
 
 	for (size_t i=0; i < servs.size(); ++i) {

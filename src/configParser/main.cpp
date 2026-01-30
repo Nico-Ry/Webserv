@@ -36,9 +36,10 @@ Notes:
 
 #include "Config.hpp"
 
-int	main(int ac, char** av) {
+int	main(int ac, char** av)
+{
 	if (ac != 2)
-		return -1;
+		return (-1);
 	try {
 		Config	cfg(av[1]);
 		std::cout << "[DEBUG] PARSING SUCCESS" << std::endl;
@@ -47,5 +48,5 @@ int	main(int ac, char** av) {
 	catch (std::exception& e) {
 		std::cout << "Error: " << e.what() << std::endl;
 	}
-	return 0;
+	return (0);
 }

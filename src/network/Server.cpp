@@ -13,28 +13,32 @@
 static const int CLIENT_TIMEOUT_SECONDS = 30;
 
 // Helper function pour convertir int en string (C++98)
-static std::string intToString(int n) {
+static std::string intToString(int n)
+{
 	std::ostringstream oss;
 	oss << n;
 	return oss.str();
 }
 
 Server::ServerException::ServerException(const std::string& message)
-	: std::runtime_error(message) {
-}
+	: std::runtime_error(message)
+{}
 
 Server::Server(const Config& cfg, int backlog)
-	: socket_manager(), multiplexer(), clients(), config(&cfg), running(false) {
+	: socket_manager(), multiplexer(), clients(), config(&cfg), running(false)
+	{
 
 	std::cout << BOLD_CYAN << "=== Initializing Multi-Port Server ===" << RES << std::endl;
 
-	if (cfg.servers.empty()) {
+	if (cfg.servers.empty())
+	{
 		throw ServerException("No server blocks found in configuration");
 	}
 
 	// Creer un socket pour chaque ServerBlock dans la config
 	try {
-		for (size_t i = 0; i < cfg.servers.size(); i++) {
+		for (size_t i = 0; i < cfg.servers.size(); i++)
+		{
 			int port = cfg.servers[i].port;
 
 			std::cout << BOLD_CYAN << "Setting up server on port " << port << "..." << RES << std::endl;
@@ -52,9 +56,11 @@ Server::Server(const Config& cfg, int backlog)
 			std::cout << GREEN << "✓ " << RES << "Server socket created: "
 					  << "fd=" << fd << " (port " << port << ")" << std::endl;
 		}
-	} catch (...) {
+	} catch (...)
+	{
 		// Nettoyer les sockets deja crees en cas d'echec
-		for (size_t i = 0; i < server_fds.size(); i++) {
+		for (size_t i = 0; i < server_fds.size(); i++)
+		{
 			SocketManager::close_socket(server_fds[i]);
 		}
 		server_fds.clear();
@@ -66,26 +72,31 @@ Server::Server(const Config& cfg, int backlog)
 			  << server_fds.size() << " port" << (server_fds.size() > 1 ? "s" : "") << ")" << std::endl;
 }
 
-Server::~Server() {
+Server::~Server()
+{
 	std::cout << BOLD_ORANGE << "=== Shutting down server ===" << RES << std::endl;
 
 	// Fermer toutes les connexions clients
 	for (std::map<int, Connection*>::iterator it = clients.begin();
-		 it != clients.end(); ++it) {
+		 it != clients.end(); ++it)
+	{
 		delete it->second;
 	}
 	clients.clear();
 
 	// Liberer tous les parsers HTTP
 	for (std::map<int, HttpRequestParser*>::iterator it = parsers.begin();
-		 it != parsers.end(); ++it) {
+		 it != parsers.end(); ++it)
+	{
 		delete it->second;
 	}
 	parsers.clear();
 
 	// Fermer tous les sockets serveurs
-	for (size_t i = 0; i < server_fds.size(); i++) {
-		if (server_fds[i] >= 0) {
+	for (size_t i = 0; i < server_fds.size(); i++)
+	{
+		if (server_fds[i] >= 0)
+		{
 			SocketManager::close_socket(server_fds[i]);
 		}
 	}
@@ -95,7 +106,8 @@ Server::~Server() {
 	std::cout << GREEN << "✓ " << RES << "Server stopped" << std::endl;
 }
 
-void Server::run() {
+void Server::run()
+{
 	running = true;
 
 	std::cout << std::endl << "Multi-client server running on ports: ";
@@ -106,7 +118,8 @@ void Server::run() {
 	}
 	std::cout << std::endl << "(Ctrl+C to stop)\n" << std::endl;
 
-	while (running) {
+	while (running)
+	{
 		// Attendre des evenements sur les fds surveilles (timeout 5s pour vérifier les timeouts clients)
 		std::vector<int> ready_fds = multiplexer.wait(5000);
 
@@ -120,30 +133,36 @@ void Server::run() {
 		// std::cout << "poll() returned " << ready_fds.size() << " ready fd(s)" << std::endl;
 
 		// Traiter chaque fd pret
-		for (size_t i = 0; i < ready_fds.size(); i++) {
+		for (size_t i = 0; i < ready_fds.size(); i++)
+		{
 			int fd = ready_fds[i];
 
 			// Verifier si c'est un server socket (nouvelle connexion)
-			if (isServerSocket(fd)) {
+			if (isServerSocket(fd))
+			{
 				// Nouvelle connexion entrante sur ce server socket
 				acceptNewClient(fd);
 			}
-			else {
+			else
+			{
 				// Evenement sur un client existant
 				short revents = multiplexer.get_revents(fd);
 				bool client_disconnected = false;
 
-				if (revents & POLLIN) {
+				if (revents & POLLIN)
+				{
 					handleClientRead(fd);
 
 					// Verifier si le client a ete supprime pendant la lecture
-					if (clients.find(fd) == clients.end()) {
+					if (clients.find(fd) == clients.end())
+					{
 						client_disconnected = true;
 					}
 				}
 
 				// IMPORTANT: ne traiter POLLOUT que si le client n'a pas ete deconnecte
-				if (!client_disconnected && (revents & POLLOUT)) {
+				if (!client_disconnected && (revents & POLLOUT))
+				{
 					handleClientWrite(fd);
 				}
 			}
@@ -153,15 +172,18 @@ void Server::run() {
 	}
 }
 
-void Server::stop() {
+void Server::stop()
+{
 	running = false;
 }
 
-bool Server::isServerSocket(int fd) const {
-	return fd_to_server.find(fd) != fd_to_server.end();
+bool Server::isServerSocket(int fd) const
+{
+	return (fd_to_server.find(fd) != fd_to_server.end());
 }
 
-void Server::acceptNewClient(int server_fd) {
+void Server::acceptNewClient(int server_fd)
+{
 	try {
 		int client_fd = socket_manager.accept_connection(server_fd);
 		Connection* conn = new Connection(client_fd);
@@ -177,19 +199,23 @@ void Server::acceptNewClient(int server_fd) {
 				  << "fd=" << client_fd << " -> (total clients: " << clients.size() << ")"
 				  << std::endl;
 	}
-	catch (const SocketManager::SocketException& e) {
+	catch (const SocketManager::SocketException& e)
+	{
 		std::cerr << "✗ Error accepting client: " << e.what() << std::endl;
 	}
-	catch (const Connection::ConnectionException& e) {
+	catch (const Connection::ConnectionException& e)
+	{
 		std::cerr << "✗ Error creating connection: " << e.what() << std::endl;
 	}
 }
 
-void Server::handleClientRead(int fd) {
+void Server::handleClientRead(int fd)
+{
 	Connection* conn = clients[fd];
 	ssize_t n = conn->read_available();
 
-	if (n > 0) {
+	if (n > 0)
+	{
 		// Mettre à jour le timestamp d'activité
 		conn->update_activity();
 
@@ -201,62 +227,74 @@ void Server::handleClientRead(int fd) {
 		processRequest(conn, fd);
 
 		// Activer POLLOUT si une reponse est prete
-		if (!conn->send_buffer.empty()) {
+		if (!conn->send_buffer.empty())
+		{
 			multiplexer.modify_fd(fd, POLLIN | POLLOUT);
 		}
 	}
-	else if (n == 0) {
+	else if (n == 0)
+	{
 		// Client a ferme la connexion
 		// std::cout << "  [fd=" << fd << "] Client disconnected" << std::endl;
 		std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Client disconnected" << std::endl;
 		removeClient(fd);
 	}
-	else {
+	else
+{
 		// Erreur de lecture
 		std::cout << "  [fd=" << fd << "] Error reading" << std::endl;
 		removeClient(fd);
 	}
 }
 
-void Server::handleClientWrite(int fd) {
+void Server::handleClientWrite(int fd)
+{
 	Connection* conn = clients[fd];
 
-	if (conn->has_pending_data()) {
+	if (conn->has_pending_data())
+	{
 		ssize_t sent = conn->write_pending();
 
-		if (sent > 0) {
+		if (sent > 0)
+		{
 			// std::cout << "  [fd=" << fd << "] Sent " << sent << " bytes" << std::endl;
 			std::cout << BOLD_YELLOW << "[DEBUG] "
 				<< RES << "Sent " << sent << " bytes" << std::endl;
 		}
-		else if (sent < 0) {
+		else if (sent < 0)
+		{
 			std::cout << "  [fd=" << fd << "] Error writing" << std::endl;
 			removeClient(fd);
-			return;
+			return ;
 		}
 
 		// Si tout a ete envoye, desactiver POLLOUT
-		if (!conn->has_pending_data()) {
+		if (!conn->has_pending_data())
+		{
 			multiplexer.modify_fd(fd, POLLIN);
 		}
 	}
-	else {
+	else
+	{
 		// Plus rien a envoyer, desactiver POLLOUT
 		multiplexer.modify_fd(fd, POLLIN);
 	}
 }
 
-void Server::removeClient(int fd) {
+void Server::removeClient(int fd)
+{
 	std::map<int, Connection*>::iterator it = clients.find(fd);
 
-	if (it != clients.end()) {
+	if (it != clients.end())
+	{
 		multiplexer.remove_fd(fd);
 		delete it->second;
 		clients.erase(it);
 
 		// Supprimer aussi le parser HTTP associe
 		std::map<int, HttpRequestParser*>::iterator parser_it = parsers.find(fd);
-		if (parser_it != parsers.end()) {
+		if (parser_it != parsers.end())
+		{
 			delete parser_it->second;
 			parsers.erase(parser_it);
 		}
@@ -270,9 +308,11 @@ void Server::removeClient(int fd) {
 	}
 }
 
-void Server::processRequest(Connection* conn, int fd) {
+void Server::processRequest(Connection* conn, int fd)
+{
 	// Creer un parser pour ce client si necessaire
-	if (parsers.find(fd) == parsers.end()) {
+	if (parsers.find(fd) == parsers.end())
+	{
 		parsers[fd] = new HttpRequestParser();
 		// std::cout << "  [fd=" << fd << "] Created HTTP parser" << std::endl;
 	}
@@ -301,7 +341,8 @@ void Server::processRequest(Connection* conn, int fd) {
 	// }
 
 
-	if (parser->hasError()) {
+	if (parser->hasError())
+	{
 		// Generer une reponse d'erreur HTTP
 		int errorCode = parser->getErrorStatus();
 		HttpResponse resp(errorCode, reasonPhrase(errorCode));
@@ -322,7 +363,8 @@ void Server::processRequest(Connection* conn, int fd) {
 	}
 
 	// Verifier si la requete est complete
-	else if (parser->isDone()) {
+	else if (parser->isDone())
+	{
 
 		// Traiter la requete HTTP valide
 		const HttpRequest& req = parser->getRequest();

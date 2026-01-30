@@ -31,26 +31,26 @@ bool isFile(const std::string& p)
 
 bool canReadFile(const std::string& p)
 {
-	return access(p.c_str(), R_OK) == 0;
+	return (access(p.c_str(), R_OK) == 0);
 }
 
 // For directories, X_OK is required to "enter"/traverse.
 // Without X_OK, you can't access contents or files inside.
 bool canTraverseDir(const std::string& p)
 {
-	return access(p.c_str(), X_OK) == 0;
+	return (access(p.c_str(), X_OK) == 0);
 }
 
 // For autoindex, you also need to be able to read the directory entries.
 // Usually you need BOTH: R_OK (list) and X_OK (traverse).
 bool canListDir(const std::string& p)
 {
-	return access(p.c_str(), R_OK) == 0 && access(p.c_str(), X_OK) == 0;
+	return (access(p.c_str(), R_OK) == 0 && access(p.c_str(), X_OK) == 0);
 }
 
 bool canWriteInDir(const std::string& p)
 {
-	return access(p.c_str(), W_OK) == 0 && access(p.c_str(), X_OK) == 0;
+	return (access(p.c_str(), W_OK) == 0 && access(p.c_str(), X_OK) == 0);
 }
 
 void debugAccessError(const std::string& what, const std::string& path)
@@ -77,14 +77,16 @@ void debugAccessError(const std::string& what, const std::string& path)
 */
 std::string	joinPath(const std::string& a, const std::string& b)
 {
-	if (a.empty()) return b;
-	if (b.empty()) return a;
+	if (a.empty())
+		 return (b);
+	if (b.empty())
+		return (a);
 
 	if (a[a.size() - 1] == '/' && b[0] == '/')
-		return a + b.substr(1);
+		return (a + b.substr(1));
 	if (a[a.size() - 1] != '/' && b[0] != '/')
-		return a + "/" + b;
-	return a + b;
+		return (a + "/" + b);
+	return (a + b);
 }
 
 
@@ -111,5 +113,5 @@ std::string	getResolvedPath(const std::string& requestURI, const LocationBlock& 
 	if (rules.uri != "/" && requestURI.find(rules.uri) == 0)
 		path = requestURI.substr(rules.uri.length());
 
-	return joinPath(rules.root, path);
+	return (joinPath(rules.root, path));
 }

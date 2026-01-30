@@ -20,11 +20,11 @@ Data structure layout:
 
 Config															 (Config.hpp)
 └── vector<ServerBlock>												  |
-    └── ServerBlock											(ServerBlock.hpp)
-        ├── server-level configuration/info							  |
-        └── vector<LocationBlock>									  |
-            └── LocationBlock							  (LocationBlock.hpp)
-                └── location-level configuration/info
+	└── ServerBlock											(ServerBlock.hpp)
+		├── server-level configuration/info							  |
+		└── vector<LocationBlock>									  |
+			└── LocationBlock							  (LocationBlock.hpp)
+				└── location-level configuration/info
 
 Notes:
 - LocationBlocks represent more specific configuration than ServerBlocks.
@@ -45,34 +45,39 @@ Notes:
 // Variable globale pour gerer l'arret propre
 static Server* g_server = NULL;
 
-void signal_handler(int signal) {
-    if (signal == SIGINT) {
-        std::cout << std::endl << "Received SIGINT, stopping server..." << std::endl;
-        if (g_server) {
-            g_server->stop();
-        }
-    }
+void signal_handler(int signal)
+{
+	if (signal == SIGINT)
+	{
+		std::cout << std::endl << "Received SIGINT, stopping server..." << std::endl;
+		if (g_server)
+		{
+			g_server->stop();
+		}
+	}
 }
 
 
 
-int main(int argc, char** argv) {
-    // int port = 8080;
+int main(int argc, char** argv)
+{
+	// int port = 8080;
 
-    // // Parser le port en argument
-    // if (argc > 1) {
-    //     port = std::atoi(argv[1]);
-    //     if (port <= 0 || port > 65535) {
-    //         std::cerr << "Error: Invalid port number" << std::endl;
-    //         std::cerr << "Usage: " << argv[0] << " [port]" << std::endl;
-    //         return 1;
-    //     }
-    // }
+	// // Parser le port en argument
+	// if (argc > 1) {
+	//     port = std::atoi(argv[1]);
+	//     if (port <= 0 || port > 65535) {
+	//         std::cerr << "Error: Invalid port number" << std::endl;
+	//         std::cerr << "Usage: " << argv[0] << " [port]" << std::endl;
+	//         return 1;
+	//     }
+	// }
 
 	if (argc != 2)
-		return -1;
+		return (-1);
 
-    try {
+	try
+	{
 
 		// Read config file passed as argument and build Config
 		std::string	configFile(argv[1]);
@@ -81,32 +86,39 @@ int main(int argc, char** argv) {
 
 
 
-        // Configurer le gestionnaire de signaux
-        signal(SIGINT, signal_handler);
-        signal(SIGPIPE, SIG_IGN);  // Ignorer SIGPIPE
+		// Configurer le gestionnaire de signaux
+		signal(SIGINT, signal_handler);
+		signal(SIGPIPE, SIG_IGN);  // Ignorer SIGPIPE
 
-        // Creer et lancer le serveur multi-ports
-        Server server(cfg); // Passe toute la config (supporte multi-ports)
-        g_server = &server;
+		// Creer et lancer le serveur multi-ports
+		Server server(cfg); // Passe toute la config (supporte multi-ports)
+		g_server = &server;
 
 		server.run();
 
 		g_server = NULL;
 
-    } catch (const ParseException& e) {
-		std::cerr << e.what() << std::endl;
-		return 1;
 	}
-	catch (const Server::ServerException& e) {
-        std::cerr << "✗ Server Error: " << e.what() << std::endl;
-        return 1;
-    } catch (const SocketManager::SocketException& e) {
-        std::cerr << "✗ Socket Error: " << e.what() << std::endl;
-        return 1;
-    } catch (const std::exception& e) {
-        std::cerr << "✗ Unexpected Error: " << e.what() << std::endl;
-        return 1;
-    }
+	catch (const ParseException& e)
+	{
+		std::cerr << e.what() << std::endl;
+		return (1);
+	}
+	catch (const Server::ServerException& e)
+	{
+		std::cerr << "✗ Server Error: " << e.what() << std::endl;
+		return (1);
+	}
+	catch (const SocketManager::SocketException& e)
+	{
+		std::cerr << "✗ Socket Error: " << e.what() << std::endl;
+		return (1);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "✗ Unexpected Error: " << e.what() << std::endl;
+		return (1);
+	}
 
-    return 0;
+	return (0);
 }

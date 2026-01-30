@@ -3,7 +3,8 @@
 #include "http/Request.hpp"
 
 
-void	printHttpMethod(const HttpMethod& method) {
+void	printHttpMethod(const HttpMethod& method)
+{
 	std::cout << CYAN << "[METHOD]" << RES << std::endl;
 	if (method == METHOD_GET)
 		std::cout << std::setw(8) << "GET";
@@ -18,26 +19,30 @@ void	printHttpMethod(const HttpMethod& method) {
 	std::cout << std::endl;
 }
 
-void	printHttpTarget(const HttpRequest& req) {
+void	printHttpTarget(const HttpRequest& req)
+{
 	std::cout << CYAN << "[TARGET]" << std::endl
 		<< std::setw(8) << RES << req.rawTarget << std::endl;
 }
 
-void	printHttpVersion(const HttpRequest& req) {
+void	printHttpVersion(const HttpRequest& req)
+{
 	std::cout << CYAN << "[HTTP VERSION]" << std::endl
 		<< std::setw(8) << RES << req.httpVersion << std::endl;
 }
 
-void	printHttpBody(const HttpRequest& req) {
+void	printHttpBody(const HttpRequest& req)
+{
 	std::cout << CYAN << "[HTTP BODY]" << std::endl
 		<< std::setw(8) << RES << req.body << std::endl;
 }
 
-void	printHttpHeaders(const HttpRequest& req) {
+void	printHttpHeaders(const HttpRequest& req)
+{
 	std::cout << CYAN << "[HEADERS]" << std::endl;
 
 	std::map<std::string, std::string>::const_iterator it = req.headers.begin();
-for (; it != req.headers.end(); ++it)
+	for (; it != req.headers.end(); ++it)
 		std::cout << std::setw(8)
 			<< MAGENTA << it->first
 			<< RES << ":"
@@ -45,7 +50,8 @@ for (; it != req.headers.end(); ++it)
 			<< RES << std::endl;
 }
 
-void	printHttpRequest(const HttpRequest& req) {
+void	printHttpRequest(const HttpRequest& req)
+{
 	std::cout << BOLD_YELLOW << "\n~ Parsed HTTP Request ~" << RES << std::endl;
 
 // print first line

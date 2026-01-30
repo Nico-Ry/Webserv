@@ -5,32 +5,37 @@
 
 // SocketException
 SocketManager::SocketException::SocketException(const std::string& message)
-	: std::runtime_error(message) {
-}
+	: std::runtime_error(message)
+{}
 
 // SocketManager
-SocketManager::SocketManager() {
-}
+SocketManager::SocketManager()
+{}
 
-SocketManager::~SocketManager() {
-}
+SocketManager::~SocketManager()
+{}
 
-int SocketManager::create_socket() {
+int SocketManager::create_socket()
+{
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (fd < 0) {
+	if (fd < 0)
+	{
 		throw SocketException("socket() failed: " + std::string(strerror(errno)));
 	}
-	return fd;
+	return (fd);
 }
 
-void SocketManager::configure_socket(int fd) {
+void SocketManager::configure_socket(int fd)
+{
 	int opt = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+	{
 		throw SocketException("setsockopt(SO_REUSEADDR) failed: " + std::string(strerror(errno)));
 	}
 }
 
-void SocketManager::bind_socket(int fd, int port) {
+void SocketManager::bind_socket(int fd, int port)
+{
 	struct sockaddr_in addr;
 	std::memset(&addr, 0, sizeof(addr));
 
@@ -38,35 +43,41 @@ void SocketManager::bind_socket(int fd, int port) {
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = INADDR_ANY;
 
-	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+	{
 		std::ostringstream oss;
 		oss << "bind() failed on port " << port << ": " << strerror(errno);
 		throw SocketException(oss.str());
 	}
 }
 
-void SocketManager::start_listening(int fd, int backlog) {
-	if (listen(fd, backlog) < 0) {
+void SocketManager::start_listening(int fd, int backlog)
+{
+	if (listen(fd, backlog) < 0)
+	{
 		throw SocketException("listen() failed: " + std::string(strerror(errno)));
 	}
 }
 
-int SocketManager::create_server(int port, int backlog) {
+int SocketManager::create_server(int port, int backlog)
+{
 	int fd = create_socket();
 
 	try {
 		configure_socket(fd);
 		bind_socket(fd, port);
 		start_listening(fd, backlog);
-	} catch (const SocketException& e) {
+	} catch (const SocketException& e)
+	{
 		close(fd);
 		throw;
 	}
 
-	return fd;
+	return (fd);
 }
 
-int SocketManager::accept_connection(int server_fd) {
+int SocketManager::accept_connection(int server_fd)
+{
 	struct sockaddr_in client_addr;
 	socklen_t len = sizeof(client_addr);
 	std::memset(&client_addr, 0, sizeof(client_addr));
@@ -77,11 +88,11 @@ int SocketManager::accept_connection(int server_fd) {
 		throw SocketException("accept() failed: " + std::string(strerror(errno)));
 	}
 
-	return client_fd;
+	return (client_fd);
 }
 
-void SocketManager::close_socket(int fd) {
-	if (fd >= 0) {
+void SocketManager::close_socket(int fd)
+{
+	if (fd >= 0)
 		close(fd);
-	}
 }

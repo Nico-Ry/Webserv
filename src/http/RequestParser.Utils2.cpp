@@ -84,14 +84,10 @@ std::string HttpRequestParser::toLower(const std::string &s)
 static bool	isAsciiControl(unsigned char c)
 {
 	if (c <= 31)
-	{
-		return true;
-	}
+		return (true);
 	if (c == 127)
-	{
-		return true;
-	}
-	return false;
+		return (true);
+	return (false);
 }
 
 /*
@@ -108,9 +104,7 @@ static void	collapseDoubleSlashes(std::string& path)
 	for (size_t i = 0; i < path.size(); ++i)
 	{
 		if (path[i] == '/' && !out.empty() && out[out.size() - 1] == '/')
-		{
 			continue;
-		}
 		out.push_back(path[i]);
 	}
 	path = out;
@@ -128,16 +122,12 @@ static bool	hasUnsafeSegments(const std::string& path)
 	{
 		// skip leading slashes
 		while (i < path.size() && path[i] == '/')
-		{
 			++i;
-		}
 
 		// find end of segment
 		size_t j = i;
 		while (j < path.size() && path[j] != '/')
-		{
 			++j;
-		}
 
 		// extract segment
 		if (j > i)
@@ -145,15 +135,13 @@ static bool	hasUnsafeSegments(const std::string& path)
 			std::string seg = path.substr(i, j - i);
 
 			if (seg == "." || seg == "..")
-			{
-				return true;
-			}
+				return (true);
 		}
 
 		i = j;
 	}
 
-	return false;
+	return (false);
 }
 
 /*
@@ -166,22 +154,16 @@ static bool	hasUnsafeSegments(const std::string& path)
 bool	sanitizeUrlPath(std::string& path)
 {
 	if (path.empty())
-	{
-		return false;
-	}
+		return (false);
 
 	if (path[0] != '/')
-	{
-		return false;
-	}
+		return (false);
 
 	// Reject ASCII control characters anywhere in the path
 	for (size_t i = 0; i < path.size(); ++i)
 	{
 		if (isAsciiControl(static_cast<unsigned char>(path[i])))
-		{
-			return false;
-		}
+			return (false);
 	}
 
 	// Normalize repeated slashes
@@ -189,9 +171,7 @@ bool	sanitizeUrlPath(std::string& path)
 
 	// Reject traversal-like segments
 	if (hasUnsafeSegments(path))
-	{
-		return false;
-	}
+		return (false);
 
-	return true;
+	return (true);
 }

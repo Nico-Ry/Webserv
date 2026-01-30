@@ -9,10 +9,10 @@ www/
 ├── css/
 │   └── style.css       # Common CSS shared by all pages
 └── pages/
-    ├── index.html      # Home page (route: /)
-    ├── test.html       # Test page (route: /test)
-    ├── upload.html     # Upload page (route: /upload)
-    └── 404.html        # Error page (404 Not Found)
+	├── index.html      # Home page (route: /)
+	├── test.html       # Test page (route: /test)
+	├── upload.html     # Upload page (route: /upload)
+	└── 404.html        # Error page (404 Not Found)
 ```
 
 ## Current Status

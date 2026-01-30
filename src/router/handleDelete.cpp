@@ -1,19 +1,22 @@
 #include "router/Router.hpp"
 
-static std::string	getParentDirectory(const std::string& filePath) {
+static std::string	getParentDirectory(const std::string& filePath)
+{
 	size_t lastSlash = filePath.rfind("/");
 	if (lastSlash == std::string::npos || lastSlash == 0)
-		return "/";
+		return ("/");
 	return (filePath.substr(0, lastSlash));
 }
 
 
-static bool	canTraverseAndWriteDir(const std::string& p) {
+static bool	canTraverseAndWriteDir(const std::string& p)
+{
 	return (access(p.c_str(), W_OK) == 0 && access(p.c_str(), X_OK) == 0);
 }
 
 
-HttpResponse	Router::handleDelete(const std::string& urlPath) {
+HttpResponse	Router::handleDelete(const std::string& urlPath)
+{
 	std::string resolvedPath = getResolvedPath(urlPath, *rules);
 	std::cout << YELLOW << "[DEBUG - DELETE] " << BOLD_BLUE
 			  << "ResolvedPath: " << resolvedPath
@@ -31,13 +34,14 @@ HttpResponse	Router::handleDelete(const std::string& urlPath) {
 			  << "File's Parent Directory: " << parentDir
 			  << RES << std::endl;
 
-	if (!canTraverseAndWriteDir(parentDir)) {
+	if (!canTraverseAndWriteDir(parentDir))
+	{
 		std::cout << YELLOW << "[DELETE] " << RES << "Missing W_OK or X_OK" << std::endl;
 		return (HttpResponse(403, "Forbidden"));
 	}
 
 	if (unlink(resolvedPath.c_str()) != 0)
-		return HttpResponse(500, "Internal Server Error");
+		return (HttpResponse(500, "Internal Server Error"));
 
 	return (HttpResponse(204, "No Content"));
 }

@@ -1,82 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webserv - Upload</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .upload-container {
-            max-width: 600px;
-            margin: var(--spacing-xl) auto;
-        }
-        .upload-zone {
-            border: 2px dashed var(--color-border);
-            border-radius: 12px;
-            padding: var(--spacing-xl);
-            text-align: center;
-            background: var(--color-gray);
-            margin: var(--spacing-lg) 0;
-        }
-        .upload-zone:hover {
-            border-color: var(--color-primary);
-            background: #f0f4ff;
-        }
-        input[type="file"] {
-            display: none;
-        }
-        .info-box {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            padding: var(--spacing-md);
-            margin-top: var(--spacing-lg);
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Webserv - Upload</title>
+	<link rel="stylesheet" href="/css/style.css">
+	<style>
+		.upload-container {
+			max-width: 600px;
+			margin: var(--spacing-xl) auto;
+		}
+		.upload-zone {
+			border: 2px dashed var(--color-border);
+			border-radius: 12px;
+			padding: var(--spacing-xl);
+			text-align: center;
+			background: var(--color-gray);
+			margin: var(--spacing-lg) 0;
+		}
+		.upload-zone:hover {
+			border-color: var(--color-primary);
+			background: #f0f4ff;
+		}
+		input[type="file"] {
+			display: none;
+		}
+		.info-box {
+			background: #fff3cd;
+			border: 1px solid #ffc107;
+			border-radius: 8px;
+			padding: var(--spacing-md);
+			margin-top: var(--spacing-lg);
+		}
+	</style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-content">
-            <a href="/" class="navbar-brand">Webserv</a>
-            <ul class="navbar-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/test">Test</a></li>
-                <li><a href="/upload">Upload</a></li>
-            </ul>
-        </div>
-    </nav>
+	<nav class="navbar">
+		<div class="navbar-content">
+			<a href="/" class="navbar-brand">Webserv</a>
+			<ul class="navbar-links">
+				<li><a href="/">Home</a></li>
+				<li><a href="/test">Test</a></li>
+				<li><a href="/upload">Upload</a></li>
+			</ul>
+		</div>
+	</nav>
 
-    <div class="container">
-        <div class="upload-container">
-            <h1 style="font-size: 48px; margin-bottom: var(--spacing-md);">Upload Files</h1>
-            <p style="color: #666; margin-bottom: var(--spacing-lg);">Test file upload functionality (coming soon)</p>
+	<div class="container">
+		<div class="upload-container">
+			<h1 style="font-size: 48px; margin-bottom: var(--spacing-md);">Upload Files</h1>
+			<p style="color: #666; margin-bottom: var(--spacing-lg);">Test file upload functionality (coming soon)</p>
 
-            <div class="upload-zone" onclick="document.getElementById('file-input').click()">
-                <div style="font-size: 48px; margin-bottom: var(--spacing-sm);">📁</div>
-                <h3>Click to select file</h3>
-                <p style="color: #666; margin-top: var(--spacing-sm);">or drag and drop</p>
-                <input type="file" id="file-input" onchange="handleFileSelect(event)">
-            </div>
+			<div class="upload-zone" onclick="document.getElementById('file-input').click()">
+				<div style="font-size: 48px; margin-bottom: var(--spacing-sm);">📁</div>
+				<h3>Click to select file</h3>
+				<p style="color: #666; margin-top: var(--spacing-sm);">or drag and drop</p>
+				<input type="file" id="file-input" onchange="handleFileSelect(event)">
+			</div>
 
-            <div class="info-box">
-                <strong>⚠️ Upload Handler Not Implemented Yet</strong><br>
-                The server receives POST requests but doesn't save files yet.<br>
-                This will be implemented by the UploadHandler module.
-            </div>
-        </div>
-    </div>
+			<div class="info-box">
+				<strong>⚠️ Upload Handler Not Implemented Yet</strong><br>
+				The server receives POST requests but doesn't save files yet.<br>
+				This will be implemented by the UploadHandler module.
+			</div>
+		</div>
+	</div>
 
-    <script>
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const formData = new FormData();
-            formData.append('file', file);
-            fetch('/upload', { method: 'POST', body: formData })
-                .then(response => response.text())
-                .then(() => window.location.reload())
-                .catch(err => alert('Error: ' + err.message));
-        }
-    </script>
+	<script>
+		function handleFileSelect(event) {
+			const file = event.target.files[0];
+			if (!file) return;
+			const formData = new FormData();
+			formData.append('file', file);
+			fetch('/upload', { method: 'POST', body: formData })
+				.then(response => response.text())
+				.then(() => window.location.reload())
+				.catch(err => alert('Error: ' + err.message));
+		}
+	</script>
 </body>
 </html>

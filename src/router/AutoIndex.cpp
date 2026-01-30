@@ -28,7 +28,7 @@ static std::string htmlEscape(const std::string& s)
 		else if (c == '"') out += "&quot;";
 		else out += c;
 	}
-	return out;
+	return (out);
 }
 
 // Ensure directory-like URLs end with '/'.
@@ -128,7 +128,7 @@ static std::string buildAutoIndexRowHtml(const std::string& name, bool isDirecto
 		row << "<td>-</td>";
 
 	row << "</tr>\n";
-	return row.str();
+	return (row.str());
 }
 
 // Reads the directory and returns the full HTML for the listing.
