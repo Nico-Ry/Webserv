@@ -15,9 +15,9 @@ static bool	canTraverseAndWriteDir(const std::string& p) {
 
 HttpResponse	Router::handleDelete(const std::string& urlPath) {
 	std::string resolvedPath = getResolvedPath(urlPath, *rules);
-	std::cout << YELLOW << "[DEBUG - DELETE] " << BOLD_BLUE
-			  << "ResolvedPath: " << resolvedPath
-			  << RES << std::endl;
+	// std::cout << YELLOW << "[DEBUG - DELETE] " << BOLD_BLUE
+	// 		  << "ResolvedPath: " << resolvedPath
+	// 		  << RES << std::endl;
 
 	if (!exists(resolvedPath))
 		return (HttpResponse(404, "Not Found"));
@@ -27,12 +27,12 @@ HttpResponse	Router::handleDelete(const std::string& urlPath) {
 
 
 	std::string	parentDir = getParentDirectory(resolvedPath);
-	std::cout << YELLOW << "[DEBUG - DELETE] " << GREEN
-			  << "File's Parent Directory: " << parentDir
-			  << RES << std::endl;
+	// std::cout << YELLOW << "[DEBUG - DELETE] " << GREEN
+	// 		  << "File's Parent Directory: " << parentDir
+	// 		  << RES << std::endl;
 
 	if (!canTraverseAndWriteDir(parentDir)) {
-		std::cout << YELLOW << "[DELETE] " << RES << "Missing W_OK or X_OK" << std::endl;
+		std::cout << YELLOW << "[DEBUG - DELETE] " << RES << "Missing W_OK or X_OK" << std::endl;
 		return (HttpResponse(403, "Forbidden"));
 	}
 

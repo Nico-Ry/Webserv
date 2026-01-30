@@ -181,8 +181,8 @@ HttpResponse	Router::routing(const HttpRequest& req)
 		if (exceedsMaxSize(req.body.size()))
 			return (HttpResponse(413, "Payload Too Large"));
 		std::string scriptPath = "." + req.path;  // ./cgi-bin/script.py
-		std::cout << YELLOW << "[DEBUG - CGI] " << BOLD_BLUE
-				  << "Executing CGI: " << scriptPath << RES << std::endl;
+		std::cout << YELLOW << "[DEBUG - CGI] " << RES
+				  << "Executing CGI: " << BOLD_BLUE << scriptPath << RES << std::endl;
 		return (CgiHandler::execute(req, scriptPath));
 	}
 
