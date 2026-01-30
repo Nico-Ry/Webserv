@@ -181,8 +181,8 @@ HttpResponse	Router::routing(const HttpRequest& req)
 		if (exceedsMaxSize(req.body.size()))
 			return (HttpResponse(413, "Payload Too Large"));
 		std::string scriptPath = "." + req.path;  // ./cgi-bin/script.py
-		std::cout << YELLOW << "[DEBUG - CGI] " << BOLD_BLUE
-				  << "Executing CGI: " << scriptPath << RES << std::endl;
+		std::cout << YELLOW << "[DEBUG - CGI] " << RES
+				  << "Executing CGI: " << BOLD_BLUE << scriptPath << RES << std::endl;
 		return (CgiHandler::execute(req, scriptPath));
 	}
 
@@ -218,6 +218,27 @@ HttpResponse	Router::routing(const HttpRequest& req)
 }
 
 
+
+static void printSuccess(const HttpResponse& resp) {
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+				<< BOLD_GREEN << resp.statusCode << RES << "] ["
+				<< BOLD_GREEN << resp.reason << RES << "]" << std::endl;
+}
+
+static void printNonSuccess(const HttpResponse& resp) {
+	if (resp.statusCode >= 400) {
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+				<< BOLD_RED << resp.statusCode << RES << "] ["
+				<< BOLD_RED << resp.reason << RES << "]" << std::endl;
+	}
+	else {
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+				<< BOLD_BLUE << resp.statusCode << RES << "] ["
+				<< BOLD_BLUE << resp.reason << RES << "]" << std::endl;
+	}
+}
+
+
 HttpResponse Router::buildResponse(const HttpRequest& req)
 {
 	//Kept HttpResponse as may need Location pointer for POST so we can provide the path of where the upload occured
@@ -225,28 +246,75 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 	HttpResponse		result = routing(req);
 
 	if (result.isSuccess())
-	{
-	std::cout << BOLD_GREEN << result.statusCode
-		<< RES << " " << result.reason << std::endl;
-	}
+		printSuccess(result);
 	else
 	{
-	std::cout << BOLD_RED << result.statusCode
-		<< RES << " " << result.reason << std::endl;
+		printNonSuccess(result);
+		std::map<int, StringVec>::const_iterator it = rules->errorPages.find(result.statusCode);
+		if (it == rules->errorPages.end())
+			result.body = generateErrorHtml(result.statusCode, result.reason);
+		// else {
+		// 	for (size_t i=0; i < it->second.size(); ++i) {
+		// 		if (exists(it->second[i]) && isFile(it->second[i]))
+		// 			result.body = readFile();
+		// 	}
+		// }
 	}
 
 	return (result);
-
-	// if (result.isSuccess()) {
-	// 	std::cout << BOLD_GREEN << result.statusCode << " " << RES << result.errorMsg << std::endl;
-	// 	// Build valid response here!
-	// }
-	// else {
-	// 	std::cout << BOLD_RED << result.statusCode << " "
-	// 		<< RES << result.errorMsg << std::endl;
-	// 	// Build error response here!
-	// }
+}
 
 
-	// return resp;
+
+std::string	generateErrorHtml(const int& statusCode, const std::string& statusMsg)
+{
+	std::stringstream ss;
+
+	ss <<
+	"<!DOCTYPE html>\n"
+	"<html lang=\"en\">\n"
+	"<head>\n"
+	"    <meta charset=\"UTF-8\">\n"
+	"    <title>" << statusCode << " - " << statusMsg << "</title>\n"
+	"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\n"
+	"    <link rel=\"stylesheet\" href=\"/css/common.css\">\n\n"
+	"    <style>\n"
+	"        .error-container {\n"
+	"            text-align: center;\n"
+	"            padding: var(--spacing-xl) 0;\n"
+	"        }\n\n"
+	"        .error-code {\n"
+	"            font-size: 120px;\n"
+	"            font-weight: 700;\n"
+	"            color: #d35400;\n"
+	"            line-height: 1;\n"
+	"        }\n"
+	"    </style>\n"
+	"</head>\n"
+	"<body>\n\n"
+	"<nav class=\"navbar\">\n"
+	"    <div class=\"navbar-content\">\n"
+	"        <a href=\"/\" class=\"navbar-brand\">Webserv</a>\n"
+	"        <ul class=\"navbar-links\">\n"
+	"            <li><a href=\"/\">Home</a></li>\n"
+	"            <li><a href=\"/test\">Test</a></li>\n"
+	"            <li><a href=\"/upload\">Upload</a></li>\n"
+	"        </ul>\n"
+	"    </div>\n"
+	"</nav>\n\n"
+	"<div class=\"container\">\n"
+	"    <div class=\"error-container\">\n"
+	"        <div class=\"error-code\">" << statusCode << "</div>\n"
+	"        <h1 style=\"font-size: 48px; margin: var(--spacing-md) 0;\">"
+			<< statusMsg << "</h1>\n"
+	"        <p style=\"color: #666; font-size: 18px; margin-bottom: var(--spacing-lg);\">\n"
+	"            This error page was automatically generated.\n"
+	"        </p>\n"
+	"        <a href=\"/\" class=\"btn\">Go to Home</a>\n"
+	"    </div>\n"
+	"</div>\n\n"
+	"</body>\n"
+	"</html>";
+
+	return ss.str();
 }

@@ -108,25 +108,19 @@ class Router {
 
 
 
-//								DELETE
+//								POST & DELETE
 
 	HttpResponse	handleDelete(const std::string& urlPath);
-
-
-
-
-//								POST
-
-	HttpResponse handlePost(const HttpRequest& req);;
+	HttpResponse	handlePost(const HttpRequest& req);;
 };
 
 
-std::string	getResolvedPath(const std::string& requestURI, const LocationBlock& rules);
+std::string		getResolvedPath(const std::string& requestURI, const LocationBlock& rules);
 
 
 // fsDirPath: filesystem directory path (real path on disk)
 //            used to read directory entries and file metadata
 // urlPath:   requested URL path (used to generate HTML links)
-HttpResponse buildAutoIndexResponse( const std::string& fsDirPath, const std::string& urlPath);
-
+HttpResponse	buildAutoIndexResponse( const std::string& fsDirPath, const std::string& urlPath);
+std::string		generateErrorHtml(const int& statusCode, const std::string& statusMsg);
 #endif

@@ -220,8 +220,7 @@ void Server::handleClientRead(int fd)
 		conn->update_activity();
 
 		// std::cout << "  [fd=" << fd << "] Received " << n << " bytes" << std::endl;
-		std::cout << BOLD_YELLOW << "[DEBUG] "
-			<< RES << "Received " << n << " bytes" << std::endl;
+		// std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Received " << n << " bytes" << std::endl;
 
 		// Traiter la requete HTTP avec le parser
 		processRequest(conn, fd);
@@ -236,7 +235,7 @@ void Server::handleClientRead(int fd)
 	{
 		// Client a ferme la connexion
 		// std::cout << "  [fd=" << fd << "] Client disconnected" << std::endl;
-		std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Client disconnected" << std::endl;
+		// std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Client disconnected" << std::endl;
 		removeClient(fd);
 	}
 	else
@@ -258,8 +257,7 @@ void Server::handleClientWrite(int fd)
 		if (sent > 0)
 		{
 			// std::cout << "  [fd=" << fd << "] Sent " << sent << " bytes" << std::endl;
-			std::cout << BOLD_YELLOW << "[DEBUG] "
-				<< RES << "Sent " << sent << " bytes" << std::endl;
+			// std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Sent " << sent << " bytes" << std::endl;
 		}
 		else if (sent < 0)
 		{
@@ -302,8 +300,7 @@ void Server::removeClient(int fd)
 		// Supprimer le mapping client -> server
 		client_to_server.erase(fd);
 
-		std::cout << BOLD_YELLOW << "[DEBUG] "
-			<< RES << "live clients: " << clients.size() << std::endl;
+		// std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "live clients: " << clients.size() << std::endl;
 		// std::cout << "  (remaining clients: " << clients.size() << ")" << std::endl;
 	}
 }
@@ -381,10 +378,8 @@ void Server::processRequest(Connection* conn, int fd)
 		bool closeConnection = parser->shouldCloseConnection();
 		conn->send_buffer = ResponseBuilder::build(resp, closeConnection);//TODO: NEED TO ADAPT BEHAVIOUR FOR DIFFERNT STATUS CODES
 
-		// std::cout << "  [fd=" << fd << "] HTTP Response: " << resp.statusCode
-		//          << " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
-		std::cout << BOLD_GREEN << "[HTTP Response] " << RES << resp.statusCode
-					<< " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
+		std::cout	<< std::left << BOLD_BLACK << std::setw(16) << "[Server]" << RES << "  ~  (Connection: "
+					<< (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
 
 
 		// Reset parser pour la prochaine requete (keep-alive)
