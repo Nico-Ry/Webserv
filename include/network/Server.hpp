@@ -41,6 +41,7 @@ private:
     void handleClientRead(int fd);
     void handleClientWrite(int fd);
     void removeClient(int fd);
+    void checkClientTimeouts();  // Vérifie et ferme les connexions inactives
 
     // Helper: verifie si un fd est un server socket
     bool isServerSocket(int fd) const;

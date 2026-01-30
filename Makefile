@@ -66,8 +66,8 @@ SRC_DEBUG			= $(addprefix $(DEBUG_DIR), \
 						)
 
 
-#CGI_DIR				= src/cgi/
-#SRC_CGI				= $(addprefix $(CGI_DIR), \
+CGI_DIR				= src/cgi/
+SRC_CGI				= $(addprefix $(CGI_DIR), \
 						CgiHandler.cpp \
 						CgiEnvironment.cpp \
 						CgiParser.cpp \
@@ -75,7 +75,7 @@ SRC_DEBUG			= $(addprefix $(DEBUG_DIR), \
 						)
 
 
-SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_ROUTER) $(SRC_DEBUG)  #$(SRC_CGI)
+SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_ROUTER) $(SRC_DEBUG) $(SRC_CGI)
 
 # Main source
 MAIN_SRC = src/main.cpp

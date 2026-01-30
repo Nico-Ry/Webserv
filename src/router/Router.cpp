@@ -3,6 +3,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include "router/PathUtils.hpp"
+#include "cgi/CgiHandler.hpp"
 
 Router::Router(const Config& cfg, const ServerBlock* serverBlock)
 	: cfg(cfg), server(serverBlock), rules(NULL) {}
@@ -157,6 +158,21 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 	getLocation(req.path);
 	if (!rules)// should never happen, defensive coding
 		return (HttpResponse(500, "Internal Server Error"));
+
+// ==========================================================================
+// CGI HANDLING (checked BEFORE redirects and method validation)
+// - CGI scripts use a direct path (./cgi-bin/script.py)
+// - CGI bypasses location rules (methods, redirects) to stay independent
+// - Only maxBodySize is checked for security
+// ==========================================================================
+	if (CgiHandler::isCgiScript(req.path)) {
+		if (exceedsMaxSize(req.body.size()))
+			return HttpResponse(413, "Payload Too Large");
+		std::string scriptPath = "." + req.path;  // ./cgi-bin/script.py
+		std::cout << YELLOW << "[DEBUG - CGI] " << BOLD_BLUE
+				  << "Executing CGI: " << scriptPath << RES << std::endl;
+		return CgiHandler::execute(req, scriptPath);
+	}
 
 // TODO: a function that matches redirection code with
 //       the appropriate redirection message and stores

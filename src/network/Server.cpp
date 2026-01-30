@@ -7,6 +7,10 @@
 #include <iostream>
 #include <cstring>
 #include <sstream>
+#include <ctime>
+
+// Timeout pour les connexions clients inactives (en secondes)
+static const int CLIENT_TIMEOUT_SECONDS = 30;
 
 // Helper function pour convertir int en string (C++98)
 static std::string intToString(int n) {
@@ -103,8 +107,11 @@ void Server::run() {
 	std::cout << std::endl << "(Ctrl+C to stop)\n" << std::endl;
 
 	while (running) {
-		// Attendre des evenements sur les fds surveilles
-		std::vector<int> ready_fds = multiplexer.wait(-1);
+		// Attendre des evenements sur les fds surveilles (timeout 5s pour vérifier les timeouts clients)
+		std::vector<int> ready_fds = multiplexer.wait(5000);
+
+		// Vérifier les connexions inactives (même si pas d'événements)
+		checkClientTimeouts();
 
 		if (ready_fds.empty()) {
 			continue;
@@ -183,6 +190,9 @@ void Server::handleClientRead(int fd) {
 	ssize_t n = conn->read_available();
 
 	if (n > 0) {
+		// Mettre à jour le timestamp d'activité
+		conn->update_activity();
+
 		// std::cout << "  [fd=" << fd << "] Received " << n << " bytes" << std::endl;
 		std::cout << BOLD_YELLOW << "[DEBUG] "
 			<< RES << "Received " << n << " bytes" << std::endl;
@@ -427,3 +437,27 @@ void Server::processRequest(Connection* conn, int fd) {
 
 //     return resp;
 // }
+
+void Server::checkClientTimeouts() {
+	time_t now = time(NULL);
+	std::vector<int> to_remove;
+
+	// Identifier les clients qui ont dépassé le timeout
+	for (std::map<int, Connection*>::iterator it = clients.begin();
+		 it != clients.end(); ++it) {
+		int fd = it->first;
+		Connection* conn = it->second;
+
+		if (now - conn->last_activity > CLIENT_TIMEOUT_SECONDS) {
+			std::cout << BOLD_ORANGE << "[TIMEOUT] " << RES
+				<< "Client fd=" << fd << " inactive for "
+				<< (now - conn->last_activity) << "s, closing connection" << std::endl;
+			to_remove.push_back(fd);
+		}
+	}
+
+	// Fermer les connexions timeout (on ne peut pas modifier la map pendant l'itération)
+	for (size_t i = 0; i < to_remove.size(); ++i) {
+		removeClient(to_remove[i]);
+	}
+}

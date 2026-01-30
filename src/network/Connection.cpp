@@ -10,8 +10,12 @@ Connection::ConnectionException::ConnectionException(const std::string& message)
 }
 
 Connection::Connection(int fd)
-	: fd(fd), recv_buffer(), send_buffer(), bytes_sent(0) {
+	: fd(fd), recv_buffer(), send_buffer(), bytes_sent(0), last_activity(time(NULL)) {
 	set_nonblocking();
+}
+
+void Connection::update_activity() {
+	last_activity = time(NULL);
 }
 
 Connection::~Connection() {

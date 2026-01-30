@@ -4,6 +4,7 @@
 #include <string>
 #include <stdexcept>
 #include <sys/types.h>
+#include <ctime>
 
 class Connection {
 public:
@@ -34,6 +35,10 @@ public:
     std::string recv_buffer;
     std::string send_buffer;
     size_t bytes_sent;
+    time_t last_activity;  // Timestamp de dernière activité (pour timeout)
+
+    // Met à jour le timestamp d'activité
+    void update_activity();
 
 private:
     // Met le socket en mode non-bloquant
