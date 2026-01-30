@@ -16,7 +16,8 @@ Router::~Router() {}
  * @brief Generates a set filled with all parent paths in descending order (longest to shortest).
  * @note Such that: `/www/images/data` would produce: `/www/images/data`, `/www/images`, `/www` and `/`
  */
-DescendingStrSet	Router::genParentPaths(const std::string& uri) {
+DescendingStrSet	Router::genParentPaths(const std::string& uri)
+{
 	DescendingStrSet	parentPaths;
 
 // start by inserting root as fallback
@@ -24,13 +25,14 @@ DescendingStrSet	Router::genParentPaths(const std::string& uri) {
 
 // defensive coding in case empty URI
 	if (uri.empty())
-		return parentPaths;
+		return (parentPaths);
 
 // Read URI char by char inserting everything that's been read
 // into buf. Once "/" is encountered insert buf in parentPaths.
 
 	std::string	buf;
-	for (size_t i=0; i < uri.length(); ++i) {
+	for (size_t i=0; i < uri.length(); ++i)
+	{
 		char c = uri[i];
 
 		if (c == '/' && buf.length() > 1)// insert if longer than "/"
@@ -40,7 +42,7 @@ DescendingStrSet	Router::genParentPaths(const std::string& uri) {
 
 	parentPaths.insert(uri);//				insert full URI
 	// printParentPaths(parentPaths);//		Uncomment to print all parent paths
-	return parentPaths;
+	return (parentPaths);
 }
 
 /**
@@ -49,7 +51,8 @@ DescendingStrSet	Router::genParentPaths(const std::string& uri) {
  * file/directory doesn't exist. In case no matches are found, we fallback to '/'.
  * Actual validation of existence will be performed later.
  */
-void	Router::getLocation(const std::string& uri) {
+void	Router::getLocation(const std::string& uri)
+{
 
 	DescendingStrSet	paths = genParentPaths(uri);
 
@@ -60,13 +63,15 @@ void	Router::getLocation(const std::string& uri) {
 		std::string	longestUri = *it;
 
 		//check if longest URI matches any location block in server
-		for (size_t i=0; i < server->locations.size(); ++i) {
+		for (size_t i=0; i < server->locations.size(); ++i)
+		{
 			//store index of fallback LocationBlock
 			if (server->locations[i].uri == "/")
 				fallback = &server->locations[i];
-			if (server->locations[i].uri == longestUri) {
+			if (server->locations[i].uri == longestUri)
+			{
 				this->rules = &server->locations[i];
-				return;
+				return ;
 			}
 		}
 	}
@@ -74,14 +79,16 @@ void	Router::getLocation(const std::string& uri) {
 	if (fallback)
 		this->rules = fallback;
 // No "/" Location Block, build default one from ServerBlock
-	else {
+	else
+	{
 		this->defaultLoc = LocationBlock(*server);
 		this->rules = &defaultLoc;
 	}
 }
 
 
-bool	Router::methodAllowed(const HttpMethod& method) {
+bool	Router::methodAllowed(const HttpMethod& method)
+{
 	std::string	target;
 
 //	Convert enum to string
@@ -94,18 +101,20 @@ bool	Router::methodAllowed(const HttpMethod& method) {
 	else
 		target = "NOT IMPLEMENTED";
 
-	for (size_t i=0; i < rules->methods.size(); ++i) {
+	for (size_t i=0; i < rules->methods.size(); ++i)
+	{
 		if (target == rules->methods[i])
-			return true;
+			return (true);
 	}
-	return false;
+	return (false);
 }
 
 
-bool	Router::exceedsMaxSize(const size_t& len) {
+bool	Router::exceedsMaxSize(const size_t& len)
+{
 	if (len >= rules->clientMaxBodySize)
-		return true;
-	return false;
+		return (true);
+	return (false);
 }
 
 
@@ -120,18 +129,19 @@ bool	Router::readFileToString(const std::string& path, std::string& responseBody
 
 // checks file exists, has read permission and path is valid
 	if (!ifs.is_open())
-		return false;
+		return (false);
 
 // read and copy over
 	std::ostringstream oss;
 	oss << ifs.rdbuf();
 	responseBody = oss.str();
-	return true;
+	return (true);
 }
 
 
 
-HttpResponse	Router::buildRedirectResponse(const int& code, const std::string& target) {
+HttpResponse	Router::buildRedirectResponse(const int& code, const std::string& target)
+{
 	std::string	statusMsg;
 
 	if (code == 301)
@@ -152,7 +162,8 @@ HttpResponse	Router::buildRedirectResponse(const int& code, const std::string& t
  * @brief Validates all Routing is correct for a given HTTP request
  * @note checks: Port, URI, Max Size.
  */
-HttpResponse	Router::routing(const HttpRequest& req) {
+HttpResponse	Router::routing(const HttpRequest& req)
+{
 
 // Find correct context for requestURI
 	getLocation(req.path);
@@ -165,13 +176,14 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 // - CGI bypasses location rules (methods, redirects) to stay independent
 // - Only maxBodySize is checked for security
 // ==========================================================================
-	if (CgiHandler::isCgiScript(req.path)) {
+	if (req.path.compare(0, 9, "/cgi-bin/") == 0 && CgiHandler::isCgiScript(req.path))//changed by nico Now /upload/test.py will NOT be treated as CGI, and your upload code will work.
+	{
 		if (exceedsMaxSize(req.body.size()))
-			return HttpResponse(413, "Payload Too Large");
+			return (HttpResponse(413, "Payload Too Large"));
 		std::string scriptPath = "." + req.path;  // ./cgi-bin/script.py
 		std::cout << YELLOW << "[DEBUG - CGI] " << BOLD_BLUE
 				  << "Executing CGI: " << scriptPath << RES << std::endl;
-		return CgiHandler::execute(req, scriptPath);
+		return (CgiHandler::execute(req, scriptPath));
 	}
 
 // TODO: a function that matches redirection code with
@@ -179,45 +191,48 @@ HttpResponse	Router::routing(const HttpRequest& req) {
 //       the locationBlock pointer of the request so we
 //		 can find rules->redirectTarget when build HttpResponse
 	if (rules->hasRedirect)
-		return buildRedirectResponse(rules->redirectCode, rules->redirectTarget);
+		return (buildRedirectResponse(rules->redirectCode, rules->redirectTarget));
 
 // Basic Validation Before handling requested method
 
 	if (!methodAllowed(req.method))
-		return HttpResponse(405, "Method Not Allowed");
+		return (HttpResponse(405, "Method Not Allowed"));
 
 	if (exceedsMaxSize(req.body.size()))//changed to bodySize to handle chunked requests
-		return HttpResponse(413, "Payload Too Large");
+		return (HttpResponse(413, "Payload Too Large"));
 
 // Split logic to handle GET, DELETE and POST separately
 	if (req.method == METHOD_GET)
-		return handleGet(req.path);
+		return (handleGet(req.path));
 
 	else if (req.method == METHOD_DELETE)
-		return handleDelete(req.path);
+		return (handleDelete(req.path));
 
 	else if (req.method == METHOD_POST)
-		return handlePost(req);
+		return (handlePost(req));
 
-	return HttpResponse(501, "Not Implemented");
+	return (HttpResponse(501, "Not Implemented"));
 }
 
 
-HttpResponse Router::buildResponse(const HttpRequest& req) {
+HttpResponse Router::buildResponse(const HttpRequest& req)
+{
 	//Kept HttpResponse as may need Location pointer for POST so we can provide the path of where the upload occured
 
 	HttpResponse		result = routing(req);
 
-	if (result.isSuccess()) {
+	if (result.isSuccess())
+	{
 	std::cout << BOLD_GREEN << result.statusCode
 		<< RES << " " << result.reason << std::endl;
 	}
-	else {
+	else
+	{
 	std::cout << BOLD_RED << result.statusCode
 		<< RES << " " << result.reason << std::endl;
 	}
 
-	return result;
+	return (result);
 
 	// if (result.isSuccess()) {
 	// 	std::cout << BOLD_GREEN << result.statusCode << " " << RES << result.errorMsg << std::endl;

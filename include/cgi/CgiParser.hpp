@@ -13,23 +13,23 @@
  * - Body
  */
 namespace CgiParser {
-    /**
-     * @brief Parse CGI output (headers + body)
-     *
-     * CGI scripts output:
-     *   Status: 200 OK\r\n
-     *   Content-Type: text/html\r\n
-     *   \r\n
-     *   <html>body</html>
-     *
-     * Parses the headers and body, builds an HttpResponse.
-     * Special handling for "Status" header.
-     * Default Content-Type is text/html if not provided.
-     *
-     * @param output Raw output from CGI script
-     * @return HttpResponse Parsed response
-     */
-    HttpResponse parseCgiOutput(const std::string& output);
+	/**
+	 * @brief Parse CGI output (headers + body)
+	 *
+	 * CGI scripts output:
+	 *   Status: 200 OK\r\n
+	 *   Content-Type: text/html\r\n
+	 *   \r\n
+	 *   <html>body</html>
+	 *
+	 * Parses the headers and body, builds an HttpResponse.
+	 * Special handling for "Status" header.
+	 * Default Content-Type is text/html if not provided.
+	 *
+	 * @param output Raw output from CGI script
+	 * @return HttpResponse Parsed response
+	 */
+	HttpResponse parseCgiOutput(const std::string& output);
 }
 
 #endif
