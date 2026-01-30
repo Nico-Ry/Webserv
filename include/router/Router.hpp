@@ -122,5 +122,5 @@ std::string		getResolvedPath(const std::string& requestURI, const LocationBlock&
 //            used to read directory entries and file metadata
 // urlPath:   requested URL path (used to generate HTML links)
 HttpResponse	buildAutoIndexResponse( const std::string& fsDirPath, const std::string& urlPath);
-std::string		generateErrorHtml(const int& statusCode, const std::string& statusMsg)
+std::string		generateErrorHtml(const int& statusCode, const std::string& statusMsg);
 #endif

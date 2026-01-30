@@ -336,10 +336,8 @@ void Server::processRequest(Connection* conn, int fd) {
 		bool closeConnection = parser->shouldCloseConnection();
 		conn->send_buffer = ResponseBuilder::build(resp, closeConnection);//TODO: NEED TO ADAPT BEHAVIOUR FOR DIFFERNT STATUS CODES
 
-		// std::cout << "  [fd=" << fd << "] HTTP Response: " << resp.statusCode
-		//          << " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
-		std::cout << BOLD_GREEN << "[HTTP Response] " << RES << resp.statusCode
-					<< " (Connection: " << (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
+		std::cout	<< std::left << BOLD_BLACK << std::setw(16) << "[Server]" << RES << "  ~  (Connection: "
+					<< (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
 
 
 		// Reset parser pour la prochaine requete (keep-alive)

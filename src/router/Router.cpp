@@ -216,6 +216,25 @@ HttpResponse	Router::routing(const HttpRequest& req)
 
 
 
+static void printSuccess(const HttpResponse& resp) {
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+				<< BOLD_GREEN << resp.statusCode << RES << "] ["
+				<< BOLD_GREEN << resp.reason << RES << "]" << std::endl;
+}
+
+static void printNonSuccess(const HttpResponse& resp) {
+	if (resp.statusCode >= 400) {
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+				<< BOLD_RED << resp.statusCode << RES << "] ["
+				<< BOLD_RED << resp.reason << RES << "]" << std::endl;
+	}
+	else {
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+				<< BOLD_BLUE << resp.statusCode << RES << "] ["
+				<< BOLD_BLUE << resp.reason << RES << "]" << std::endl;
+	}
+}
+
 
 HttpResponse Router::buildResponse(const HttpRequest& req)
 {
@@ -224,14 +243,10 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 	HttpResponse		result = routing(req);
 
 	if (result.isSuccess())
-	{
-	std::cout << BOLD_GREEN << result.statusCode
-		<< RES << " " << result.reason << std::endl;
-	}
+		printSuccess(result);
 	else
 	{
-	std::cout << BOLD_RED << result.statusCode
-		<< RES << " " << result.reason << std::endl;
+		printNonSuccess(result);
 		std::map<int, StringVec>::const_iterator it = rules->errorPages.find(result.statusCode);
 		if (it == rules->errorPages.end())
 			result.body = generateErrorHtml(result.statusCode, result.reason);
@@ -245,6 +260,8 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 
 	return (result);
 }
+
+
 
 std::string	generateErrorHtml(const int& statusCode, const std::string& statusMsg)
 {

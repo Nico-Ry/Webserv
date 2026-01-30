@@ -22,9 +22,10 @@
 
 static HttpResponse	getNotFound(const std::string& resolvedPath)
 {
-	std::cout << YELLOW << "[DEBUG - GET] " << RES
-			  << "Does not exist: " << ORANGE << resolvedPath
-			  << RES << std::endl;
+	// std::cout << YELLOW << "[DEBUG - GET] " << RES
+	// 		  << "Does not exist: " << ORANGE << resolvedPath
+	// 		  << RES << std::endl;
+	(void)resolvedPath;
 	return (HttpResponse(404, "Not Found"));
 }
 
@@ -79,8 +80,8 @@ HttpResponse Router::getTryIndexFiles(const std::string& resolvedPath,
 	{
 		std::string candidate = joinPath(resolvedPath, indexList[i]);
 
-		std::cout << YELLOW << "[DEBUG - GET] " << RES
-				  << "Trying index file: " << PURPLE << candidate << RES << std::endl;
+		// std::cout << YELLOW << "[DEBUG - GET] " << RES
+		// 		  << "Trying index file: " << PURPLE << candidate << RES << std::endl;
 
 		if (isFile(candidate))
 		{
