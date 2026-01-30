@@ -5,21 +5,20 @@
 
 // ---- small helpers  ----
 
+
 static bool isSafeFilename(const std::string& name)
 {
 	if (name.empty())
 		return (false);
 
-	// Reject path separators and traversal patterns
+	if (name == "." || name == "..")
+		return (false);
+
 	if (name.find('/') != std::string::npos)
 		return (false);
 	if (name.find('\\') != std::string::npos)
 		return (false);
 	if (name.find("..") != std::string::npos)
-		return (false);
-
-	// Optional: reject weird empty-dot names
-	if (name == "." || name == "..")
 		return (false);
 
 	return (true);
@@ -133,17 +132,8 @@ static HttpResponse	writeBodyToFileOrFail(const std::string& fullPath,
 because its writen in binary mode*/
 HttpResponse Router::handlePost(const HttpRequest& req)
 {
-	// 1) Resolve path (useful for CGI decision & safety checks)
-	std::string resolved = getResolvedPath(req.path, *rules);
-
-	// Until CGI exists, avoid -Werror unused warning
-	(void)resolved;
-
-	// 2) CGI hook (Dibran will implement)
-	// TODO(CGI): if this target should be executed as CGI, delegate here.
-	// if (isCgiTarget(resolved, *rules))
-	//     return (executeCgi(req, resolved, *rules));
-
+	//1-5 Dibran CGI bypassed already in routing()
+	
 	// 3-5) Validate upload dir
 	// {} limits the lifetime (scope) of err
 	{
