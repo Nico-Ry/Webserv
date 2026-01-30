@@ -215,7 +215,38 @@ HttpResponse	Router::routing(const HttpRequest& req)
 }
 
 
-static std::string generateErrorHtml(const int& statusCode, const std::string& statusMsg)
+
+
+HttpResponse Router::buildResponse(const HttpRequest& req)
+{
+	//Kept HttpResponse as may need Location pointer for POST so we can provide the path of where the upload occured
+
+	HttpResponse		result = routing(req);
+
+	if (result.isSuccess())
+	{
+	std::cout << BOLD_GREEN << result.statusCode
+		<< RES << " " << result.reason << std::endl;
+	}
+	else
+	{
+	std::cout << BOLD_RED << result.statusCode
+		<< RES << " " << result.reason << std::endl;
+		std::map<int, StringVec>::const_iterator it = rules->errorPages.find(result.statusCode);
+		if (it == rules->errorPages.end())
+			result.body = generateErrorHtml(result.statusCode, result.reason);
+		// else {
+		// 	for (size_t i=0; i < it->second.size(); ++i) {
+		// 		if (exists(it->second[i]) && isFile(it->second[i]))
+		// 			result.body = readFile();
+		// 	}
+		// }
+	}
+
+	return (result);
+}
+
+std::string	generateErrorHtml(const int& statusCode, const std::string& statusMsg)
 {
 	std::stringstream ss;
 
@@ -266,48 +297,4 @@ static std::string generateErrorHtml(const int& statusCode, const std::string& s
 	"</html>";
 
 	return ss.str();
-}
-
-
-
-HttpResponse Router::buildResponse(const HttpRequest& req)
-{
-	//Kept HttpResponse as may need Location pointer for POST so we can provide the path of where the upload occured
-
-	HttpResponse		result = routing(req);
-
-	if (result.isSuccess())
-	{
-	std::cout << BOLD_GREEN << result.statusCode
-		<< RES << " " << result.reason << std::endl;
-	}
-	else
-	{
-	std::cout << BOLD_RED << result.statusCode
-		<< RES << " " << result.reason << std::endl;
-		std::map<int, StringVec>::const_iterator it = rules->errorPages.find(result.statusCode);
-		if (it == rules->errorPages.end())
-			result.body = generateErrorHtml(result.statusCode, result.reason);
-		// else {
-		// 	for (size_t i=0; i < it->second.size(); ++i) {
-		// 		if (exists(it->second[i]) && isFile(it->second[i]))
-		// 			result.body = readFile();
-		// 	}
-		// }
-	}
-
-	return (result);
-
-	// if (result.isSuccess()) {
-	// 	std::cout << BOLD_GREEN << result.statusCode << " " << RES << result.errorMsg << std::endl;
-	// 	// Build valid response here!
-	// }
-	// else {
-	// 	std::cout << BOLD_RED << result.statusCode << " "
-	// 		<< RES << result.errorMsg << std::endl;
-	// 	// Build error response here!
-	// }
-
-
-	// return resp;
 }

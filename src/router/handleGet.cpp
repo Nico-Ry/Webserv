@@ -22,9 +22,9 @@
 
 static HttpResponse	getNotFound(const std::string& resolvedPath)
 {
-	// std::cout << YELLOW << "[DEBUG - GET] " << ORANGE
-	// 		  << "DOES NOT EXIST! " << RES << resolvedPath
-	// 		  << std::endl;
+	std::cout << YELLOW << "[DEBUG - GET] " << RES
+			  << "Does not exist: " << ORANGE << resolvedPath
+			  << RES << std::endl;
 	return (HttpResponse(404, "Not Found"));
 }
 
