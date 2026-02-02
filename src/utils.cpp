@@ -32,7 +32,7 @@ void		logWarning(const std::string& msg) {
 				<< RES << "]" << std::endl;
 }
 
-void		logCustomErrorPageWarning(const std::string& msg, const std::string& errorPagePath) {
+void		logCustomErrorPage_Warning(const std::string& msg, const std::string& errorPagePath) {
 	std::cout	<< std::left << BOLD_ORANGE << std::setw(16) << "[Warning]"
 				<< RES << "  ~  "
 				<< ORANGE << msg
@@ -40,6 +40,17 @@ void		logCustomErrorPageWarning(const std::string& msg, const std::string& error
 				<< RED << errorPagePath
 				<< RES << "'" << std::endl;
 }
+
+
+void		logCustomErrorPage_Error(const std::string& msg, const std::string& errorPagePath) {
+	std::cout	<< std::left << BOLD_RED << std::setw(16) << "[Error]"
+				<< RES << "  ~  "
+				<< RED << msg
+				<< RES << " -> '"
+				<< RED << errorPagePath
+				<< RES << "'" << std::endl;
+}
+
 
 
 std::string	generateErrorHtml(const int& statusCode, const std::string& statusMsg)

@@ -80,7 +80,11 @@ class Router {
 	HttpResponse		buildResponse(const HttpRequest& req);
 	HttpResponse		buildRedirectResponse(const int& code, const std::string& target);
 	HttpResponse		routing(const HttpRequest& req);
-	bool				tryToServeCustomErrorPage(const HttpResponse& r);
+
+
+//						SERVE ERROR PAGE
+
+	bool				tryToServeCustomErrorPage(HttpResponse& r);
 
 
 //					 	REQUEST VALIDATION

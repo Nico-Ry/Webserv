@@ -264,29 +264,47 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 		printNonSuccess(result);
 		if (!tryToServeCustomErrorPage(result)) {
 			result.body = generateErrorHtml(result.statusCode, result.reason);
-			result.headers["Content-Type"] = "text/html";
+			result.headers["Content-Type"] = Mime::fromPath(req.path);
 		}
 	}
 
 	return (result);
 }
+#include "http/Mime.hpp"
 
-
-bool	Router::tryToServeCustomErrorPage(const HttpResponse& r) {
+bool	Router::tryToServeCustomErrorPage(HttpResponse& r) {
 	std::map<int, StringVec>::const_iterator	it = rules->errorPages.find(r.statusCode);
 	if (it == rules->errorPages.end())
 		return false; //->	No error files defined in config for status code
 
 
+
+//	try each file, first success returns true
 	for (size_t i=0; i < it->second.size(); ++i) {
 		const std::string	errorPagePath = it->second[i];
 		const std::string	resolvedPath = joinPath(server->root, errorPagePath);
+		std::string	buffer;
 
-		std::cout << BOLD_GREEN << resolvedPath << RES << std::endl;
+
 		if (!exists(resolvedPath)) {
-			logCustomErrorPageWarning("Custom error page not found", resolvedPath);
+			logCustomErrorPage_Warning("Custom error page not found", resolvedPath);
 			continue;
 		}
+		if (!isFile(resolvedPath)) {
+			logCustomErrorPage_Warning("Not a file", resolvedPath);
+			continue;
+		}
+
+		if (!readFileToString(resolvedPath, buffer))  {
+			logCustomErrorPage_Error("Failed to read file", resolvedPath);
+			continue;
+		}
+
+		r.body = buffer;
+		r.headers["Content-Type"] = Mime::fromPath(resolvedPath);
+		// r.headers["Content-Type"] = "text/html";
+
+		return true;
 	}
 	return false;
 }

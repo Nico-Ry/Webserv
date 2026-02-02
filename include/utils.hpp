@@ -76,6 +76,7 @@ void			printSuccess(const HttpResponse& resp);
 //---------------------------------------------------------------------------//
 
 void			logWarning(const std::string& msg);
-void			logCustomErrorPageWarning(const std::string& msg, const std::string& errorPagePath);
+void			logCustomErrorPage_Warning(const std::string& msg, const std::string& errorPagePath);
+void			logCustomErrorPage_Error(const std::string& msg, const std::string& errorPagePath);
 
 #endif
