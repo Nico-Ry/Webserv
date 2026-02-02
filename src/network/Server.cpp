@@ -13,7 +13,7 @@
 static const int CLIENT_TIMEOUT_SECONDS = 30;
 
 // Helper function pour convertir int en string (C++98)
-static std::string intToString(int n)
+std::string intToString(int n)
 {
 	std::ostringstream oss;
 	oss << n;
@@ -350,14 +350,12 @@ void Server::processRequest(Connection* conn, int fd)
 
 	// Build HTML Error Page
 		resp.headers["Content-Type"] = "text/html";
-		resp.body = "<html><body><h1>Error " + intToString(errorCode)
-					+ "</h1><p>" + reasonPhrase(errorCode) + "</p></body></html>";
-
+		resp.body = generateErrorHtml(resp.statusCode, resp.reason);
+		printNonSuccess(resp);
 
 		// resp.headers["Content-Length: "] = toStringSize(resp.body.size());//NICO DID THIS CHANGE
 
-		// std::cout << "  [fd=" << fd << "] HTTP Error: " << errorCode << std::endl;
-		std::cerr << RED << resp.statusCode << RES << " " << resp.reason << std::endl;
+
 		// Toujours fermer connexion sur erreur
 		conn->send_buffer = ResponseBuilder::build(resp, true);
 				// IMPORTANT: reset parser also on error

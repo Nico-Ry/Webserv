@@ -57,10 +57,25 @@ void	printHttpRequest(const HttpRequest& req);
 
 
 //---------------------------------------------------------------------------//
-//									ROUTER
+//								ROUTER
 //---------------------------------------------------------------------------//
 
 void	printParentPaths(const DescendingStrSet& paths);
 void	printRouterUri(const HttpRequest& r);
+
+//---------------------------------------------------------------------------//
+//							HTTP GENERATOR
+//---------------------------------------------------------------------------//
+std::string		generateErrorHtml(const int& statusCode, const std::string& statusMsg);
+void			printNonSuccess(const HttpResponse& resp);
+void			printSuccess(const HttpResponse& resp);
+
+
+//---------------------------------------------------------------------------//
+//							  LOG WARNINGS
+//---------------------------------------------------------------------------//
+
+void			logWarning(const std::string& msg);
+void			logCustomErrorPageWarning(const std::string& msg, const std::string& errorPagePath);
 
 #endif

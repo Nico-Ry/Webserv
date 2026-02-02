@@ -80,6 +80,7 @@ class Router {
 	HttpResponse		buildResponse(const HttpRequest& req);
 	HttpResponse		buildRedirectResponse(const int& code, const std::string& target);
 	HttpResponse		routing(const HttpRequest& req);
+	bool				tryToServeCustomErrorPage(const HttpResponse& r);
 
 
 //					 	REQUEST VALIDATION
@@ -116,12 +117,12 @@ class Router {
 };
 
 
-std::string		getResolvedPath(const std::string& requestURI, const LocationBlock& rules);
+std::string			getResolvedPath(const std::string& requestURI, const LocationBlock& rules);
 
 
 // fsDirPath: filesystem directory path (real path on disk)
 //            used to read directory entries and file metadata
 // urlPath:   requested URL path (used to generate HTML links)
-HttpResponse	buildAutoIndexResponse( const std::string& fsDirPath, const std::string& urlPath);
-std::string		generateErrorHtml(const int& statusCode, const std::string& statusMsg);
+HttpResponse		buildAutoIndexResponse( const std::string& fsDirPath, const std::string& urlPath);
+
 #endif
