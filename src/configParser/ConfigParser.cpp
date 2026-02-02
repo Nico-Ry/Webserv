@@ -28,6 +28,9 @@ ConfigParser::ConfigParser(const std::vector<Token>& toks)
 	locationDirectives["methods"] = &ConfigParser::parseMethods;
 	locationDirectives["upload"] = &ConfigParser::parseUpload;
 	locationDirectives["return"] = &ConfigParser::parseReturn;
+	locationDirectives["cgi_bin"] = &ConfigParser::parseCgiBin;
+	locationDirectives["cgi_extension"] = &ConfigParser::parseCgiExtension;
+
 }
 
 ConfigParser::~ConfigParser() {}

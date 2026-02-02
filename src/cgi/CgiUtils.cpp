@@ -48,7 +48,7 @@ bool CgiUtils::isExecutable(const std::string& path)
 HttpResponse CgiUtils::generateErrorResponse(int statusCode, const std::string& message)
 {
 	HttpResponse resp(statusCode, reasonPhrase(statusCode));
-	resp.headers["Content-Type: "] = "text/html";
+	resp.headers["Content-Type"] = "text/html";
 
 	std::string html;
 	html = "<!DOCTYPE html>\n<html>\n<head>\n";

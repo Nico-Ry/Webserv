@@ -20,7 +20,7 @@ HttpResponse CgiParser::parseCgiOutput(const std::string& output)
 		resp.statusCode = 200;
 		resp.reason = "OK";
 		resp.body = output;
-		resp.headers["Content-Type: "] = "text/html";
+		resp.headers["Content-Type"] = "text/html";
 		return (resp);
 	}
 
@@ -83,7 +83,7 @@ HttpResponse CgiParser::parseCgiOutput(const std::string& output)
 	// Set default Content-Type if not provided
 	if (resp.headers.find("Content-Type: ") == resp.headers.end())
 	{
-		resp.headers["Content-Type: "] = "text/html";
+		resp.headers["Content-Type"] = "text/html";
 	}
 
 	return (resp);

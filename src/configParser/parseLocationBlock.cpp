@@ -37,6 +37,38 @@ void		ConfigParser::parseLocationBlock(ServerBlock& s)
 	s.locations.push_back(newBlock);
 }
 
+//---------------------------------------------------------------------------//
+//								CGI
+//---------------------------------------------------------------------------//
+void	ConfigParser::parseCgiBin(LocationBlock& l)
+{
+	Token cgiBinToken = expect(TOKEN_WORD, "expected path for cgi-bin:");
+	std::string path = cgiBinToken.value;
+
+	if (path.empty())
+		throw ParseException("CGI Bin cannot be empty", cgiBinToken.line);
+
+	l.cgiBin = path;
+	l.hasCgiBin = true;
+
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
+
+void	ConfigParser::parseCgiExtension(LocationBlock& l)
+{
+	Token cgiExtToken = expect(TOKEN_WORD, "expected CGI extension (e.g. .py):");
+	std::string extension = cgiExtToken.value;
+
+	if (extension.empty())
+		throw ParseException("CGI Extension cannot be empty", cgiExtToken.line);
+	if (extension[0] != '.')
+		throw ParseException("CGI Extension must start with a dot:", cgiExtToken.line);
+
+	l.cgiExtension = extension;
+	l.hasCgiExtension = true;
+
+	expect(TOKEN_SEMICOLON, "Expected ';'");
+}
 
 //---------------------------------------------------------------------------//
 //								RETURN

@@ -123,7 +123,7 @@
 function testRequest(method, path, body) {
 	const options = { method: method };
 	if (body) {
-		options.headers = { 'Content-Type': 'text/plain' };
+		options.headers = { 'Content-Type: ': 'text/plain' };
 		options.body = body;
 	}
 	fetch(path, options).then(() => window.location.reload());

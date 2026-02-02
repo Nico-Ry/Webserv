@@ -133,7 +133,7 @@ because its writen in binary mode*/
 HttpResponse Router::handlePost(const HttpRequest& req)
 {
 	//1-5 Dibran CGI bypassed already in routing()
-	
+
 	// 3-5) Validate upload dir
 	// {} limits the lifetime (scope) of err
 	{
@@ -200,8 +200,8 @@ HttpResponse Router::handlePost(const HttpRequest& req)
 		locationUrl = req.path;
 
 	HttpResponse resp(code, msg, "uploaded\n");
-	resp.headers["Content-Type: "] = "text/plain";
-	resp.headers["Location: "] = locationUrl;
+	resp.headers["Content-Type"] = "text/plain";
+	resp.headers["Location"] = locationUrl;
 	return (resp);
 }
 

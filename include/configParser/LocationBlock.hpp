@@ -49,6 +49,13 @@ class LocationBlock {
 		int							redirectCode;
 		std::string					redirectTarget;
 
+		// ===== CGI (location-scoped) =====
+		bool						hasCgiExtension;
+		std::string					cgiExtension;
+
+		bool						hasCgiBin;
+		std::string					cgiBin;
+
 		std::string					uploadDir;
 };
 

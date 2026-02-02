@@ -45,7 +45,7 @@ HttpResponse::HttpResponse(const std::string& redirection, int code, const std::
 	  isRedirect(true),
 	  redirectTarget(redirection)
 {
-	this->headers["Location: "] = redirection;
+	this->headers["Location"] = redirection;
 }
 
 

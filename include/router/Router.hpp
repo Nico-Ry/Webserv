@@ -89,6 +89,7 @@ class Router {
 	DescendingStrSet	genParentPaths(const std::string& uri);
 	bool				methodAllowed(const HttpMethod& method);
 	bool				exceedsMaxSize(const size_t& len);
+	bool				isCgiRequest(const HttpRequest& req) const;
 
 //---------------------------------------------------------------------------//
 //---------------------------- METHOD HANDLERS --------------------------------//

@@ -156,6 +156,30 @@ HttpResponse	Router::buildRedirectResponse(const int& code, const std::string& t
 	return (HttpResponse(target, code, statusMsg));
 }
 
+static bool	endsWith(const std::string& s, const std::string& suffix)
+{
+	if (suffix.size() > s.size())
+		return (false);
+	return (s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0);
+}
+
+bool	Router::isCgiRequest(const HttpRequest& req) const
+{
+	// "rules" should already be the matched LocationBlock (router sets this).
+	if (rules == NULL)
+		return (false);
+
+	// CGI is only enabled if the location explicitly configured it
+	if (rules->hasCgiExtension == false)
+		return (false);
+
+	// Subject requires CGI decision based on extension
+	if (endsWith(req.path, rules->cgiExtension) == false)
+		return (false);
+
+	return (true);
+}
+
 
 
 /**
@@ -176,18 +200,27 @@ HttpResponse	Router::routing(const HttpRequest& req)
 // - CGI bypasses location rules (methods, redirects) to stay independent
 // - Only maxBodySize is checked for security
 // ==========================================================================
-	if (req.path.compare(0, 9, "/cgi-bin/") == 0 && CgiHandler::isCgiScript(req.path))//changed by nico Now /upload/test.py will NOT be treated as CGI, and your upload code will work.
+	if (isCgiRequest(req))
 	{
 		if (exceedsMaxSize(req.body.size()))
 			return (HttpResponse(413, "Payload Too Large"));
-		std::string scriptPath = "." + req.path;  // ./cgi-bin/script.py
+
+		// Build the filesystem path //location /cgi-bin { root .; cgi_extension .py; } /cgi-bin/form.py → ./cgi-bin/form.py
+		// Option A: use location root + URI
+		std::string scriptPath = rules->root + req.path;
+
+		// Option B (only if we want cgi_bin to override):
+		// if (rules->hasCgiBin) scriptPath = rules->cgiBin + req.path;
+
 		std::cout << YELLOW << "[DEBUG - CGI] " << RES
-				  << "Executing CGI: " << BOLD_BLUE << scriptPath << RES << std::endl;
+				<< "Executing CGI: " << BOLD_BLUE << scriptPath << RES << std::endl;
+
 		return (CgiHandler::execute(req, scriptPath));
 	}
 
+
 	std::cout << "[DEBUG ROUTER] method=" << req.method
-          << " path='" << req.path << "'" << std::endl;
+			<< " path='" << req.path << "'" << std::endl;
 
 // TODO: a function that matches redirection code with
 //       the appropriate redirection message and stores

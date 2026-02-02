@@ -320,6 +320,9 @@ void Server::processRequest(Connection* conn, int fd)
 	// std::cout << BOLD_GOLD << conn->recv_buffer << RES << std::endl;
 	parser->feed(conn->recv_buffer);
 	conn->recv_buffer.clear();
+		// Prevent pipelining from overwriting the pending response
+	if (!conn->send_buffer.empty())
+		return;
 
 	//NICO OOOO
 	// // If headers are parsed and we are about to parse the body,
@@ -357,6 +360,13 @@ void Server::processRequest(Connection* conn, int fd)
 		std::cerr << RED << resp.statusCode << RES << " " << resp.reason << std::endl;
 		// Toujours fermer connexion sur erreur
 		conn->send_buffer = ResponseBuilder::build(resp, true);
+				// IMPORTANT: reset parser also on error
+		if (parser->hasBufferedData())
+			parser->resetKeepBuffer();
+		else
+			parser->reset();
+
+		return;
 	}
 
 	// Verifier si la requete est complete
@@ -383,7 +393,10 @@ void Server::processRequest(Connection* conn, int fd)
 
 
 		// Reset parser pour la prochaine requete (keep-alive)
-		parser->reset();
+		if (parser->hasBufferedData())
+			parser->resetKeepBuffer();
+		else
+			parser->reset();
 	}
 }
 

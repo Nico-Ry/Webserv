@@ -222,7 +222,7 @@
 					method: "POST",
 					body: selectedFile, // raw bytes (NOT multipart)
 					headers: {
-						"Content-Type": selectedFile.type || "application/octet-stream"
+						"Content-Type: ": selectedFile.type || "application/octet-stream"
 					}
 				});
 

@@ -17,7 +17,15 @@
  * @attention Note that some element such as `errorPages` are purposely
  * omitted from being copied over to the LocationBlock
  */
-LocationBlock::LocationBlock() {}
+LocationBlock::LocationBlock()
+	: autoIndex(false),
+	  clientMaxBodySize(0),
+	  hasRedirect(false),
+	  redirectCode(0),
+	  hasCgiExtension(false),
+	  hasCgiBin(false)
+{}
+
 
 
 /**
@@ -34,6 +42,8 @@ LocationBlock::LocationBlock(const ServerBlock& s) :
 	clientMaxBodySize(s.clientMaxBodySize),
 	hasRedirect(false),
 	redirectCode(0),//	Set to Zero by default
+	hasCgiExtension(false),
+	hasCgiBin(false),
 	uploadDir(s.uploadDir)
 	{}
 

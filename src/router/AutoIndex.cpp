@@ -204,7 +204,7 @@ HttpResponse buildAutoIndexResponse(const std::string& fsDirPath, const std::str
 		return (HttpResponse(403, "Forbidden"));
 
 	HttpResponse resp(200, "OK", body);
-	resp.headers["Content-Type: "] = "text/html; charset=utf-8";
+	resp.headers["Content-Type"] = "text/html; charset=utf-8";
 	return (resp);
 }
 // Content-Type: text/html; charset=UTF-8
