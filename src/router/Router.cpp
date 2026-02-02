@@ -264,7 +264,7 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 		printNonSuccess(result);
 		if (!tryToServeCustomErrorPage(result)) {
 			result.body = generateErrorHtml(result.statusCode, result.reason);
-			result.headers["Content-Type"] = Mime::fromPath(req.path);
+			result.headers["Content-Type"] = "text/html";
 		}
 	}
 
