@@ -86,3 +86,52 @@ body {
 	transform: translateY(-2px);
 	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
+
+/* POST card layout fixes */
+.post-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 900px) {
+  .post-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.post-box {
+  min-width: 0;
+}
+
+.post-box textarea {
+  width: 100%;
+  min-height: 140px;
+}
+
+/* Buttons should not become weird tall squares */
+.post-box .btnrow {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.post-box .btnrow .btn,
+.post-box .btnrow button.btn {
+  flex: 1;
+  width: 100%;
+  white-space: nowrap;       /* prevents multi-line button text */
+  padding: 12px 14px;
+}
+
+/* File row: keep browse + upload aligned */
+.file-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.file-input {
+  flex: 1;
+  min-width: 220px;
+}

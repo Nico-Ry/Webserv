@@ -284,8 +284,11 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 	{
 		printNonSuccess(result);
 		std::map<int, StringVec>::const_iterator it = rules->errorPages.find(result.statusCode);
-		if (it == rules->errorPages.end())
+		if (it == rules->errorPages.end()){
 			result.body = generateErrorHtml(result.statusCode, result.reason);
+			result.headers["Content-Type"] = "text/html";
+		}
+
 		// else {
 		// 	for (size_t i=0; i < it->second.size(); ++i) {
 		// 		if (exists(it->second[i]) && isFile(it->second[i]))
