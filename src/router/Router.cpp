@@ -222,6 +222,7 @@ HttpResponse	Router::routing(const HttpRequest& req)
 	std::cout << "[DEBUG ROUTER] method=" << req.method
 			<< " path='" << req.path << "'" << std::endl;
 
+	std::cout << BOLD_BLUE << getResolvedPath(req.path, *rules);
 // TODO: a function that matches redirection code with
 //       the appropriate redirection message and stores
 //       the locationBlock pointer of the request so we
@@ -259,6 +260,8 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 
 	if (result.isSuccess())
 		printSuccess(result);
+	else if (result.isRedirect)
+		printRedirect(result);
 	else
 	{
 		printNonSuccess(result);

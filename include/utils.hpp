@@ -69,6 +69,7 @@ void	printRouterUri(const HttpRequest& r);
 std::string		generateErrorHtml(const int& statusCode, const std::string& statusMsg);
 void			printNonSuccess(const HttpResponse& resp);
 void			printSuccess(const HttpResponse& resp);
+void			printRedirect(const HttpResponse& resp);
 
 
 //---------------------------------------------------------------------------//

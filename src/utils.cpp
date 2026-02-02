@@ -6,18 +6,17 @@
 //---------------------------------------------------------------------------//
 
 void		printNonSuccess(const HttpResponse& resp) {
-	if (resp.statusCode >= 400) {
 	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
 				<< BOLD_RED << resp.statusCode << RES << "] ["
 				<< BOLD_RED << resp.reason << RES << "]" << std::endl;
-	}
-	else {
+}
+
+
+void		printRedirect(const HttpResponse& resp) {
 	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
 				<< BOLD_BLUE << resp.statusCode << RES << "] ["
 				<< BOLD_BLUE << resp.reason << RES << "]" << std::endl;
-	}
 }
-
 
 void		printSuccess(const HttpResponse& resp) {
 	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
@@ -62,7 +61,7 @@ std::string	generateErrorHtml(const int& statusCode, const std::string& statusMs
 	"    <meta charset=\"UTF-8\">\n"
 	"    <title>" << statusCode << " - " << statusMsg << "</title>\n"
 	"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\n"
-	"    <link rel=\"stylesheet\" href=\"/css/common.css\">\n\n"
+	"    <link rel=\"stylesheet\" href=\"/css/style.css\">\n\n"
 	"    <style>\n"
 	"        .error-container {\n"
 	"            text-align: center;\n"
