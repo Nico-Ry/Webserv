@@ -75,7 +75,7 @@ SRC_CGI				= $(addprefix $(CGI_DIR), \
 						)
 
 
-SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_ROUTER) $(SRC_DEBUG) $(SRC_CGI)
+SRCS = $(SRC_NETWORK) $(SRC_HTTP) $(SRC_CONFIG_PARSER) $(SRC_ROUTER) $(SRC_DEBUG) $(SRC_CGI) src/utils.cpp
 
 # Main source
 MAIN_SRC = src/main.cpp

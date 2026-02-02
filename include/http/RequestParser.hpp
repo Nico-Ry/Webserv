@@ -115,6 +115,7 @@ private:
 	bool	consumeChunkDataAndCRLF();
 
 
+
 	/*
 		readLine(hasLine)
 		- Looks inside _buffer for "\r\n"
@@ -136,6 +137,9 @@ private:
 	bool	setError(int statusCode);
 
 };
+
+	bool	hasUnsafeSegments(const std::string& path);
+
 
 #endif
 

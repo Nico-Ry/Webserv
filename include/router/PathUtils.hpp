@@ -28,7 +28,8 @@ std::string	joinPath(const std::string& a, const std::string& b);
 	Map a URL path to a filesystem path using location rules:
 		fs = rules.root + (urlPath without rules.uri prefix)
 */
-std::string	getResolvedPath(const std::string& urlPath, const LocationBlock& rules);
+std::string	getResolvedPath(const std::string& urlPath, const std::string& rules);
+std::string	getResolvedErrorPagePath(const std::string& errorPagePath, const std::string& serverRoot);
 
 
 bool	exists(const std::string& p);

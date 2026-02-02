@@ -1,4 +1,5 @@
 #include "configParser/ConfigParser.hpp"
+#include "http/RequestParser.hpp"
 
 //---------------------------------------------------------------------------//
 //							  PARSE SERVER BLOCK
@@ -51,6 +52,8 @@ void	ConfigParser::parseUpload(ServerBlock& s)
 
 	if (path.empty())
 		throw ParseException("Upload Directory cannot be empty", uploadToken.line);
+	if (hasUnsafeSegments(path))
+		throw ParseException("Upload Directory contains forbidden characters", uploadToken);
 
 	if (path[0] == '/')
 	{
@@ -62,6 +65,7 @@ void	ConfigParser::parseUpload(ServerBlock& s)
 			<< ORANGE << path << RES << std::endl;
 		std::cerr << ss.str();
 	}
+
 
 	s.uploadDir = path;
 	expect(TOKEN_SEMICOLON, "Expected ';'");
@@ -150,6 +154,8 @@ void	ConfigParser::parseErrorPages(ServerBlock& s)
 			if (isDirective(peek().value))
 				expect(TOKEN_SEMICOLON, "Expected ';'"); // missing semicolon
 
+			if (hasUnsafeSegments(peek().value))
+				throw ParseException("Error File path contains forbidden characters", peek());
 			err_pages.push_back(consume().value);
 		}
 	}
@@ -176,6 +182,10 @@ void	ConfigParser::parseIndex(ServerBlock& s)
 		if (check(TOKEN_WORD)) {
 			if (isDirective(peek().value))
 				expect(TOKEN_SEMICOLON, "Expected ';'");
+
+			if (hasUnsafeSegments(peek().value))
+				throw ParseException("Index File path contains forbidden characters", peek());
+
 			s.index.push_back(consume().value);
 			}
 	}
@@ -219,6 +229,9 @@ void	ConfigParser::parseRoot(ServerBlock& s)
 
 	if (root.empty())
 		throw ParseException("root cannot be empty", rootToken.line);
+
+	if (hasUnsafeSegments(root))
+		throw ParseException("Root path contains forbidden characters", rootToken);
 
 	if (root[0] == '/') {
 		std::stringstream	ss;
