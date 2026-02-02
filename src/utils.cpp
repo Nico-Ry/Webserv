@@ -7,12 +7,12 @@
 
 void		printNonSuccess(const HttpResponse& resp) {
 	if (resp.statusCode >= 400) {
-	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
 				<< BOLD_RED << resp.statusCode << RES << "] ["
 				<< BOLD_RED << resp.reason << RES << "]" << std::endl;
 	}
 	else {
-	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
 				<< BOLD_BLUE << resp.statusCode << RES << "] ["
 				<< BOLD_BLUE << resp.reason << RES << "]" << std::endl;
 	}
@@ -20,7 +20,7 @@ void		printNonSuccess(const HttpResponse& resp) {
 
 
 void		printSuccess(const HttpResponse& resp) {
-	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
 				<< BOLD_GREEN << resp.statusCode << RES << "] ["
 				<< BOLD_GREEN << resp.reason << RES << "]" << std::endl;
 }
@@ -34,9 +34,7 @@ void		logWarning(const std::string& msg) {
 
 void		logCustomErrorPage_Warning(const std::string& msg, const std::string& errorPagePath) {
 	std::cout	<< std::left << BOLD_ORANGE << std::setw(16) << "[Warning]"
-				<< RES << "  ~  "
-				<< ORANGE << msg
-				<< RES << " -> '"
+				<< RES << "  ~   " << msg << " -> '"
 				<< RED << errorPagePath
 				<< RES << "'" << std::endl;
 }
@@ -44,7 +42,7 @@ void		logCustomErrorPage_Warning(const std::string& msg, const std::string& erro
 
 void		logCustomErrorPage_Error(const std::string& msg, const std::string& errorPagePath) {
 	std::cout	<< std::left << BOLD_RED << std::setw(16) << "[Error]"
-				<< RES << "  ~  "
+				<< RES << "  ~   "
 				<< RED << msg
 				<< RES << " -> '"
 				<< RED << errorPagePath
