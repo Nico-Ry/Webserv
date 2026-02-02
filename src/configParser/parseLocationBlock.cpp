@@ -63,6 +63,8 @@ void	ConfigParser::parseCgiExtension(LocationBlock& l)
 		throw ParseException("CGI Extension cannot be empty", cgiExtToken.line);
 	if (extension[0] != '.')
 		throw ParseException("CGI Extension must start with a dot:", cgiExtToken.line);
+	if (extension.size() == 1)
+		throw ParseException("invalid CGI Extension", cgiExtToken);
 
 	l.cgiExtension = extension;
 	l.hasCgiExtension = true;

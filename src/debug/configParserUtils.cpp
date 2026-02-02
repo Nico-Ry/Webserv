@@ -70,6 +70,10 @@ void	printAllOutput(const Config& data)
 		std::cout << CYAN << "REDIRECT" << RES << std::endl;
 		printLocationRedirect(current);
 		std::cout << "\n-------------------------" << std::endl;
+
+		std::cout << CYAN << "CGI" << RES << std::endl;
+		printCgiInfo(current);
+		std::cout << "\n-------------------------" << std::endl;
 	}
 	std::cout << BOLD_GREEN << "PARSING SUCCESS"
 		<< RES << "\n-------------------------" << std::endl;
@@ -368,5 +372,25 @@ void	printLocationRedirect(const ServerBlock& data)
 		std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri << RES << " -> "
 			<< PURPLE << l.redirectCode << " "
 			<< GREEN << l.redirectTarget << RES << std::endl;
+	}
+}
+
+void	printCgiInfo(const ServerBlock& s)
+{
+
+	for (size_t i=0; i < s.locations.size(); ++i)
+	{
+		const LocationBlock&	l = s.locations[i];
+
+		if (!l.hasCgiBin)
+		{
+			std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri
+				<< RES << " -> " << RED << "NO cgi\n" << RES;
+			continue;
+		}
+
+		std::cout << BOLD << "[Location] " << RES << YELLOW << l.uri << RES << " -> "
+			<< PURPLE << l.cgiBin << " "
+			<< GREEN << l.cgiExtension << RES << std::endl;
 	}
 }

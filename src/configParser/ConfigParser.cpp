@@ -56,7 +56,7 @@ void	ConfigParser::parse(Config& data)
 		data.servers.push_back(parseServerBlock());
 	}
 	//[DEBUG] output to see all parsed/stored values
-	// printAllOutput(data);
+	printAllOutput(data);
 }
 
 

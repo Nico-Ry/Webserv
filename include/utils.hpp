@@ -41,6 +41,7 @@ void	printLocationMaxSize(const ServerBlock& s);
 void	printLocationMethods(const ServerBlock& data);
 void	printLocationRedirect(const ServerBlock& data);
 void	printLocationUpload(const ServerBlock& data);
+void	printCgiInfo(const ServerBlock& s);
 
 
 //---------------------------------------------------------------------------//
