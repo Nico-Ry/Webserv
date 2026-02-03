@@ -74,7 +74,7 @@ void	ConfigParser::parse(Config& data)
  */
 void	ConfigParser::updateUnit(std::string& unit, const std::string& currentToken)
 {
-	if (currentToken == "K" || currentToken == "M" || currentToken == "G")
+	if (currentToken == "B" || currentToken == "K" || currentToken == "M" || currentToken == "G")
 		unit = consume().value;
 }
 
@@ -110,7 +110,7 @@ void	ConfigParser::getSizeAndUnit(const Token& sizeToken, long& num, std::string
 	// check for invalid unit specifier
 	if (unit.size() > 1)
 		throw ParseException("max_size invalid unit", sizeToken.line);
-	if (unit != "K" && unit != "M" && unit != "G")
+	if (unit != "B" && unit != "K" && unit != "M" && unit != "G")
 		throw ParseException("max_size invalid unit", sizeToken.line);
 }
 

@@ -50,6 +50,7 @@ void Connection::set_nonblocking()
 	}
 }
 #include "utils.hpp"
+#include "http/ResponseBuilder.hpp"
 /**
  * @brief Lit toutes les donnees disponibles dans recv_buffer
  * @return >0 bytes lus, 0 si connexion fermee, -1 si erreur
@@ -68,10 +69,15 @@ ssize_t Connection::read_available()
 	if (n < 0)
 		return -1; // erreur - fermer la connexion
 
+	std::cout << BOLD_GOLD << totalBytesReceived << RES << std::endl;
+
 	recv_buffer.append(buffer, n);
 	totalBytesReceived += recv_buffer.size();
-	if (totalBytesReceived > maxRequestSize)
+	if (totalBytesReceived > maxRequestSize) {
+		HttpResponse	resp(413, "Payload Too Large");
+		printNonSuccess(resp);
 		return -1; // error payload too large
+	}
 
 	return n;
 }

@@ -19,7 +19,7 @@ class Connection {
 //		PUBLIC ATTRIBUTES
 
 		int 				fd;
-		static const size_t	maxRequestSize = 5 * 1024 * 1024;
+		static const size_t	maxRequestSize = 5 * 1024;
 		size_t				totalBytesReceived;
 		std::string			recv_buffer;
 		std::string			send_buffer;

@@ -195,7 +195,9 @@ void	ConfigParser::parseMaxSize(LocationBlock& l)
 	expect(TOKEN_SEMICOLON, "Expected ';'");
 
 	size_t		maxSize = 0;
-	if (unit == "K")
+	if (unit == "B")
+		maxSize = static_cast<size_t>(num);
+	else if (unit == "K")
 		maxSize = static_cast<size_t>(num) * 1024UL;
 	else if (unit == "M")
 		maxSize = static_cast<size_t>(num) * 1024UL * 1024UL;
