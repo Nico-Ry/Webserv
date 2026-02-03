@@ -1,0 +1,121 @@
+.hero {
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+  margin-bottom: var(--spacing-xl);
+}
+
+.hero h1 {
+  font-size: 56px;
+  font-weight: 800;
+  margin-bottom: var(--spacing-sm);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+  font-size: 18px;
+  color: #666;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.card h2 {
+  font-size: 24px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.card p {
+  color: #666;
+  margin-bottom: var(--spacing-md);
+}
+
+.small {
+  font-size: 14px;
+  color: #666;
+}
+
+.code {
+  font-family: 'Courier New', monospace;
+  background: var(--color-gray);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: var(--spacing-sm);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.output {
+  background: #0b1220;
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: var(--spacing-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.output .meta {
+  font-size: 14px;
+  color: #cbd5e1;
+  margin-bottom: var(--spacing-sm);
+}
+
+.output pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--color-border);
+  background: var(--color-gray);
+}
+
+.btnrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.btn-get { background: #10b981; }
+.btn-post { background: #3b82f6; }
+.btn-delete { background: #ef4444; }
+.btn-gray { background: #6b7280; }
+
+.btn,
+button.btn {
+  cursor: pointer;
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  font-size: 16px;
+  min-height: 120px;
+  resize: vertical;
+}
+
+hr.sep {
+  border: none;
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--spacing-lg) 0;
+}

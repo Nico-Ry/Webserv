@@ -56,6 +56,9 @@ void	Tokeniser::tokenise(std::vector<Token>& tokens)
 		for (size_t col = 0; col < currentLine.length(); ++col)
 		{
 			char c = currentLine[col];
+			// Check if comment start
+			if (c == '#')
+				break; // ignore rest of line
 
 			// Check if special character
 			if (c == '{' || c == '}' || c == ';')

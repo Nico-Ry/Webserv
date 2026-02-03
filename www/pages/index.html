@@ -1,90 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Webserv - Home</title>
-	<link rel="stylesheet" href="/css/style.css">
-	<style>
-		.hero {
-			text-align: center;
-			padding: var(--spacing-xl) 0;
-			margin-bottom: var(--spacing-xl);
-		}
-		.hero h1 {
-			font-size: 64px;
-			font-weight: 700;
-			margin-bottom: var(--spacing-sm);
-			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-			-webkit-background-clip: text;
-			-webkit-text-fill-color: transparent;
-		}
-		.hero p {
-			font-size: 24px;
-			color: #666;
-		}
-		.cards {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-			gap: var(--spacing-md);
-			margin-top: var(--spacing-xl);
-		}
-		.card {
-			background: white;
-			border: 1px solid var(--color-border);
-			border-radius: 12px;
-			padding: var(--spacing-lg);
-			transition: all 0.3s;
-		}
-		.card:hover {
-			transform: translateY(-4px);
-			box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-		}
-		.card h2 {
-			font-size: 32px;
-			margin-bottom: var(--spacing-sm);
-		}
-		.card p {
-			color: #666;
-			margin-bottom: var(--spacing-md);
-		}
-	</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webserv - Feature Test Hub</title>
+
+  <link rel="icon" href="/assets/img/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/hub.css">
 </head>
+
 <body>
-	<nav class="navbar">
-		<div class="navbar-content">
-			<a href="/" class="navbar-brand">Webserv</a>
-			<ul class="navbar-links">
-				<li><a href="/">Home</a></li>
-				<li><a href="/test">Test</a></li>
-				<li><a href="/upload">Upload</a></li>
-			</ul>
-		</div>
-	</nav>
-
-	<div class="container">
-		<div class="hero">
-			<h1>Webserv</h1>
-			<p>High-Performance C++98 HTTP Server</p>
-		</div>
-
-		<div class="cards">
-			<div class="card">
-				<h2>Test Methods</h2>
-				<p>Test HTTP methods (GET, POST, DELETE) with interactive buttons</p>
-				<a href="/test" class="btn">Go to Test</a>
-			</div>
-			<div class="card">
-				<h2>Upload Files</h2>
-				<p>Test file uploads with POST requests</p>
-				<a href="/upload" class="btn">Go to Upload</a>
-			</div>
-			<div class="card">
-				<h2>Documentation</h2>
-				<p>Network layer fully integrated with HTTP parser</p>
-				<a href="/test" class="btn">View Status</a>
-			</div>
-		</div>
+  <nav class="navbar">
+	<div class="navbar-content">
+	  <a href="/" class="navbar-brand">Webserv</a>
+	  <ul class="navbar-links">
+		<li><a href="/">Hub</a></li>
+		<li><a href="/test">Test Page</a></li>
+		<li><a href="/pages/upload.html">Upload Page</a></li>
+		<li><a href="/tests/autoindex/">Autoindex</a></li>
+	  </ul>
 	</div>
+  </nav>
+
+  <div class="container">
+	<div class="hero">
+	  <h1>Feature Test Hub</h1>
+	  <p>
+		One page to validate <span class="badge">GET</span>, <span class="badge">POST</span>, <span class="badge">DELETE</span>,
+		autoindex, redirects, and error handling.
+	  </p>
+	  <p class="small" style="margin-top: var(--spacing-sm);">
+		Tip: open DevTools → Network to compare headers with NGINX.
+	  </p>
+	</div>
+
+	<div class="grid">
+	  <div class="card">
+		<h2>1) Static GET</h2>
+		<p>These links should return real static files from disk.</p>
+		<div class="btnrow">
+		  <a class="btn btn-get" href="/test">Open /test</a>
+		  <a class="btn btn-get" href="/assets/css/style.css">GET /assets/css/style.css</a>
+		  <a class="btn btn-get" href="/assets/favicon.ico">GET /assets/favicon.ico</a>
+		  <a class="btn btn-get" href="/tests/static/hello.txt">GET /tests/static/hello.txt</a>
+		</div>
+		<hr class="sep">
+		<p class="small">Expected: 200 OK + correct Content-Type + correct Content-Length.</p>
+	  </div>
+
+	  <div class="card">
+		<h2>2) Autoindex</h2>
+		<p>Autoindex should be enabled for <span class="badge">/tests/autoindex/</span>.</p>
+		<div class="btnrow">
+		  <a class="btn btn-gray" href="/tests/autoindex/">Open /tests/autoindex/</a>
+		  <a class="btn btn-gray" href="/tests/autoindex/folder/">Open nested folder</a>
+		</div>
+		<hr class="sep">
+		<p class="small">
+		  Expected: an HTML listing with files/subfolders (not 403).
+		  If you add permtest under <span class="badge">/tests/permtest/</span>, link it here too.
+		</p>
+	  </div>
+
+	  <div class="card">
+		<h2>3) Redirect</h2>
+		<p>
+		  This route is configured to return <span class="badge">301</span>.
+		  Your server should set the <span class="badge">Location</span> header.
+		</p>
+		<div class="btnrow">
+		  <a class="btn btn-gray" href="/search">Open /search</a>
+		</div>
+		<hr class="sep">
+		<p class="small">Expected: 301 response, then the browser follows to the Location.</p>
+	  </div>
+
+	  <div class="card">
+		<h2>4) Errors (404, 405, size limit)</h2>
+		<p>These send requests via fetch and show the response below.</p>
+		<div class="btnrow">
+		  <button class="btn btn-gray" onclick="run('GET','/does-not-exist')">GET 404</button>
+		  <button class="btn btn-post" onclick="run('POST','/test','x')">POST /test → 405</button>
+		  <button class="btn btn-post" onclick="runBigNoSize()">POST /no_size → 413</button>
+		</div>
+		<hr class="sep">
+		<p class="small">Expected: correct status codes + your custom error pages (if configured).</p>
+	  </div>
+
+	  <div class="card">
+		<h2>5) POST</h2>
+		<p>
+		  Use the upload page to test raw-body uploads to <span class="badge">/upload/&lt;filename&gt;</span>.
+		  Below: text POST test (works with your current handlePost).
+		</p>
+
+		<div class="btnrow">
+		  <a class="btn btn-post" href="/pages/upload.html">Open upload page</a>
+		</div>
+
+		<hr class="sep">
+
+		<label class="small"><strong>Text body (text/plain)</strong></label>
+		<textarea id="postText">name=42webserver&message=Hello There from Post Form.</textarea>
+
+		<div class="btnrow" style="margin-top: var(--spacing-sm);">
+		  <button class="btn btn-post"
+			onclick="run('POST','/upload', document.getElementById('postText').value, {'Content-Type':'text/plain'})">
+			POST text → /upload
+		  </button>
+		</div>
+
+		<p class="small" style="margin-top: var(--spacing-sm);">
+		  Expected: 200/201 + server response; file should appear in <span class="badge">www/upload/</span>.
+		</p>
+	  </div>
+
+	  <div class="card">
+		<h2>6) DELETE</h2>
+		<p>
+		  This will try to delete <span class="badge">/upload/to-delete.txt</span>.
+		  If it does not exist, create it first.
+		</p>
+		<div class="btnrow">
+		  <button class="btn btn-post" onclick="createDeleteTarget()">Create /upload/to-delete.txt</button>
+		  <button class="btn btn-delete" onclick="run('DELETE','/upload/to-delete.txt')">DELETE /upload/to-delete.txt</button>
+		  <a class="btn btn-get" href="/upload/to-delete.txt">GET target file</a>
+		</div>
+		<hr class="sep">
+		<p class="small">Expected: 201/200 on create, then 200/204 for delete, then GET should return 404.</p>
+	  </div>
+	</div>
+
+	<hr class="sep">
+
+	<div class="card">
+	  <h2>Live response viewer</h2>
+	  <p class="small">Shows status + headers + body returned by your server.</p>
+	  <div id="out" class="output">
+		<div class="meta">No request yet.</div>
+		<pre></pre>
+	  </div>
+
+	  <hr class="sep">
+
+	  <p class="small"><strong>Equivalent curl commands:</strong></p>
+	  <div class="code">curl -i http://127.0.0.1:8080/tests/autoindex/
+curl -i http://127.0.0.1:8080/tests/static/hello.txt
+curl -i -X POST http://127.0.0.1:8080/test -d 'x'
+curl -i -X DELETE http://127.0.0.1:8080/upload/to-delete.txt</div>
+	</div>
+  </div>
+
+  <script src="/assets/js/hub.js"></script>
 </body>
 </html>
