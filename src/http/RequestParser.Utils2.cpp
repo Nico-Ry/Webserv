@@ -114,7 +114,7 @@ static void	collapseDoubleSlashes(std::string& path)
 	Reject unsafe path segments such as "." or "..".
 	This prevents directory traversal and avoids ambiguous canonicalization.
 */
-static bool	hasUnsafeSegments(const std::string& path)
+bool	hasUnsafeSegments(const std::string& path)
 {
 	size_t i = 0;
 
