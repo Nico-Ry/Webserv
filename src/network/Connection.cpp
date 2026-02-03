@@ -10,7 +10,13 @@ Connection::ConnectionException::ConnectionException(const std::string& message)
 {}
 // Constructeur: met automatiquement le fd en mode non-bloquant
 Connection::Connection(int fd)
-	: fd(fd), recv_buffer(), send_buffer(), bytes_sent(0), last_activity(time(NULL)), should_close(false)
+	:	fd(fd),
+		totalBytesReceived(0),
+		recv_buffer(),
+		send_buffer(),
+		bytes_sent(0),
+		last_activity(time(NULL)),
+		should_close(false)
 {
 	set_nonblocking();
 }
@@ -43,14 +49,15 @@ void Connection::set_nonblocking()
 		throw ConnectionException("fcntl(F_SETFL, O_NONBLOCK) failed: " + std::string(strerror(errno)));
 	}
 }
-
+#include "utils.hpp"
 /**
  * @brief Lit toutes les donnees disponibles dans recv_buffer
  * @return >0 bytes lus, 0 si connexion fermee, -1 si erreur
  */
 ssize_t Connection::read_available()
 {
-	char buffer[4096];
+	size_t	bufferSize = 4096;
+	char	buffer[bufferSize];
 
 	// Un seul appel recv() par evenement POLLIN
 	// On ne verifie JAMAIS errno apres recv() (interdit par le sujet)
@@ -59,6 +66,7 @@ ssize_t Connection::read_available()
 	if (n > 0)
 	{
 		recv_buffer.append(buffer, n);
+		totalBytesReceived += recv_buffer.size();
 		return n;
 	}
 	else if (n == 0)
