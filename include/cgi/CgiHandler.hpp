@@ -4,6 +4,7 @@
 #include "../http/Request.hpp"
 #include "../http/HttpResponse.hpp"
 #include "../configParser/LocationBlock.hpp"
+#include "CgiProcess.hpp"
 #include <string>
 #include <vector>
 #include <map>
@@ -24,13 +25,31 @@
 class CgiHandler {
 public:
 	/**
-	 * @brief Execute a CGI script and return the HTTP response
+	 * @brief Start a CGI script asynchronously (non-blocking)
+	 *
+	 * Forks the process and returns immediately. The caller must:
+	 * - Register pipes in poll()
+	 * - Handle POLLOUT on pipe_in to write body
+	 * - Handle POLLIN on pipe_out to read output
+	 * - Call waitpid() with WNOHANG periodically
 	 *
 	 * @param req The HTTP request
-	 * @param scriptPath Full path to the CGI script (e.g., "./cgi-bin/script.py")
-	 * @param interpreterPath Path to interpreter (e.g., "/usr/bin/python3"), empty for auto-detect
-	 * @param timeout Maximum execution time in seconds (default: 30)
-	 * @return HttpResponse The response from the CGI script
+	 * @param scriptPath Full path to the CGI script
+	 * @param client_fd The client socket waiting for response
+	 * @param interpreterPath Path to interpreter (empty for auto-detect)
+	 * @param timeout Maximum execution time in seconds
+	 * @return CgiProcess* Process info, or NULL on immediate failure
+	 */
+	static CgiProcess* startCgi(const HttpRequest& req,
+								const std::string& scriptPath,
+								int client_fd,
+								const std::string& interpreterPath = "",
+								int timeout = 30);
+
+	/**
+	 * @brief Execute a CGI script and return the HTTP response (BLOCKING - deprecated)
+	 *
+	 * @deprecated Use startCgi() for non-blocking execution
 	 */
 	static HttpResponse execute(const HttpRequest& req,
 							   const std::string& scriptPath,

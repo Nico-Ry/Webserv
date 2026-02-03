@@ -1,13 +1,17 @@
 #include "network/Server.hpp"
 #include "http/Status.hpp"
 #include "router/Router.hpp"
-// #include "../../include/cgi/CgiHandler.hpp"
+#include "cgi/CgiHandler.hpp"
+#include "cgi/CgiParser.hpp"
 #include "colours.hpp"
 #include "utils.hpp"
 #include <iostream>
 #include <cstring>
 #include <sstream>
 #include <ctime>
+#include <sys/wait.h>
+#include <signal.h>
+#include <unistd.h>
 
 // Timeout pour les connexions clients inactives (en secondes)
 static const int CLIENT_TIMEOUT_SECONDS = 30;
@@ -76,6 +80,26 @@ Server::~Server()
 {
 	std::cout << BOLD_ORANGE << "=== Shutting down server ===" << RES << std::endl;
 
+	// Nettoyer tous les CGI en cours
+	for (std::map<int, CgiProcess*>::iterator it = cgi_by_pipe_out.begin();
+		 it != cgi_by_pipe_out.end(); ++it)
+	{
+		CgiProcess* cgi = it->second;
+		if (cgi->pipe_in >= 0)
+			close(cgi->pipe_in);
+		if (cgi->pipe_out >= 0)
+			close(cgi->pipe_out);
+		if (cgi->pid > 0)
+		{
+			kill(cgi->pid, SIGKILL);
+			waitpid(cgi->pid, NULL, 0);
+		}
+		delete cgi;
+	}
+	cgi_by_pipe_in.clear();
+	cgi_by_pipe_out.clear();
+	cgi_by_client.clear();
+
 	// Fermer toutes les connexions clients
 	for (std::map<int, Connection*>::iterator it = clients.begin();
 		 it != clients.end(); ++it)
@@ -120,17 +144,16 @@ void Server::run()
 
 	while (running)
 	{
-		// Attendre des evenements sur les fds surveilles (timeout 5s pour vérifier les timeouts clients)
+		// Attendre des evenements sur les fds surveilles (timeout 5s pour vérifier les timeouts)
 		std::vector<int> ready_fds = multiplexer.wait(5000);
 
-		// Vérifier les connexions inactives (même si pas d'événements)
+		// Vérifier les connexions inactives et les CGI timeouts
 		checkClientTimeouts();
+		checkCgiTimeouts();
 
 		if (ready_fds.empty()) {
 			continue;
 		}
-
-		// std::cout << "poll() returned " << ready_fds.size() << " ready fd(s)" << std::endl;
 
 		// Traiter chaque fd pret
 		for (size_t i = 0; i < ready_fds.size(); i++)
@@ -140,13 +163,40 @@ void Server::run()
 			// Verifier si c'est un server socket (nouvelle connexion)
 			if (isServerSocket(fd))
 			{
-				// Nouvelle connexion entrante sur ce server socket
 				acceptNewClient(fd);
 			}
-			else
+			// Verifier si c'est un pipe CGI (stdin pour ecriture)
+			else if (cgi_by_pipe_in.find(fd) != cgi_by_pipe_in.end())
 			{
-				// Evenement sur un client existant
 				short revents = multiplexer.get_revents(fd);
+				if (revents & POLLOUT)
+				{
+					handleCgiWrite(fd);
+				}
+			}
+			// Verifier si c'est un pipe CGI (stdout pour lecture)
+			else if (cgi_by_pipe_out.find(fd) != cgi_by_pipe_out.end())
+			{
+				short revents = multiplexer.get_revents(fd);
+				if (revents & (POLLIN | POLLHUP))
+				{
+					handleCgiRead(fd);
+				}
+			}
+			// Sinon c'est un client socket
+			else if (clients.find(fd) != clients.end())
+			{
+				short revents = multiplexer.get_revents(fd);
+
+				// Verifier d'abord les erreurs poll (connexion fermee, erreur socket)
+				if (revents & (POLLERR | POLLNVAL))
+				{
+					removeClient(fd);
+					continue;
+				}
+
+				// POLLHUP = client a ferme la connexion, mais il peut rester des donnees a lire
+				// On essaie de lire d'abord si POLLIN est aussi present
 				bool client_disconnected = false;
 
 				if (revents & POLLIN)
@@ -158,6 +208,13 @@ void Server::run()
 					{
 						client_disconnected = true;
 					}
+				}
+
+				// Si POLLHUP sans POLLIN, fermer la connexion
+				if (!client_disconnected && (revents & POLLHUP) && !(revents & POLLIN))
+				{
+					removeClient(fd);
+					continue;
 				}
 
 				// IMPORTANT: ne traiter POLLOUT que si le client n'a pas ete deconnecte
@@ -239,9 +296,9 @@ void Server::handleClientRead(int fd)
 		removeClient(fd);
 	}
 	else
-{
-		// Erreur de lecture
-		std::cout << "  [fd=" << fd << "] Error reading" << std::endl;
+	{
+		// Erreur de lecture - fermer la connexion silencieusement
+		// (normal sous haute charge quand le client ferme la connexion)
 		removeClient(fd);
 	}
 }
@@ -261,14 +318,21 @@ void Server::handleClientWrite(int fd)
 		}
 		else if (sent < 0)
 		{
-			std::cout << "  [fd=" << fd << "] Error writing" << std::endl;
+			// Erreur d'ecriture - fermer silencieusement
 			removeClient(fd);
 			return ;
 		}
 
-		// Si tout a ete envoye, desactiver POLLOUT
+		// Si tout a ete envoye
 		if (!conn->has_pending_data())
 		{
+			// Fermer si Connection: close etait demande
+			if (conn->should_close)
+			{
+				removeClient(fd);
+				return;
+			}
+			// Sinon garder la connexion (keep-alive)
 			multiplexer.modify_fd(fd, POLLIN);
 		}
 	}
@@ -285,6 +349,14 @@ void Server::removeClient(int fd)
 
 	if (it != clients.end())
 	{
+		// Cleanup any CGI running for this client
+		std::map<int, CgiProcess*>::iterator cgi_it = cgi_by_client.find(fd);
+		if (cgi_it != cgi_by_client.end())
+		{
+			std::cout << "[CGI] Client fd=" << fd << " disconnecting, cleaning up CGI" << std::endl;
+			cleanupCgi(cgi_it->second);
+		}
+
 		multiplexer.remove_fd(fd);
 		delete it->second;
 		clients.erase(it);
@@ -299,9 +371,6 @@ void Server::removeClient(int fd)
 
 		// Supprimer le mapping client -> server
 		client_to_server.erase(fd);
-
-		// std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "live clients: " << clients.size() << std::endl;
-		// std::cout << "  (remaining clients: " << clients.size() << ")" << std::endl;
 	}
 }
 
@@ -372,25 +441,68 @@ void Server::processRequest(Connection* conn, int fd)
 	// Verifier si la requete est complete
 	else if (parser->isDone())
 	{
-
 		// Traiter la requete HTTP valide
 		const HttpRequest& req = parser->getRequest();
-
-		// printHttpRequest() is already called in RequestParser.Core1.cpp feed()
 
 		// Generer la reponse HTTP avec le bon ServerBlock
 		const ServerBlock* serverBlock = client_to_server[fd];
 		Router	requestHandler(*config, serverBlock);
 		HttpResponse resp = requestHandler.buildResponse(req);
-		// HttpResponse resp = this->handleHttpRequest(req); // Lancement depuis HTML Server.cpp
 
-		// Determiner si on doit fermer la connexion (keep-alive)
-		bool closeConnection = parser->shouldCloseConnection();
-		conn->send_buffer = ResponseBuilder::build(resp, closeConnection);//TODO: NEED TO ADAPT BEHAVIOUR FOR DIFFERNT STATUS CODES
+		// Check if this is a CGI request that needs async execution
+		if (resp.isCgiPending)
+		{
+			// Verify client doesn't already have a CGI running
+			if (cgi_by_client.find(fd) != cgi_by_client.end())
+			{
+				std::cerr << "[CGI] Client fd=" << fd << " already has CGI running" << std::endl;
+				HttpResponse errResp(503, "Service Unavailable");
+				errResp.body = "CGI already running for this client";
+				conn->send_buffer = ResponseBuilder::build(errResp, true);
+			}
+			else
+			{
+				// Start CGI asynchronously
+				CgiProcess* cgi = CgiHandler::startCgi(req, resp.cgiScriptPath, fd);
+				if (cgi == NULL)
+				{
+					// CGI failed to start
+					HttpResponse errResp(500, "Internal Server Error");
+					errResp.body = "Failed to start CGI";
+					conn->send_buffer = ResponseBuilder::build(errResp, true);
+				}
+				else
+				{
+					// Register CGI pipes in poll()
+					if (cgi->pipe_in >= 0)
+					{
+						multiplexer.add_fd(cgi->pipe_in, POLLOUT);
+						cgi_by_pipe_in[cgi->pipe_in] = cgi;
+					}
+					multiplexer.add_fd(cgi->pipe_out, POLLIN);
+					cgi_by_pipe_out[cgi->pipe_out] = cgi;
+					cgi_by_client[fd] = cgi;
 
-		std::cout	<< std::left << BOLD_BLACK << std::setw(16) << "[Server]" << RES << "  ~  (Connection: "
-					<< (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
+					// Don't send response yet - wait for CGI to complete
+					// Reset parser for next request
+					if (parser->hasBufferedData())
+						parser->resetKeepBuffer();
+					else
+						parser->reset();
+					return;
+				}
+			}
+		}
+		else
+		{
+			// Normal response (not CGI)
+			bool closeConnection = parser->shouldCloseConnection();
+			conn->send_buffer = ResponseBuilder::build(resp, closeConnection);
+			conn->should_close = closeConnection;  // Fermer apres envoi si demande
 
+			std::cout	<< std::left << BOLD_BLACK << std::setw(16) << "[Server]" << RES << "  ~  (Connection: "
+						<< (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
+		}
 
 		// Reset parser pour la prochaine requete (keep-alive)
 		if (parser->hasBufferedData())
@@ -498,6 +610,10 @@ void Server::checkClientTimeouts() {
 		int fd = it->first;
 		Connection* conn = it->second;
 
+		// Ne pas timeout les clients qui ont un CGI en cours
+		if (cgi_by_client.find(fd) != cgi_by_client.end())
+			continue;
+
 		if (now - conn->last_activity > CLIENT_TIMEOUT_SECONDS) {
 			std::cout << BOLD_ORANGE << "[TIMEOUT] " << RES
 				<< "Client fd=" << fd << " inactive for "
@@ -510,4 +626,217 @@ void Server::checkClientTimeouts() {
 	for (size_t i = 0; i < to_remove.size(); ++i) {
 		removeClient(to_remove[i]);
 	}
+}
+
+// ============================================================================
+// CGI NON-BLOQUANT
+// ============================================================================
+
+bool Server::isCgiPipe(int fd) const
+{
+	return (cgi_by_pipe_in.find(fd) != cgi_by_pipe_in.end() ||
+			cgi_by_pipe_out.find(fd) != cgi_by_pipe_out.end());
+}
+
+void Server::handleCgiWrite(int pipe_fd)
+{
+	std::map<int, CgiProcess*>::iterator it = cgi_by_pipe_in.find(pipe_fd);
+	if (it == cgi_by_pipe_in.end())
+		return;
+
+	CgiProcess* cgi = it->second;
+
+	// Write body to CGI stdin (one write per poll event)
+	if (cgi->hasBodyToWrite())
+	{
+		const char* data = cgi->body.c_str() + cgi->body_written;
+		size_t remaining = cgi->body.size() - cgi->body_written;
+
+		ssize_t n = write(pipe_fd, data, remaining);
+		if (n > 0)
+		{
+			cgi->body_written += n;
+			std::cout << "[CGI] Wrote " << n << " bytes to CGI stdin (total: "
+					  << cgi->body_written << "/" << cgi->body.size() << ")" << std::endl;
+		}
+		else if (n < 0)
+		{
+			// Write error
+			std::cerr << "[CGI] Error writing to CGI stdin" << std::endl;
+			cgi->state = CgiProcess::CGI_ERROR;
+			finishCgi(cgi);
+			return;
+		}
+	}
+
+	// If all body written, close pipe_in and switch to reading
+	if (!cgi->hasBodyToWrite())
+	{
+		multiplexer.remove_fd(pipe_fd);
+		close(pipe_fd);
+		cgi_by_pipe_in.erase(pipe_fd);
+		cgi->pipe_in = -1;
+		cgi->state = CgiProcess::CGI_READING_OUTPUT;
+		std::cout << "[CGI] Finished writing body, now reading output" << std::endl;
+	}
+}
+
+void Server::handleCgiRead(int pipe_fd)
+{
+	std::map<int, CgiProcess*>::iterator it = cgi_by_pipe_out.find(pipe_fd);
+	if (it == cgi_by_pipe_out.end())
+		return;
+
+	CgiProcess* cgi = it->second;
+	char buffer[4096];
+
+	// Read from CGI stdout (one read per poll event)
+	ssize_t n = read(pipe_fd, buffer, sizeof(buffer));
+
+	if (n > 0)
+	{
+		cgi->output.append(buffer, n);
+		std::cout << "[CGI] Read " << n << " bytes from CGI (total: "
+				  << cgi->output.size() << " bytes)" << std::endl;
+	}
+	else if (n == 0)
+	{
+		// EOF - CGI finished output
+		std::cout << "[CGI] CGI output complete (" << cgi->output.size() << " bytes)" << std::endl;
+		cgi->state = CgiProcess::CGI_DONE;
+		finishCgi(cgi);
+	}
+	else
+	{
+		// Read error
+		std::cerr << "[CGI] Error reading from CGI stdout" << std::endl;
+		cgi->state = CgiProcess::CGI_ERROR;
+		finishCgi(cgi);
+	}
+}
+
+void Server::checkCgiTimeouts()
+{
+	std::vector<CgiProcess*> to_cleanup;
+
+	// Check all active CGI processes
+	for (std::map<int, CgiProcess*>::iterator it = cgi_by_pipe_out.begin();
+		 it != cgi_by_pipe_out.end(); ++it)
+	{
+		CgiProcess* cgi = it->second;
+		if (cgi->isTimedOut())
+		{
+			std::cout << BOLD_ORANGE << "[CGI TIMEOUT] " << RES
+					  << "CGI pid=" << cgi->pid << " timed out after "
+					  << cgi->timeout << "s" << std::endl;
+			cgi->state = CgiProcess::CGI_ERROR;
+			to_cleanup.push_back(cgi);
+		}
+	}
+
+	// Cleanup timed out CGIs
+	for (size_t i = 0; i < to_cleanup.size(); ++i)
+	{
+		finishCgi(to_cleanup[i]);
+	}
+}
+
+void Server::finishCgi(CgiProcess* cgi)
+{
+	int client_fd = cgi->client_fd;
+
+	// Check if client still exists
+	if (clients.find(client_fd) == clients.end())
+	{
+		std::cerr << "[CGI] Client fd=" << client_fd << " disconnected, discarding CGI output" << std::endl;
+		cleanupCgi(cgi);
+		return;
+	}
+
+	Connection* conn = clients[client_fd];
+	HttpResponse resp(500, "Internal Server Error");
+
+	if (cgi->state == CgiProcess::CGI_DONE)
+	{
+		// Wait for child process with WNOHANG (should be done already)
+		int status;
+		pid_t result = waitpid(cgi->pid, &status, WNOHANG);
+
+		if (result == 0)
+		{
+			// Process still running - wait a bit more
+			result = waitpid(cgi->pid, &status, 0);
+		}
+
+		if (result > 0 && WIFEXITED(status) && WEXITSTATUS(status) == 0)
+		{
+			// Parse CGI output
+			resp = CgiParser::parseCgiOutput(cgi->output);
+			std::cout << "[CGI] CGI completed successfully, status=" << resp.statusCode << std::endl;
+		}
+		else
+		{
+			resp = HttpResponse(502, "Bad Gateway");
+			resp.body = "CGI script failed to execute properly";
+			std::cerr << "[CGI] CGI process failed" << std::endl;
+		}
+	}
+	else if (cgi->state == CgiProcess::CGI_ERROR)
+	{
+		if (cgi->isTimedOut())
+		{
+			resp = HttpResponse(504, "Gateway Timeout");
+			resp.body = "CGI script timed out";
+		}
+		else
+		{
+			resp = HttpResponse(502, "Bad Gateway");
+			resp.body = "CGI script error";
+		}
+	}
+
+	// Send response to client
+	conn->send_buffer = ResponseBuilder::build(resp, false);
+	conn->update_activity();  // Reset timeout pour laisser le temps d'envoyer la reponse
+	multiplexer.modify_fd(client_fd, POLLIN | POLLOUT);
+
+	std::cout << std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
+			  << (resp.statusCode < 400 ? BOLD_GREEN : BOLD_RED) << resp.statusCode << RES << "] ["
+			  << (resp.statusCode < 400 ? BOLD_GREEN : BOLD_RED) << resp.reason << RES << "]" << std::endl;
+
+	// Cleanup CGI resources
+	cleanupCgi(cgi);
+}
+
+void Server::cleanupCgi(CgiProcess* cgi)
+{
+	// Remove from maps
+	if (cgi->pipe_in >= 0)
+	{
+		multiplexer.remove_fd(cgi->pipe_in);
+		cgi_by_pipe_in.erase(cgi->pipe_in);
+		close(cgi->pipe_in);
+	}
+	if (cgi->pipe_out >= 0)
+	{
+		multiplexer.remove_fd(cgi->pipe_out);
+		cgi_by_pipe_out.erase(cgi->pipe_out);
+		close(cgi->pipe_out);
+	}
+	cgi_by_client.erase(cgi->client_fd);
+
+	// Kill process if still running
+	if (cgi->pid > 0)
+	{
+		int status;
+		pid_t result = waitpid(cgi->pid, &status, WNOHANG);
+		if (result == 0)
+		{
+			// Process still running, kill it
+			kill(cgi->pid, SIGKILL);
+			waitpid(cgi->pid, &status, 0);
+		}
+	}
+
+	delete cgi;
 }

@@ -23,7 +23,9 @@ HttpResponse::HttpResponse(int code, const std::string& msg)
 	  headers(),
 	  body(""),
 	  isRedirect(false),
-	  redirectTarget("")
+	  redirectTarget(""),
+	  isCgiPending(false),
+	  cgiScriptPath("")
 {
 }
 
@@ -33,7 +35,9 @@ HttpResponse::HttpResponse(int code, const std::string& msg, const std::string& 
 	  headers(),
 	  body(body),
 	  isRedirect(false),
-	  redirectTarget("")
+	  redirectTarget(""),
+	  isCgiPending(false),
+	  cgiScriptPath("")
 {
 }
 
@@ -43,7 +47,9 @@ HttpResponse::HttpResponse(const std::string& redirection, int code, const std::
 	  headers(),
 	  body(""),
 	  isRedirect(true),
-	  redirectTarget(redirection)
+	  redirectTarget(redirection),
+	  isCgiPending(false),
+	  cgiScriptPath("")
 {
 	this->headers["Location"] = redirection;
 }
