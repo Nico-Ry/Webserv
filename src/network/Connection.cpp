@@ -8,18 +8,20 @@
 Connection::ConnectionException::ConnectionException(const std::string& message)
 	: std::runtime_error(message)
 {}
-
+// Constructeur: met automatiquement le fd en mode non-bloquant
 Connection::Connection(int fd)
 	: fd(fd), recv_buffer(), send_buffer(), bytes_sent(0), last_activity(time(NULL)), should_close(false)
 {
 	set_nonblocking();
 }
 
+// Met à jour le timestamp d'activité
 void Connection::update_activity()
 {
 	last_activity = time(NULL);
 }
 
+// Destructeur: ferme le fd
 Connection::~Connection()
 {
 	if (fd >= 0)
@@ -28,6 +30,7 @@ Connection::~Connection()
 	}
 }
 
+// Met le socket en mode non-bloquant
 void Connection::set_nonblocking()
 {
 	int flags = fcntl(fd, F_GETFL, 0);
@@ -40,7 +43,10 @@ void Connection::set_nonblocking()
 		throw ConnectionException("fcntl(F_SETFL, O_NONBLOCK) failed: " + std::string(strerror(errno)));
 	}
 }
-
+/**
+ * @brief Lit toutes les donnees disponibles dans recv_buffer
+ * @return >0 bytes lus, 0 si connexion fermee, -1 si erreur
+ */
 ssize_t Connection::read_available()
 {
 	char buffer[4096];
@@ -66,6 +72,11 @@ ssize_t Connection::read_available()
 	}
 }
 
+
+/**
+ * @brief Envoie les donnees de send_buffer
+ * @return >0 bytes envoyes, 0 si rien a envoyer, -1 si erreur
+ */
 ssize_t Connection::write_pending()
 {
 	if (send_buffer.empty() || bytes_sent >= send_buffer.length())
@@ -100,6 +111,7 @@ ssize_t Connection::write_pending()
 	}
 }
 
+// Verifie si tout le send_buffer a ete envoye
 bool Connection::has_pending_data() const
 {
 	return (!send_buffer.empty() && bytes_sent < send_buffer.length());
