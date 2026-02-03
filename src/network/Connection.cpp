@@ -63,22 +63,17 @@ ssize_t Connection::read_available()
 	// On ne verifie JAMAIS errno apres recv() (interdit par le sujet)
 	ssize_t n = recv(fd, buffer, sizeof(buffer), 0);
 
-	if (n > 0)
-	{
-		recv_buffer.append(buffer, n);
-		totalBytesReceived += recv_buffer.size();
-		return n;
-	}
-	else if (n == 0)
-	{
-		// Connexion fermee par le client
-		return 0;
-	}
-	else
-	{
-		// n < 0: erreur - fermer la connexion
-		return -1;
-	}
+	if (n == 0)
+		return 0; // connexion fermee par le client
+	if (n < 0)
+		return -1; // erreur - fermer la connexion
+
+	recv_buffer.append(buffer, n);
+	totalBytesReceived += recv_buffer.size();
+	if (totalBytesReceived > maxRequestSize)
+		return -1; // error payload too large
+
+	return n;
 }
 
 
