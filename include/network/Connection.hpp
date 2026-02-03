@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <ctime>
 
+#define MAX_BODY_SIZE
+
 class Connection {
 	public:
 //		CONSTRUCTORS & DESTRUCTOR
@@ -16,12 +18,14 @@ class Connection {
 
 //		PUBLIC ATTRIBUTES
 
-		int fd;
-		std::string recv_buffer;
-		std::string send_buffer;
-		size_t bytes_sent;
-		time_t last_activity;  // Timestamp de dernière activité (pour timeout)
-		bool should_close;     // Fermer la connexion apres envoi (Connection: close)
+		int 				fd;
+		static const size_t	maxRequestSize;
+		size_t				totalBytesReceived;
+		std::string			recv_buffer;
+		std::string			send_buffer;
+		size_t				bytes_sent;
+		time_t				last_activity;	// Timestamp de dernière activité (pour timeout)
+		bool				should_close;	// Fermer la connexion apres envoi (Connection: close)
 
 
 //		MEMBER FUCTIONS

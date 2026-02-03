@@ -43,6 +43,7 @@ void Connection::set_nonblocking()
 		throw ConnectionException("fcntl(F_SETFL, O_NONBLOCK) failed: " + std::string(strerror(errno)));
 	}
 }
+
 /**
  * @brief Lit toutes les donnees disponibles dans recv_buffer
  * @return >0 bytes lus, 0 si connexion fermee, -1 si erreur
