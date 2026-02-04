@@ -223,7 +223,7 @@ HttpResponse	Router::routing(const HttpRequest& req)
 	std::cout << "[DEBUG ROUTER] method=" << req.method
 			<< " path='" << req.path << "'" << std::endl;
 
-	std::cout << BOLD_BLUE << getResolvedPath(req.path, *rules);
+	std::cout << BOLD_BLUE << getResolvedPath(req.path, *rules) << std::endl;
 // TODO: a function that matches redirection code with
 //       the appropriate redirection message and stores
 //       the locationBlock pointer of the request so we
@@ -288,26 +288,26 @@ bool	Router::tryToServeCustomErrorPage(HttpResponse& r) {
 		const std::string	resolvedPath = joinPath(server->root, errorPagePath);
 		std::string	buffer;
 
-		std::cout << YELLOW << "Searching for: " << RES << resolvedPath << std::endl;
+		// std::cout << YELLOW << "Searching for: " << RES << resolvedPath << std::endl;
 		if (!exists(resolvedPath)) {
 			logCustomErrorPage_Warning("Custom error page not found", resolvedPath);
 			continue;
 		}
-		else
-			std::cout << GREEN << "Found custom error page: " << RES << resolvedPath << std::endl;
+		// else
+		// 	std::cout << GREEN << "Found custom error page: " << RES << resolvedPath << std::endl;
 		if (!isFile(resolvedPath)) {
 			logCustomErrorPage_Warning("Not a file", resolvedPath);
 			continue;
 		}
-		else
-			std::cout << GREEN << "Is a file: " << RES << resolvedPath << std::endl;
+		// else
+		// 	std::cout << GREEN << "Is a file: " << RES << resolvedPath << std::endl;
 
 		if (!readFileToString(resolvedPath, buffer))  {
 			logCustomErrorPage_Error("Failed to read file", resolvedPath);
 			continue;
 		}
-		else
-			std::cout << GREEN << "Read custom error page successfully: " << RES << resolvedPath << std::endl;
+		// else
+		// 	std::cout << GREEN << "Read custom error page successfully: " << RES << resolvedPath << std::endl;
 
 		r.body = buffer;
 		r.headers["Content-Type"] = Mime::fromPath(resolvedPath);

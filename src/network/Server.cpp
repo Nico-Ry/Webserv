@@ -551,8 +551,8 @@ void Server::processRequest(Connection* conn, int fd)
 			conn->send_buffer = ResponseBuilder::build(resp, closeConnection);
 			conn->should_close = closeConnection;  // Fermer apres envoi si demande
 
-			std::cout	<< std::left << BOLD_BLACK << std::setw(16) << "[Server]" << RES << "  ~  (Connection: "
-						<< (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
+			// std::cout	<< std::left << BOLD_BLACK << std::setw(16) << "[Server]" << RES << "  ~  (Connection: "
+			// 			<< (closeConnection ? "close" : "keep-alive") << ")" << std::endl;
 		}
 
 		// Reset parser pour la prochaine requete (keep-alive)
