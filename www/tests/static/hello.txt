@@ -1,0 +1,1 @@
+this is hello.txt in www/tests/static/hello.txt
