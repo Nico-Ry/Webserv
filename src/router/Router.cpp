@@ -1,7 +1,8 @@
-#include "router/Router.hpp"
-#include "utils.hpp"
-#include <sstream>
 #include <cstdlib>
+#include <sstream>
+#include "utils.hpp"
+#include "http/Mime.hpp"
+#include "router/Router.hpp"
 #include "router/PathUtils.hpp"
 #include "cgi/CgiHandler.hpp"
 
@@ -273,7 +274,6 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 
 	return (result);
 }
-#include "http/Mime.hpp"
 
 bool	Router::tryToServeCustomErrorPage(HttpResponse& r) {
 	std::map<int, StringVec>::const_iterator	it = rules->errorPages.find(r.statusCode);
@@ -288,20 +288,26 @@ bool	Router::tryToServeCustomErrorPage(HttpResponse& r) {
 		const std::string	resolvedPath = joinPath(server->root, errorPagePath);
 		std::string	buffer;
 
-
+		std::cout << YELLOW << "Searching for: " << RES << resolvedPath << std::endl;
 		if (!exists(resolvedPath)) {
 			logCustomErrorPage_Warning("Custom error page not found", resolvedPath);
 			continue;
 		}
+		else
+			std::cout << GREEN << "Found custom error page: " << RES << resolvedPath << std::endl;
 		if (!isFile(resolvedPath)) {
 			logCustomErrorPage_Warning("Not a file", resolvedPath);
 			continue;
 		}
+		else
+			std::cout << GREEN << "Is a file: " << RES << resolvedPath << std::endl;
 
 		if (!readFileToString(resolvedPath, buffer))  {
 			logCustomErrorPage_Error("Failed to read file", resolvedPath);
 			continue;
 		}
+		else
+			std::cout << GREEN << "Read custom error page successfully: " << RES << resolvedPath << std::endl;
 
 		r.body = buffer;
 		r.headers["Content-Type"] = Mime::fromPath(resolvedPath);
