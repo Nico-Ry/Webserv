@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <sstream>
+#include <unistd.h>
 #include "utils.hpp"
 #include "http/Mime.hpp"
 #include "router/Router.hpp"
@@ -208,6 +209,10 @@ HttpResponse	Router::routing(const HttpRequest& req)
 
 		// Build the filesystem path //location /cgi-bin { root .; cgi_extension .py; } /cgi-bin/form.py → ./cgi-bin/form.py
 		std::string scriptPath = getResolvedPath(req.path, *rules);
+
+		// Check if CGI script exists (return 404 if not found)
+		if (access(scriptPath.c_str(), F_OK) != 0)
+			return (HttpResponse(404, "Not Found"));
 
 		std::cout << YELLOW << "[DEBUG - CGI] " << RES
 				<< "CGI pending: " << BOLD_BLUE << scriptPath << RES << std::endl;
