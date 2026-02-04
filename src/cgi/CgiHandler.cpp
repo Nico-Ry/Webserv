@@ -14,28 +14,28 @@
 #include <sstream>
 #include <vector>
 
+// Helper: set fd to non-blocking mode
+// Note: subject only allows F_SETFL, O_NONBLOCK, FD_CLOEXEC (no F_GETFL)
+static bool setNonBlocking(int fd)
+{
+	return fcntl(fd, F_SETFL, O_NONBLOCK) >= 0;
+}
+
 // ============================================================================
 // PUBLIC METHODS
 // ============================================================================
 
-HttpResponse CgiHandler::execute(const HttpRequest& req,
-								  const std::string& scriptPath,
-								  const std::string& interpreterPath,
-								  int timeout)
+CgiProcess* CgiHandler::startCgi(const HttpRequest& req,
+								 const std::string& scriptPath,
+								 int client_fd,
+								 const std::string& interpreterPath,
+								 int timeout)
 {
-	// DEBUG: Print the script path being tested
-	std::cout << "[CGI DEBUG] Testing script path: " << scriptPath << std::endl;
-	std::cout << "[CGI DEBUG] access() result: " << access(scriptPath.c_str(), F_OK) << std::endl;
-
-	if (access(scriptPath.c_str(), F_OK) != 0)
-	{
-		std::cout << "[CGI DEBUG] errno: " << errno << " (" << strerror(errno) << ")" << std::endl;
-	}
-
 	// Verify script exists
 	if (access(scriptPath.c_str(), F_OK) != 0)
 	{
-		return (CgiUtils::generateErrorResponse(404, "CGI script not found: " + scriptPath));
+		std::cerr << "[CGI] Script not found: " << scriptPath << std::endl;
+		return NULL;
 	}
 
 	// Auto-detect interpreter if not provided
@@ -45,23 +45,33 @@ HttpResponse CgiHandler::execute(const HttpRequest& req,
 		interpreter = detectInterpreter(scriptPath);
 		if (interpreter.empty())
 		{
-			return (CgiUtils::generateErrorResponse(500, "Cannot determine interpreter for: " + scriptPath));
+			std::cerr << "[CGI] Cannot determine interpreter for: " << scriptPath << std::endl;
+			return NULL;
 		}
 	}
 
 	// Verify interpreter exists
 	if (access(interpreter.c_str(), X_OK) != 0)
 	{
-		return (CgiUtils::generateErrorResponse(500, "Interpreter not found or not executable: " + interpreter));
+		std::cerr << "[CGI] Interpreter not found: " << interpreter << std::endl;
+		return NULL;
 	}
 
 	// Create pipes: [0] = read, [1] = write
 	int pipe_in[2];   // For writing to CGI stdin
 	int pipe_out[2];  // For reading from CGI stdout
 
-	if (pipe(pipe_in) < 0 || pipe(pipe_out) < 0)
+	if (pipe(pipe_in) < 0)
 	{
-		return (CgiUtils::generateErrorResponse(500, "Failed to create pipes"));
+		std::cerr << "[CGI] Failed to create pipe_in" << std::endl;
+		return NULL;
+	}
+	if (pipe(pipe_out) < 0)
+	{
+		close(pipe_in[0]);
+		close(pipe_in[1]);
+		std::cerr << "[CGI] Failed to create pipe_out" << std::endl;
+		return NULL;
 	}
 
 	// Fork child process
@@ -74,7 +84,8 @@ HttpResponse CgiHandler::execute(const HttpRequest& req,
 		close(pipe_in[1]);
 		close(pipe_out[0]);
 		close(pipe_out[1]);
-		return (CgiUtils::generateErrorResponse(500, "Failed to fork process"));
+		std::cerr << "[CGI] Fork failed" << std::endl;
+		return NULL;
 	}
 
 	if (pid == 0)
@@ -94,12 +105,12 @@ HttpResponse CgiHandler::execute(const HttpRequest& req,
 		close(pipe_out[1]);
 
 		// Change to script directory for relative path file access (required by subject)
-		std::string scriptName = scriptPath;  // Default: use full path
+		std::string scriptName = scriptPath;
 		size_t lastSlash = scriptPath.rfind('/');
 		if (lastSlash != std::string::npos)
 		{
 			std::string scriptDir = scriptPath.substr(0, lastSlash);
-			scriptName = scriptPath.substr(lastSlash + 1);  // Just the filename
+			scriptName = scriptPath.substr(lastSlash + 1);
 			if (!scriptDir.empty())
 			{
 				chdir(scriptDir.c_str());
@@ -120,7 +131,7 @@ HttpResponse CgiHandler::execute(const HttpRequest& req,
 		// Build argv: [interpreter, script, NULL]
 		char* argv[3];
 		argv[0] = const_cast<char*>(interpreter.c_str());
-		argv[1] = const_cast<char*>(scriptName.c_str());  // Just filename after chdir
+		argv[1] = const_cast<char*>(scriptName.c_str());
 		argv[2] = NULL;
 
 		// Execute CGI script
@@ -128,104 +139,62 @@ HttpResponse CgiHandler::execute(const HttpRequest& req,
 
 		// If execve returns, it failed
 		std::cerr << "CGI Error: execve failed: " << strerror(errno) << std::endl;
-		exit(1);
+		_exit(1);
 	}
 
 	// ========================================================================
-	// PARENT PROCESS - Write request body and read response
+	// PARENT PROCESS - Return immediately (non-blocking)
 	// ========================================================================
 
 	// Close unused pipe ends
 	close(pipe_in[0]);   // Parent doesn't read from stdin pipe
 	close(pipe_out[1]);  // Parent doesn't write to stdout pipe
 
-	// Write request body to CGI stdin (for POST requests)
-	if (!req.body.empty())
+	// Set pipes to non-blocking mode
+	if (!setNonBlocking(pipe_in[1]) || !setNonBlocking(pipe_out[0]))
 	{
-		ssize_t written = write(pipe_in[1], req.body.c_str(), req.body.size());
-		if (written < 0) {
-			close(pipe_in[1]);
-			close(pipe_out[0]);
-			kill(pid, SIGKILL);
-			waitpid(pid, NULL, 0);
-			return (CgiUtils::generateErrorResponse(500, "Failed to write request body to CGI"));
-		}
-	}
-	close(pipe_in[1]);  // Close stdin pipe (signals EOF to CGI)
-
-	// Read CGI output from stdout
-	std::string	cgi_output;
-	char		buffer[4096];
-	ssize_t		bytes_read;
-
-	// Set timeout for read operations (using select with timeout)
-	fd_set			read_fds;
-	struct timeval	tv;
-	tv.tv_sec = timeout;
-	tv.tv_usec = 0;
-
-	while (true)
-	{
-		FD_ZERO(&read_fds);
-		FD_SET(pipe_out[0], &read_fds);
-
-		int select_ret = select(pipe_out[0] + 1, &read_fds, NULL, NULL, &tv);
-
-		if (select_ret < 0)
-		{
-			// Select error
-			close(pipe_out[0]);
-			kill(pid, SIGKILL);
-			waitpid(pid, NULL, 0);
-			return (CgiUtils::generateErrorResponse(500, "Error while reading CGI output"));
-		}
-
-		if (select_ret == 0)
-		{
-			// Timeout
-			close(pipe_out[0]);
-			kill(pid, SIGKILL);
-			waitpid(pid, NULL, 0);
-			return (CgiUtils::generateErrorResponse(504, "CGI script timeout"));
-		}
-
-		// Data available
-		bytes_read = read(pipe_out[0], buffer, sizeof(buffer) - 1);
-		if (bytes_read < 0)
-		{
-			close(pipe_out[0]);
-			kill(pid, SIGKILL);
-			waitpid(pid, NULL, 0);
-			return (CgiUtils::generateErrorResponse(500, "Error reading CGI output"));
-		}
-
-		if (bytes_read == 0) {
-			// EOF
-			break ;
-		}
-
-		buffer[bytes_read] = '\0';
-		cgi_output.append(buffer, bytes_read);
+		close(pipe_in[1]);
+		close(pipe_out[0]);
+		kill(pid, SIGKILL);
+		waitpid(pid, NULL, WNOHANG);  // Non-blocking reap
+		std::cerr << "[CGI] Failed to set pipes non-blocking" << std::endl;
+		return NULL;
 	}
 
-	close(pipe_out[0]);
+	// Create CgiProcess structure
+	CgiProcess* cgi = new CgiProcess();
+	cgi->pid = pid;
+	cgi->pipe_in = pipe_in[1];
+	cgi->pipe_out = pipe_out[0];
+	cgi->client_fd = client_fd;
+	cgi->body = req.body;
+	cgi->body_written = 0;
+	cgi->output = "";
+	cgi->start_time = time(NULL);
+	cgi->timeout = timeout;
 
-	// Wait for child process to finish
-	int status;
-	if (waitpid(pid, &status, 0) < 0)
+	// If no body to write, start in reading state and close pipe_in
+	if (cgi->body.empty())
 	{
-		return (CgiUtils::generateErrorResponse(500, "Error waiting for CGI process"));
+		close(cgi->pipe_in);
+		cgi->pipe_in = -1;
+		cgi->state = CgiProcess::CGI_READING_OUTPUT;
+	}
+	else
+	{
+		cgi->state = CgiProcess::CGI_WRITING_BODY;
 	}
 
-	// Check if child exited normally
-	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
-	{
-		return (CgiUtils::generateErrorResponse(502, "CGI script failed to execute"));
-	}
+	std::cout << "[CGI] Started async CGI: pid=" << pid
+			  << " client_fd=" << client_fd
+			  << " script=" << scriptPath << std::endl;
 
-	// Parse CGI output
-	return (CgiParser::parseCgiOutput(cgi_output));
+	return cgi;
 }
+
+// NOTE: CgiHandler::execute() was removed - it was a blocking implementation
+// that violated the subject requirement "server must remain non-blocking at all times"
+// and "only 1 poll() for all I/O". Use executeAsync() instead.
 
 bool CgiHandler::isCgiScript(const std::string& path)
 {

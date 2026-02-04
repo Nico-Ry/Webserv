@@ -36,6 +36,7 @@ public:
 	std::string send_buffer;
 	size_t bytes_sent;
 	time_t last_activity;  // Timestamp de dernière activité (pour timeout)
+	bool should_close;     // Fermer la connexion apres envoi (Connection: close)
 
 	// Met à jour le timestamp d'activité
 	void update_activity();

@@ -1,7 +1,7 @@
 #include "router/Router.hpp"
 #include "utils.hpp"
 #include <sstream>
-#include <stdlib.h>
+#include <cstdlib>
 #include "router/PathUtils.hpp"
 #include "cgi/CgiHandler.hpp"
 
@@ -206,16 +206,16 @@ HttpResponse	Router::routing(const HttpRequest& req)
 			return (HttpResponse(413, "Payload Too Large"));
 
 		// Build the filesystem path //location /cgi-bin { root .; cgi_extension .py; } /cgi-bin/form.py → ./cgi-bin/form.py
-		// Option A: use location root + URI
 		std::string scriptPath = rules->root + req.path;
 
-		// Option B (only if we want cgi_bin to override):
-		// if (rules->hasCgiBin) scriptPath = rules->cgiBin + req.path;
-
 		std::cout << YELLOW << "[DEBUG - CGI] " << RES
-				<< "Executing CGI: " << BOLD_BLUE << scriptPath << RES << std::endl;
+				<< "CGI pending: " << BOLD_BLUE << scriptPath << RES << std::endl;
 
-		return (CgiHandler::execute(req, scriptPath));
+		// Return a "CGI pending" response - Server will launch CGI asynchronously
+		HttpResponse resp(0, "CGI Pending");
+		resp.isCgiPending = true;
+		resp.cgiScriptPath = scriptPath;
+		return resp;
 	}
 
 

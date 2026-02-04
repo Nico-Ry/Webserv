@@ -10,7 +10,7 @@ Connection::ConnectionException::ConnectionException(const std::string& message)
 {}
 
 Connection::Connection(int fd)
-	: fd(fd), recv_buffer(), send_buffer(), bytes_sent(0), last_activity(time(NULL))
+	: fd(fd), recv_buffer(), send_buffer(), bytes_sent(0), last_activity(time(NULL)), should_close(false)
 {
 	set_nonblocking();
 }
@@ -30,12 +30,8 @@ Connection::~Connection()
 
 void Connection::set_nonblocking()
 {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags < 0) {
-		throw ConnectionException("fcntl(F_GETFL) failed: " + std::string(strerror(errno)));
-	}
-
-	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
+	// Note: subject only allows F_SETFL, O_NONBLOCK, FD_CLOEXEC (no F_GETFL)
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
 	{
 		throw ConnectionException("fcntl(F_SETFL, O_NONBLOCK) failed: " + std::string(strerror(errno)));
 	}
@@ -44,78 +40,60 @@ void Connection::set_nonblocking()
 ssize_t Connection::read_available()
 {
 	char buffer[4096];
-	ssize_t total_read = 0;
 
-	while (true)
+	// Un seul appel recv() par evenement POLLIN
+	// On ne verifie JAMAIS errno apres recv() (interdit par le sujet)
+	ssize_t n = recv(fd, buffer, sizeof(buffer), 0);
+
+	if (n > 0)
 	{
-		ssize_t n = recv(fd, buffer, sizeof(buffer), 0);
-
-		if (n > 0)
-		{
-			recv_buffer.append(buffer, n);
-			total_read += n;
-		}
-		else if (n == 0)
-		{
-			// Connexion fermee par le client
-			return (0);
-		}
-		else
-		{
-			// n < 0: erreur
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-			{
-				// Pas d'erreur: juste plus de donnees disponibles
-				break;
-			}
-			// Vraie erreur
-			return (-1);
-		}
+		recv_buffer.append(buffer, n);
+		return n;
 	}
-
-	return total_read;
+	else if (n == 0)
+	{
+		// Connexion fermee par le client
+		return 0;
+	}
+	else
+	{
+		// n < 0: erreur - fermer la connexion
+		return -1;
+	}
 }
 
 ssize_t Connection::write_pending()
 {
 	if (send_buffer.empty() || bytes_sent >= send_buffer.length())
 	{
-		return (0);
+		return 0;
 	}
 
-	ssize_t total_sent = 0;
+	// Un seul appel send() par evenement POLLOUT
+	// On ne verifie JAMAIS errno apres send() (interdit par le sujet)
+	ssize_t n = send(fd,
+					send_buffer.data() + bytes_sent,
+					send_buffer.length() - bytes_sent,
+					MSG_NOSIGNAL);
 
-	while (bytes_sent < send_buffer.length())
+	if (n > 0)
 	{
-		ssize_t n = send(fd,
-						send_buffer.data() + bytes_sent,
-						send_buffer.length() - bytes_sent,
-						MSG_NOSIGNAL);
+		bytes_sent += n;
 
-		if (n > 0)
+		// Si tout a ete envoye, nettoyer les buffers
+		if (bytes_sent >= send_buffer.length())
 		{
-			bytes_sent += n;
-			total_sent += n;
+			send_buffer.clear();
+			bytes_sent = 0;
 		}
-		else if (n < 0) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-			{
-				// Socket buffer plein, on attendra le prochain POLLOUT
-				break;
-			}
-			// Vraie erreur
-			return (-1);
-		}
-	}
 
-	// Si tout a ete envoye, nettoyer les buffers
-	if (bytes_sent >= send_buffer.length())
+		return n;
+	}
+	else
 	{
-		send_buffer.clear();
-		bytes_sent = 0;
+		// n <= 0: erreur - fermer la connexion
+		return -1;
 	}
-
-	return (total_sent);
 }
 
 bool Connection::has_pending_data() const

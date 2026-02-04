@@ -19,6 +19,10 @@ struct HttpResponse
 	bool				isRedirect;
 	std::string			redirectTarget;
 
+	// CGI async support: if true, Server must launch CGI asynchronously
+	bool				isCgiPending;
+	std::string			cgiScriptPath;
+
 	// HttpResponse(int code = 200, const std::string &msg = "OK")
 	// 	: statusCode(code), reason(msg) {}
 	HttpResponse(int code, const std::string& msg);

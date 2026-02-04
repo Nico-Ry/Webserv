@@ -9,6 +9,7 @@
 #include "../http/HttpResponse.hpp"
 #include "../router/Router.hpp"
 #include "../configParser/Config.hpp"
+#include "../cgi/CgiProcess.hpp"
 #include <map>
 #include <vector>
 #include <stdexcept>
@@ -43,6 +44,14 @@ private:
 	void removeClient(int fd);
 	void checkClientTimeouts();  // Vérifie et ferme les connexions inactives
 
+	// CGI non-bloquant
+	void handleCgiWrite(int pipe_fd);   // Ecrire body au CGI (POLLOUT sur pipe_in)
+	void handleCgiRead(int pipe_fd);    // Lire output du CGI (POLLIN sur pipe_out)
+	void checkCgiTimeouts();            // Verifier timeouts CGI
+	void finishCgi(CgiProcess* cgi);    // Terminer un CGI et envoyer reponse
+	void cleanupCgi(CgiProcess* cgi);   // Nettoyer un CGI (fermer pipes, kill process)
+	bool isCgiPipe(int fd) const;       // Verifier si fd est un pipe CGI
+
 	// Helper: verifie si un fd est un server socket
 	bool isServerSocket(int fd) const;
 
@@ -64,6 +73,11 @@ private:
 	std::vector<int> server_fds;                    // Tous les server sockets
 	std::map<int, const ServerBlock*> fd_to_server; // fd → ServerBlock config
 	const Config* config;                           // Référence à la config complète
+
+	// CGI non-bloquant
+	std::map<int, CgiProcess*> cgi_by_pipe_in;      // pipe_in fd → CgiProcess
+	std::map<int, CgiProcess*> cgi_by_pipe_out;     // pipe_out fd → CgiProcess
+	std::map<int, CgiProcess*> cgi_by_client;       // client_fd → CgiProcess (pour savoir si client a un CGI en cours)
 
 	bool running;
 
