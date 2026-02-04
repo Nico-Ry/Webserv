@@ -70,9 +70,7 @@ ssize_t Connection::read_available()
 	recv_buffer.append(buffer, n);
 	totalBytesReceived += recv_buffer.size();
 	if (totalBytesReceived > maxRequestSize) {
-		HttpResponse	resp(413, "Payload Too Large");
-		printNonSuccess(resp);
-		return -1; // error payload too large
+		return -2; // error payload too large
 	}
 
 	return n;

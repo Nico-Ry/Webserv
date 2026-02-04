@@ -288,7 +288,7 @@ void Server::handleClientRead(int fd)
 	Connection* conn = clients[fd];
 	ssize_t n = conn->read_available();
 
-	if (n > 0)
+	if (n > 0 || n == -2)
 	{
 		// Mettre à jour le timestamp d'activité
 		conn->update_activity();
@@ -322,6 +322,9 @@ void Server::handleClientRead(int fd)
 			removeClient(fd);
 		}
 	}
+	// else if (n == -2) {
+	// 	conn->send_buffer = ResponseBuilder::build(HttpResponse(413, "Payload Too Large"), true);
+	// }
 	else
 	{
 		// Erreur de lecture - fermer la connexion silencieusement
@@ -432,6 +435,14 @@ void Server::removeClient(int fd)
 
 void Server::processRequest(Connection* conn, int fd)
 {
+	// Catches casses where bytes read exceeds limit set in Connection.hpp
+	if (conn->totalBytesReceived > conn->maxRequestSize) {
+		HttpResponse resp(413, "Payload Too Large");
+		conn->send_buffer = ResponseBuilder::build(resp, true);
+		printNonSuccess(resp);
+		return;
+	}
+
 	// Creer un parser pour ce client si necessaire
 	if (parsers.find(fd) == parsers.end())
 	{
@@ -448,23 +459,6 @@ void Server::processRequest(Connection* conn, int fd)
 		// Prevent pipelining from overwriting the pending response
 	if (!conn->send_buffer.empty())
 		return;
-
-	//NICO OOOO
-	// // If headers are parsed and we are about to parse the body,
-	// // configure the parser with the max body size for this location.
-	// if (parser->needsMaxBodySize())
-	// {
-	// 	const HttpRequest& partialReq = parser->getRequest(); // valid enough: headers+path exist now
-
-	// 	const ServerBlock* serverBlock = client_to_server[fd];
-	// 	Router requestHandler(*config, serverBlock);
-
-	// 	// We must pick the location to know rules->maxBodySize.
-	// 	requestHandler.getLocation(partialReq.path); // you may need to make this public or expose a method
-	// 	// Then set parser limit:
-	// 	parser->setMaxBodySize(requestHandler.getRulesMaxBodySize()); // or whatever accessor you implement
-	// }
-
 
 	if (parser->hasError())
 	{
