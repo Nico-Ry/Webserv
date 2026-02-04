@@ -10,7 +10,7 @@
 #include <sstream>
 #include <ctime>
 #include <sys/wait.h>
-#include <signal.h>
+#include <csignal>
 #include <unistd.h>
 
 // Timeout pour les connexions clients inactives (en secondes)
@@ -720,13 +720,9 @@ void Server::handleCgiWrite(int pipe_fd)
 		}
 		else if (n < 0)
 		{
-			// EAGAIN/EWOULDBLOCK = pipe buffer plein, reessayer au prochain POLLOUT
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return;
-			// Autre erreur = erreur fatale
-			std::cerr << "[CGI] Error writing to CGI stdin" << std::endl;
-			cgi->state = CgiProcess::CGI_ERROR;
-			finishCgi(cgi);
+			// Subject forbids checking errno after write()
+			// Treat as temporary failure, retry on next POLLOUT
+			// If it's a real error, POLLHUP/POLLERR will be signaled by poll()
 			return;
 		}
 	}
