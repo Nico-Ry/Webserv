@@ -10,7 +10,7 @@
 #include <sstream>
 #include <ctime>
 #include <sys/wait.h>
-#include <signal.h>
+#include <csignal>
 #include <unistd.h>
 
 // Timeout pour les connexions clients inactives (en secondes)
@@ -92,7 +92,7 @@ Server::~Server()
 		if (cgi->pid > 0)
 		{
 			kill(cgi->pid, SIGKILL);
-			waitpid(cgi->pid, NULL, 0);
+			waitpid(cgi->pid, NULL, WNOHANG);  // Non-blocking reap
 		}
 		delete cgi;
 	}
@@ -187,6 +187,12 @@ void Server::run()
 			else if (clients.find(fd) != clients.end())
 			{
 				short revents = multiplexer.get_revents(fd);
+				std::cout << "[DEBUG] Client fd=" << fd << " revents: "
+						  << ((revents & POLLIN) ? "POLLIN " : "")
+						  << ((revents & POLLOUT) ? "POLLOUT " : "")
+						  << ((revents & POLLHUP) ? "POLLHUP " : "")
+						  << ((revents & POLLERR) ? "POLLERR " : "")
+						  << "pending_data=" << clients[fd]->has_pending_data() << std::endl;
 
 				// Verifier d'abord les erreurs poll (connexion fermee, erreur socket)
 				if (revents & (POLLERR | POLLNVAL))
@@ -210,17 +216,28 @@ void Server::run()
 					}
 				}
 
-				// Si POLLHUP sans POLLIN, fermer la connexion
-				if (!client_disconnected && (revents & POLLHUP) && !(revents & POLLIN))
-				{
-					removeClient(fd);
-					continue;
-				}
-
-				// IMPORTANT: ne traiter POLLOUT que si le client n'a pas ete deconnecte
+				// IMPORTANT: traiter POLLOUT meme si POLLHUP (half-close du client)
+				// On doit envoyer la reponse avant de fermer
 				if (!client_disconnected && (revents & POLLOUT))
 				{
+					std::cout << "[DEBUG] POLLOUT ready for client fd=" << fd
+							  << " send_buffer size=" << clients[fd]->send_buffer.size() << std::endl;
 					handleClientWrite(fd);
+					// Verifier si client existe encore apres write
+					if (clients.find(fd) == clients.end())
+						continue;
+				}
+
+				// Si POLLHUP sans POLLIN et plus de donnees a envoyer, fermer
+				if (!client_disconnected && (revents & POLLHUP) && !(revents & POLLIN))
+				{
+					// Ne fermer que si on n'a plus rien a envoyer
+					if (!clients[fd]->has_pending_data())
+					{
+						removeClient(fd);
+						continue;
+					}
+					// Sinon on garde la connexion pour finir d'envoyer
 				}
 			}
 		}
@@ -290,10 +307,20 @@ void Server::handleClientRead(int fd)
 	}
 	else if (n == 0)
 	{
-		// Client a ferme la connexion
-		// std::cout << "  [fd=" << fd << "] Client disconnected" << std::endl;
-		// std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Client disconnected" << std::endl;
-		removeClient(fd);
+		// Client a ferme la connexion (ou half-close avec nc -N)
+		// Ne pas fermer si on a une reponse a envoyer (half-close scenario)
+		if (conn->has_pending_data())
+		{
+			std::cout << "[DEBUG] Client half-closed but we have data to send" << std::endl;
+			// Desactiver POLLIN, garder POLLOUT pour envoyer la reponse
+			multiplexer.modify_fd(fd, POLLOUT);
+			conn->should_close = true;  // Fermer apres envoi
+		}
+		else
+		{
+			// Pas de donnees a envoyer, fermer maintenant
+			removeClient(fd);
+		}
 	}
 	else
 	{
@@ -307,17 +334,24 @@ void Server::handleClientWrite(int fd)
 {
 	Connection* conn = clients[fd];
 
+	std::cout << "[DEBUG] handleClientWrite fd=" << fd
+			  << " has_pending=" << conn->has_pending_data()
+			  << " buffer_size=" << conn->send_buffer.size()
+			  << " bytes_sent=" << conn->bytes_sent << std::endl;
+
 	if (conn->has_pending_data())
 	{
 		ssize_t sent = conn->write_pending();
+		std::cout << "[DEBUG] write_pending returned " << sent << std::endl;
 
 		if (sent > 0)
 		{
-			// std::cout << "  [fd=" << fd << "] Sent " << sent << " bytes" << std::endl;
-			// std::cout << BOLD_YELLOW << "[DEBUG] " << RES << "Sent " << sent << " bytes" << std::endl;
+			std::cout << "[DEBUG] Sent " << sent << " bytes, remaining="
+					  << (conn->send_buffer.size() - conn->bytes_sent) << std::endl;
 		}
 		else if (sent < 0)
 		{
+			std::cout << "[DEBUG] write_pending error, removing client" << std::endl;
 			// Erreur d'ecriture - fermer silencieusement
 			removeClient(fd);
 			return ;
@@ -326,18 +360,40 @@ void Server::handleClientWrite(int fd)
 		// Si tout a ete envoye
 		if (!conn->has_pending_data())
 		{
-			// Fermer si Connection: close etait demande
+			std::cout << "[DEBUG] All data sent for fd=" << fd << std::endl;
+
+			// Pipelining: verifier si le parser a des donnees bufferisees (prochaine requete)
+			// IMPORTANT: faire ceci AVANT de fermer la connexion (meme si should_close)
+			std::map<int, HttpRequestParser*>::iterator parser_it = parsers.find(fd);
+			if (parser_it != parsers.end() && parser_it->second->hasBufferedData())
+			{
+				std::cout << "[DEBUG] Pipelining: processing next buffered request" << std::endl;
+				processRequest(conn, fd);
+				// Verifier si client existe encore
+				if (clients.find(fd) == clients.end())
+					return;
+				// Si une nouvelle reponse est prete, activer POLLOUT
+				if (!conn->send_buffer.empty())
+				{
+					multiplexer.modify_fd(fd, POLLOUT);
+					return;
+				}
+			}
+
+			// Fermer si Connection: close etait demande (ou half-close)
 			if (conn->should_close)
 			{
 				removeClient(fd);
 				return;
 			}
+
 			// Sinon garder la connexion (keep-alive)
 			multiplexer.modify_fd(fd, POLLIN);
 		}
 	}
 	else
 	{
+		std::cout << "[DEBUG] No pending data for fd=" << fd << std::endl;
 		// Plus rien a envoyer, desactiver POLLOUT
 		multiplexer.modify_fd(fd, POLLIN);
 	}
@@ -471,6 +527,9 @@ void Server::processRequest(Connection* conn, int fd)
 				}
 				else
 				{
+					// Save connection close preference (HTTP/1.0 vs 1.1)
+					cgi->should_close = parser->shouldCloseConnection();
+
 					// Register CGI pipes in poll()
 					if (cgi->pipe_in >= 0)
 					{
@@ -571,10 +630,9 @@ void Server::handleCgiWrite(int pipe_fd)
 		}
 		else if (n < 0)
 		{
-			// Write error
-			std::cerr << "[CGI] Error writing to CGI stdin" << std::endl;
-			cgi->state = CgiProcess::CGI_ERROR;
-			finishCgi(cgi);
+			// Subject forbids checking errno after write()
+			// Treat as temporary failure, retry on next POLLOUT
+			// If it's a real error, POLLHUP/POLLERR will be signaled by poll()
 			return;
 		}
 	}
@@ -668,17 +726,35 @@ void Server::finishCgi(CgiProcess* cgi)
 
 	if (cgi->state == CgiProcess::CGI_DONE)
 	{
-		// Wait for child process with WNOHANG (should be done already)
+		// Wait for child process with WNOHANG (non-blocking)
 		int status;
 		pid_t result = waitpid(cgi->pid, &status, WNOHANG);
 
+		// EOF on pipe means CGI finished output - use it regardless of process state
+		// result == 0: process still running (will be killed in cleanupCgi)
+		// result > 0: process exited, check exit status
+		bool cgi_success = false;
+
 		if (result == 0)
 		{
-			// Process still running - wait a bit more
-			result = waitpid(cgi->pid, &status, 0);
+			// Process still running but we got EOF - consider it successful
+			cgi_success = true;
+		}
+		else if (result > 0)
+		{
+			// Process exited - check if it was clean exit with status 0
+			if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
+				cgi_success = true;
+			else
+				std::cerr << "[CGI] CGI process exited with error status" << std::endl;
+		}
+		else
+		{
+			// waitpid error
+			std::cerr << "[CGI] waitpid error" << std::endl;
 		}
 
-		if (result > 0 && WIFEXITED(status) && WEXITSTATUS(status) == 0)
+		if (cgi_success && !cgi->output.empty())
 		{
 			// Parse CGI output
 			resp = CgiParser::parseCgiOutput(cgi->output);
@@ -705,10 +781,14 @@ void Server::finishCgi(CgiProcess* cgi)
 		}
 	}
 
-	// Send response to client
-	conn->send_buffer = ResponseBuilder::build(resp, false);
+	// Send response to client (respect HTTP/1.0 vs 1.1 connection handling)
+	conn->send_buffer = ResponseBuilder::build(resp, cgi->should_close);
+	conn->should_close = cgi->should_close;
 	conn->update_activity();  // Reset timeout pour laisser le temps d'envoyer la reponse
 	multiplexer.modify_fd(client_fd, POLLIN | POLLOUT);
+	std::cout << "[DEBUG] finishCgi: set POLLOUT for client_fd=" << client_fd
+			  << " send_buffer size=" << conn->send_buffer.size()
+			  << " should_close=" << cgi->should_close << std::endl;
 
 	std::cout << std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
 			  << (resp.statusCode < 400 ? BOLD_GREEN : BOLD_RED) << resp.statusCode << RES << "] ["
@@ -735,7 +815,7 @@ void Server::cleanupCgi(CgiProcess* cgi)
 	}
 	cgi_by_client.erase(cgi->client_fd);
 
-	// Kill process if still running
+	// Kill process if still running (non-blocking only)
 	if (cgi->pid > 0)
 	{
 		int status;
@@ -744,7 +824,8 @@ void Server::cleanupCgi(CgiProcess* cgi)
 		{
 			// Process still running, kill it
 			kill(cgi->pid, SIGKILL);
-			waitpid(cgi->pid, &status, 0);
+			// WNOHANG: never block - zombie will be reaped by kernel eventually
+			waitpid(cgi->pid, &status, WNOHANG);
 		}
 	}
 

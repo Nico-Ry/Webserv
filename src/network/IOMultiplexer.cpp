@@ -70,6 +70,10 @@ std::vector<int> IOMultiplexer::wait(int timeout)
 
 	if (ready < 0)
 	{
+		// EINTR = signal recu pendant poll(), on retourne simplement une liste vide
+		// pour que la boucle principale continue (ce n'est pas une erreur fatale)
+		if (errno == EINTR)
+			return (result);
 		throw MultiplexerException("poll() failed: " + std::string(strerror(errno)));
 	}
 

@@ -88,7 +88,7 @@ void	ConfigParser::updateUnit(std::string& unit, const std::string& currentToken
 void	ConfigParser::getSizeAndUnit(const Token& sizeToken, long& num, std::string& unit)
 {
 	std::stringstream	ss(sizeToken.value);
-	std::string			unit_err = "max_size: invalid unit specifier, expected K, M or G: ";
+	std::string			unit_err = "max_size: invalid unit specifier, expected B, K, M or G: ";
 
 	if (!(ss >> num))
 		throw ParseException("max_size invalid input:", sizeToken);

@@ -46,15 +46,7 @@ public:
 								const std::string& interpreterPath = "",
 								int timeout = 30);
 
-	/**
-	 * @brief Execute a CGI script and return the HTTP response (BLOCKING - deprecated)
-	 *
-	 * @deprecated Use startCgi() for non-blocking execution
-	 */
-	static HttpResponse execute(const HttpRequest& req,
-							   const std::string& scriptPath,
-							   const std::string& interpreterPath = "",
-							   int timeout = 30);
+	// NOTE: execute() was removed - violated "non-blocking at all times" requirement
 
 	/**
 	 * @brief Check if a file is a CGI script based on extension
