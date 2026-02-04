@@ -207,7 +207,7 @@ HttpResponse	Router::routing(const HttpRequest& req)
 			return (HttpResponse(413, "Payload Too Large"));
 
 		// Build the filesystem path //location /cgi-bin { root .; cgi_extension .py; } /cgi-bin/form.py → ./cgi-bin/form.py
-		std::string scriptPath = rules->root + req.path;
+		std::string scriptPath = getResolvedPath(req.path, *rules);
 
 		std::cout << YELLOW << "[DEBUG - CGI] " << RES
 				<< "CGI pending: " << BOLD_BLUE << scriptPath << RES << std::endl;
@@ -259,6 +259,8 @@ HttpResponse Router::buildResponse(const HttpRequest& req)
 
 	HttpResponse		result = routing(req);
 
+	if (result.isCgiPending && result.statusCode == 0)
+		return (result);
 	if (result.isSuccess())
 		printSuccess(result);
 	else if (result.isRedirect)
