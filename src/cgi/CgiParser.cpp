@@ -73,15 +73,15 @@ HttpResponse CgiParser::parseCgiOutput(const std::string& output)
 		}
 		else
 		{
-			// Regular header (add ": " to match ResponseBuilder format)
-			resp.headers[key + ": "] = value;
+			// Regular header - key only, no colon
+			resp.headers[key] = value;
 		}
 	}
 
 	resp.body = body_section;
 
 	// Set default Content-Type if not provided
-	if (resp.headers.find("Content-Type: ") == resp.headers.end())
+	if (resp.headers.find("Content-Type") == resp.headers.end())
 	{
 		resp.headers["Content-Type"] = "text/html";
 	}

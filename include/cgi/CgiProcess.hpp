@@ -33,6 +33,7 @@ struct CgiProcess {
 	int timeout;            // Timeout in seconds
 
 	State state;            // Current state
+	bool should_close;      // Close connection after response (HTTP/1.0 compat)
 
 	CgiProcess()
 		: pid(-1)
@@ -45,6 +46,7 @@ struct CgiProcess {
 		, start_time(0)
 		, timeout(30)
 		, state(CGI_WRITING_BODY)
+		, should_close(false)
 	{}
 
 	bool hasBodyToWrite() const {

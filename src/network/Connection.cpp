@@ -30,12 +30,8 @@ Connection::~Connection()
 
 void Connection::set_nonblocking()
 {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags < 0) {
-		throw ConnectionException("fcntl(F_GETFL) failed: " + std::string(strerror(errno)));
-	}
-
-	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
+	// Note: subject only allows F_SETFL, O_NONBLOCK, FD_CLOEXEC (no F_GETFL)
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
 	{
 		throw ConnectionException("fcntl(F_SETFL, O_NONBLOCK) failed: " + std::string(strerror(errno)));
 	}

@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cerrno>
 #include <sstream>
+#include <fcntl.h>
 
 // SocketException
 SocketManager::SocketException::SocketException(const std::string& message)
@@ -67,6 +68,11 @@ int SocketManager::create_server(int port, int backlog)
 		configure_socket(fd);
 		bind_socket(fd, port);
 		start_listening(fd, backlog);
+		// Set listening socket to non-blocking (subject requirement)
+		if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
+		{
+			throw SocketException("fcntl(O_NONBLOCK) failed on listen socket: " + std::string(strerror(errno)));
+		}
 	} catch (const SocketException& e)
 	{
 		close(fd);

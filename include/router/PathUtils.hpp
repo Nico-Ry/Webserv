@@ -1,7 +1,7 @@
 #ifndef PATHUTILS_HPP
 #define PATHUTILS_HPP
 
-#include <string.h>		// strerror
+#include <cstring>		// strerror
 #include <unistd.h>     // access()
 #include <errno.h>      // errno
 #include "colours.hpp"

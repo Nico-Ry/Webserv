@@ -1,7 +1,7 @@
 #include "router/Router.hpp"
 #include "utils.hpp"
 #include <sstream>
-#include <stdlib.h>
+#include <cstdlib>
 #include "router/PathUtils.hpp"
 #include "cgi/CgiHandler.hpp"
 
