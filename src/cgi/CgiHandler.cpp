@@ -185,9 +185,9 @@ CgiProcess* CgiHandler::startCgi(const HttpRequest& req,
 		cgi->state = CgiProcess::CGI_WRITING_BODY;
 	}
 
-	std::cout << "[CGI] Started async CGI: pid=" << pid
-			  << " client_fd=" << client_fd
-			  << " script=" << scriptPath << std::endl;
+	// std::cout << "[CGI] Started async CGI: pid=" << pid
+	// 		  << " client_fd=" << client_fd
+	// 		  << " script=" << scriptPath << std::endl;
 
 	return cgi;
 }

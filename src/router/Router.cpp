@@ -214,8 +214,8 @@ HttpResponse	Router::routing(const HttpRequest& req)
 		if (access(scriptPath.c_str(), F_OK) != 0)
 			return (HttpResponse(404, "Not Found"));
 
-		std::cout << YELLOW << "[DEBUG - CGI] " << RES
-				<< "CGI pending: " << BOLD_BLUE << scriptPath << RES << std::endl;
+		std::cout << std::left << YELLOW << std::setw(16) << "[CGI]" << RES
+				<< "  ~   " << BOLD_BLUE << scriptPath << RES << std::endl;
 
 		// Return a "CGI pending" response - Server will launch CGI asynchronously
 		HttpResponse resp(0, "CGI Pending");

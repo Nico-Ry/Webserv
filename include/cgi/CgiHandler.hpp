@@ -44,7 +44,7 @@ public:
 								const std::string& scriptPath,
 								int client_fd,
 								const std::string& interpreterPath = "",
-								int timeout = 30);
+								int timeout = 10);
 
 	// NOTE: execute() was removed - violated "non-blocking at all times" requirement
 

@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 // Timeout pour les connexions clients inactives (en secondes)
-static const int CLIENT_TIMEOUT_SECONDS = 30;
+static const int CLIENT_TIMEOUT_SECONDS = 15;
 
 // Helper function pour convertir int en string (C++98)
 std::string intToString(int n)
@@ -412,7 +412,7 @@ void Server::removeClient(int fd)
 		std::map<int, CgiProcess*>::iterator cgi_it = cgi_by_client.find(fd);
 		if (cgi_it != cgi_by_client.end())
 		{
-			std::cout << "[CGI] Client fd=" << fd << " disconnecting, cleaning up CGI" << std::endl;
+			// std::cout << "[CGI] Client fd=" << fd << " disconnecting, cleaning up CGI" << std::endl;
 			cleanupCgi(cgi_it->second);
 		}
 
@@ -578,9 +578,10 @@ void Server::checkClientTimeouts() {
 			continue;
 
 		if (now - conn->last_activity > CLIENT_TIMEOUT_SECONDS) {
-			std::cout << BOLD_ORANGE << "[TIMEOUT] " << RES
-				<< "Client fd=" << fd << " inactive for "
-				<< (now - conn->last_activity) << "s, closing connection" << std::endl;
+			std::cout	<< std::left << BOLD_ORANGE << std::setw(16) << "[TIMEOUT]"
+						<< RES << "  ~  Client fd=" << fd << " inactive for "
+						<< BOLD << (now - conn->last_activity) << RES << "s,"
+						<< RED << " closing connection" << RES << std::endl;
 			to_remove.push_back(fd);
 		}
 	}
@@ -619,8 +620,8 @@ void Server::handleCgiWrite(int pipe_fd)
 		if (n > 0)
 		{
 			cgi->body_written += n;
-			std::cout << "[CGI] Wrote " << n << " bytes to CGI stdin (total: "
-					  << cgi->body_written << "/" << cgi->body.size() << ")" << std::endl;
+			// std::cout << "[CGI] Wrote " << n << " bytes to CGI stdin (total: "
+			// 		  << cgi->body_written << "/" << cgi->body.size() << ")" << std::endl;
 		}
 		else if (n < 0)
 		{
@@ -639,7 +640,7 @@ void Server::handleCgiWrite(int pipe_fd)
 		cgi_by_pipe_in.erase(pipe_fd);
 		cgi->pipe_in = -1;
 		cgi->state = CgiProcess::CGI_READING_OUTPUT;
-		std::cout << "[CGI] Finished writing body, now reading output" << std::endl;
+		// std::cout << "[CGI] Finished writing body, now reading output" << std::endl;
 	}
 }
 
@@ -658,13 +659,15 @@ void Server::handleCgiRead(int pipe_fd)
 	if (n > 0)
 	{
 		cgi->output.append(buffer, n);
-		std::cout << "[CGI] Read " << n << " bytes from CGI (total: "
-				  << cgi->output.size() << " bytes)" << std::endl;
+		std::cout	<< std::left << YELLOW << std::setw(16) << "[CGI]"
+					<< RES << "  ~  Read " << BOLD << n
+					<< RES << " bytes from CGI (total: "
+					<< cgi->output.size() << " bytes)" << std::endl;
 	}
 	else if (n == 0)
 	{
 		// EOF - CGI finished output
-		std::cout << "[CGI] CGI output complete (" << cgi->output.size() << " bytes)" << std::endl;
+		// std::cout << "[CGI] CGI output complete (" << cgi->output.size() << " bytes)" << std::endl;
 		cgi->state = CgiProcess::CGI_DONE;
 		finishCgi(cgi);
 	}
@@ -688,9 +691,9 @@ void Server::checkCgiTimeouts()
 		CgiProcess* cgi = it->second;
 		if (cgi->isTimedOut())
 		{
-			std::cout << BOLD_ORANGE << "[CGI TIMEOUT] " << RES
-					  << "CGI pid=" << cgi->pid << " timed out after "
-					  << cgi->timeout << "s" << std::endl;
+			std::cout	<< std::left << BOLD_ORANGE << std::setw(16) << "[CGI TIMEOUT]"
+						<< RES << "  ~  pid=" << cgi->pid << " timed out after "
+						<< BOLD << cgi->timeout << RES << "s" << std::endl;
 			cgi->state = CgiProcess::CGI_ERROR;
 			to_cleanup.push_back(cgi);
 		}
@@ -752,7 +755,7 @@ void Server::finishCgi(CgiProcess* cgi)
 		{
 			// Parse CGI output
 			resp = CgiParser::parseCgiOutput(cgi->output);
-			std::cout << "[CGI] CGI completed successfully, status=" << resp.statusCode << std::endl;
+			// std::cout << "[CGI] CGI completed successfully, status=" << resp.statusCode << std::endl;
 		}
 		else
 		{
