@@ -51,7 +51,7 @@ print(f"""<!DOCTYPE html>
     <div class="container">
         <h1>🐍 Hello, {name}!</h1>
         <p>Your ID (x) is: <strong>{x_val}</strong></p>
-        
+
         <div class="data-box">
             Raw Query String: {query_string}
         </div>
