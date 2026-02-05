@@ -59,7 +59,6 @@
 		<hr class="sep">
 		<p class="small">
 		  Expected: an HTML listing with files/subfolders (not 403).
-		  If you add permtest under <span class="badge">/tests/permtest/</span>, link it here too.
 		</p>
 	  </div>
 
@@ -85,14 +84,14 @@
 		  <button class="btn btn-post" onclick="runBigNoSize()">POST /no_size → 413</button>
 		</div>
 		<hr class="sep">
-		<p class="small">Expected: correct status codes + your custom error pages (if configured).</p>
+		<p class="small">Expected: correct status codes .</p>
 	  </div>
 
 	  <div class="card">
 		<h2>5) POST</h2>
 		<p>
 		  Use the upload page to test raw-body uploads to <span class="badge">/upload/&lt;filename&gt;</span>.
-		  Below: text POST test (works with your current handlePost).
+		  Below: text POST test .
 		</p>
 
 		<div class="btnrow">
@@ -128,7 +127,7 @@
 		  <a class="btn btn-get" href="/upload/to-delete.txt">GET target file</a>
 		</div>
 		<hr class="sep">
-		<p class="small">Expected: 201/200 on create, then 200/204 for delete, then GET should return 404.</p>
+		<p class="small">Expected: 201/200 on create, then 204 for delete, then GET should return 404.</p>
 	  </div>
 	</div>
 
@@ -136,20 +135,13 @@
 
 	<div class="card">
 	  <h2>Live response viewer</h2>
-	  <p class="small">Shows status + headers + body returned by your server.</p>
+	  <p class="small">Shows status + headers + body returned by server.</p>
 	  <div id="out" class="output">
 		<div class="meta">No request yet.</div>
 		<pre></pre>
 	  </div>
 
-	  <hr class="sep">
 
-	  <p class="small"><strong>Equivalent curl commands:</strong></p>
-	  <div class="code">curl -i http://127.0.0.1:8080/tests/autoindex/
-curl -i http://127.0.0.1:8080/tests/static/hello.txt
-curl -i -X POST http://127.0.0.1:8080/test -d 'x'
-curl -i -X DELETE http://127.0.0.1:8080/upload/to-delete.txt</div>
-	</div>
   </div>
 
   <script src="/assets/js/hub.js"></script>

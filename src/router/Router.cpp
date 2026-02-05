@@ -225,8 +225,8 @@ HttpResponse	Router::routing(const HttpRequest& req)
 	}
 
 
-	std::cout << "[DEBUG ROUTER] method=" << req.method
-			<< " path='" << req.path << "'" << std::endl;
+	// std::cout << "[DEBUG ROUTER] method=" << req.method
+	// 		<< " path='" << req.path << "'" << std::endl;
 
 	std::cout << BOLD_BLUE << getResolvedPath(req.path, *rules) << std::endl;
 // TODO: a function that matches redirection code with

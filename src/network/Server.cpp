@@ -187,12 +187,12 @@ void Server::run()
 			else if (clients.find(fd) != clients.end())
 			{
 				short revents = multiplexer.get_revents(fd);
-				std::cout << "[DEBUG] Client fd=" << fd << " revents: "
-						  << ((revents & POLLIN) ? "POLLIN " : "")
-						  << ((revents & POLLOUT) ? "POLLOUT " : "")
-						  << ((revents & POLLHUP) ? "POLLHUP " : "")
-						  << ((revents & POLLERR) ? "POLLERR " : "")
-						  << "pending_data=" << clients[fd]->has_pending_data() << std::endl;
+				// std::cout << "[DEBUG] Client fd=" << fd << " revents: "
+				// 		  << ((revents & POLLIN) ? "POLLIN " : "")
+				// 		  << ((revents & POLLOUT) ? "POLLOUT " : "")
+				// 		  << ((revents & POLLHUP) ? "POLLHUP " : "")
+				// 		  << ((revents & POLLERR) ? "POLLERR " : "")
+				// 		  << "pending_data=" << clients[fd]->has_pending_data() << std::endl;
 
 				// Verifier d'abord les erreurs poll (connexion fermee, erreur socket)
 				if (revents & (POLLERR | POLLNVAL))
@@ -220,8 +220,8 @@ void Server::run()
 				// On doit envoyer la reponse avant de fermer
 				if (!client_disconnected && (revents & POLLOUT))
 				{
-					std::cout << "[DEBUG] POLLOUT ready for client fd=" << fd
-							  << " send_buffer size=" << clients[fd]->send_buffer.size() << std::endl;
+					// std::cout << "[DEBUG] POLLOUT ready for client fd=" << fd
+					// 		  << " send_buffer size=" << clients[fd]->send_buffer.size() << std::endl;
 					handleClientWrite(fd);
 					// Verifier si client existe encore apres write
 					if (clients.find(fd) == clients.end())
@@ -242,7 +242,6 @@ void Server::run()
 			}
 		}
 
-		std::cout << std::endl;
 	}
 }
 
@@ -311,7 +310,7 @@ void Server::handleClientRead(int fd)
 		// Ne pas fermer si on a une reponse a envoyer (half-close scenario)
 		if (conn->has_pending_data())
 		{
-			std::cout << "[DEBUG] Client half-closed but we have data to send" << std::endl;
+			// std::cout << "[DEBUG] Client half-closed but we have data to send" << std::endl;
 			// Desactiver POLLIN, garder POLLOUT pour envoyer la reponse
 			multiplexer.modify_fd(fd, POLLOUT);
 			conn->should_close = true;  // Fermer apres envoi
@@ -337,24 +336,25 @@ void Server::handleClientWrite(int fd)
 {
 	Connection* conn = clients[fd];
 
-	std::cout << "[DEBUG] handleClientWrite fd=" << fd
-			  << " has_pending=" << conn->has_pending_data()
-			  << " buffer_size=" << conn->send_buffer.size()
-			  << " bytes_sent=" << conn->bytes_sent << std::endl;
+	// std::cout << "[DEBUG] handleClientWrite fd=" << fd
+	// 		  << " has_pending=" << conn->has_pending_data()
+	// 		  << " buffer_size=" << conn->send_buffer.size()
+	// 		  << " bytes_sent=" << conn->bytes_sent << std::endl;
 
 	if (conn->has_pending_data())
 	{
 		ssize_t sent = conn->write_pending();
-		std::cout << "[DEBUG] write_pending returned " << sent << std::endl;
+		// std::cout << "[DEBUG] write_pending returned " << sent << std::endl;
 
-		if (sent > 0)
+		// if (sent > 0)
+		// {
+		// 	//wtf CHECK THIS!!! ???
+		// 	std::cout << "[DEBUG] Sent " << sent << " bytes, remaining="
+		// 			  << (conn->send_buffer.size() - conn->bytes_sent) << std::endl;
+		// }
+		if (sent < 0)
 		{
-			std::cout << "[DEBUG] Sent " << sent << " bytes, remaining="
-					  << (conn->send_buffer.size() - conn->bytes_sent) << std::endl;
-		}
-		else if (sent < 0)
-		{
-			std::cout << "[DEBUG] write_pending error, removing client" << std::endl;
+			// std::cout << "[DEBUG] write_pending error, removing client" << std::endl;
 			// Erreur d'ecriture - fermer silencieusement
 			removeClient(fd);
 			return ;
@@ -363,14 +363,14 @@ void Server::handleClientWrite(int fd)
 		// Si tout a ete envoye
 		if (!conn->has_pending_data())
 		{
-			std::cout << "[DEBUG] All data sent for fd=" << fd << std::endl;
+			// std::cout << "[DEBUG] All data sent for fd=" << fd << std::endl;
 
 			// Pipelining: verifier si le parser a des donnees bufferisees (prochaine requete)
 			// IMPORTANT: faire ceci AVANT de fermer la connexion (meme si should_close)
 			std::map<int, HttpRequestParser*>::iterator parser_it = parsers.find(fd);
 			if (parser_it != parsers.end() && parser_it->second->hasBufferedData())
 			{
-				std::cout << "[DEBUG] Pipelining: processing next buffered request" << std::endl;
+				// std::cout << "[DEBUG] Pipelining: processing next buffered request" << std::endl;
 				processRequest(conn, fd);
 				// Verifier si client existe encore
 				if (clients.find(fd) == clients.end())
@@ -396,7 +396,7 @@ void Server::handleClientWrite(int fd)
 	}
 	else
 	{
-		std::cout << "[DEBUG] No pending data for fd=" << fd << std::endl;
+		// std::cout << "[DEBUG] No pending data for fd=" << fd << std::endl;
 		// Plus rien a envoyer, desactiver POLLOUT
 		multiplexer.modify_fd(fd, POLLIN);
 	}
@@ -780,9 +780,9 @@ void Server::finishCgi(CgiProcess* cgi)
 	conn->should_close = cgi->should_close;
 	conn->update_activity();  // Reset timeout pour laisser le temps d'envoyer la reponse
 	multiplexer.modify_fd(client_fd, POLLIN | POLLOUT);
-	std::cout << "[DEBUG] finishCgi: set POLLOUT for client_fd=" << client_fd
-			  << " send_buffer size=" << conn->send_buffer.size()
-			  << " should_close=" << cgi->should_close << std::endl;
+	// std::cout << "[DEBUG] finishCgi: set POLLOUT for client_fd=" << client_fd
+	// 		  << " send_buffer size=" << conn->send_buffer.size()
+	// 		  << " should_close=" << cgi->should_close << std::endl;
 
 	std::cout << std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~  ["
 			  << (resp.statusCode < 400 ? BOLD_GREEN : BOLD_RED) << resp.statusCode << RES << "] ["

@@ -8,20 +8,20 @@
 void		printNonSuccess(const HttpResponse& resp) {
 	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
 				<< BOLD_RED << resp.statusCode << RES << "] ["
-				<< BOLD_RED << resp.reason << RES << "]" << std::endl;
+				<< BOLD_RED << resp.reason << RES << "]\n" << std::endl;
 }
 
 
 void		printRedirect(const HttpResponse& resp) {
 	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
 				<< BOLD_BLUE << resp.statusCode << RES << "] ["
-				<< BOLD_BLUE << resp.reason << RES << "]" << std::endl;
+				<< BOLD_BLUE << resp.reason << RES << "]\n" << std::endl;
 }
 
 void		printSuccess(const HttpResponse& resp) {
 	std::cout	<< std::left << BOLD_MAGENTA << std::setw(16) << "[HTTP Response]" << RES << "  ~   ["
 				<< BOLD_GREEN << resp.statusCode << RES << "] ["
-				<< BOLD_GREEN << resp.reason << RES << "]" << std::endl;
+				<< BOLD_GREEN << resp.reason << RES << "]\n" << std::endl;
 }
 
 void		logWarning(const std::string& msg) {
